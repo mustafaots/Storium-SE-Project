@@ -8,4 +8,469 @@
 <body>
     
 </body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick-Poll - Fast Team Decisions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .options-list {
+            margin-top: 10px;
+        }
+
+        .option-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .option-item input {
+            flex: 1;
+        }
+
+        .btn-remove {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn-remove:hover {
+            background: #ff3838;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .poll-view {
+            display: none;
+        }
+
+        .poll-view.active {
+            display: block;
+        }
+
+        .poll-option {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .poll-option:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .poll-option.selected {
+            background: #e7f0ff;
+            border-color: #667eea;
+        }
+
+        .poll-option-text {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .poll-bar {
+            height: 24px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .poll-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+        }
+
+        .poll-bar-text {
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .share-link {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .share-link input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        .btn-copy {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn-copy:hover {
+            background: #5568d3;
+        }
+
+        .alert {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Create Poll View -->
+        <div id="createView" class="create-view">
+            <h1>📊 Quick-Poll</h1>
+            <p class="subtitle">Make team decisions fast and easy</p>
+
+            <div class="section">
+                <label class="section-title" for="pollQuestion">Poll Question</label>
+                <input type="text" id="pollQuestion" placeholder="e.g., Where should we order lunch?">
+            </div>
+
+            <div class="section">
+                <label class="section-title">Poll Options</label>
+                <div id="optionsList" class="options-list">
+                    <div class="option-item">
+                        <input type="text" placeholder="Option 1" class="option-input">
+                        <button class="btn-remove" onclick="removeOption(this)">✕</button>
+                    </div>
+                    <div class="option-item">
+                        <input type="text" placeholder="Option 2" class="option-input">
+                        <button class="btn-remove" onclick="removeOption(this)">✕</button>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" onclick="addOption()">+ Add Option</button>
+            </div>
+
+            <button class="btn" onclick="createPoll()">Create Poll</button>
+        </div>
+
+        <!-- Poll View -->
+        <div id="pollView" class="poll-view">
+            <h1>📊 Quick-Poll</h1>
+            <p class="subtitle">Vote and see results in real-time</p>
+
+            <div id="successAlert" class="alert hidden">
+                Poll created successfully! Share the link below.
+            </div>
+
+            <div class="section">
+                <h2 id="pollQuestionDisplay" class="section-title"></h2>
+                <div id="pollOptions"></div>
+                <button id="voteBtn" class="btn" onclick="submitVote()">Submit Vote</button>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Share This Poll</div>
+                <div class="share-link">
+                    <input type="text" id="shareLink" readonly>
+                    <button class="btn-copy" onclick="copyLink()">Copy</button>
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="createNewPoll()">Create New Poll</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPoll = {
+            question: '',
+            options: [],
+            votes: {}
+        };
+
+        let selectedOption = null;
+
+        function addOption() {
+            const optionsList = document.getElementById('optionsList');
+            const optionCount = optionsList.children.length + 1;
+            
+            const optionItem = document.createElement('div');
+            optionItem.className = 'option-item';
+            optionItem.innerHTML = `
+                <input type="text" placeholder="Option ${optionCount}" class="option-input">
+                <button class="btn-remove" onclick="removeOption(this)">✕</button>
+            `;
+            
+            optionsList.appendChild(optionItem);
+        }
+
+        function removeOption(btn) {
+            const optionsList = document.getElementById('optionsList');
+            if (optionsList.children.length > 2) {
+                btn.parentElement.remove();
+            } else {
+                alert('You need at least 2 options for a poll!');
+            }
+        }
+
+        function createPoll() {
+            const question = document.getElementById('pollQuestion').value.trim();
+            const optionInputs = document.querySelectorAll('.option-input');
+            const options = [];
+
+            optionInputs.forEach(input => {
+                const value = input.value.trim();
+                if (value) {
+                    options.push(value);
+                }
+            });
+
+            if (!question) {
+                alert('Please enter a poll question!');
+                return;
+            }
+
+            if (options.length < 2) {
+                alert('Please enter at least 2 options!');
+                return;
+            }
+
+            currentPoll = {
+                question: question,
+                options: options,
+                votes: {}
+            };
+
+            options.forEach(option => {
+                currentPoll.votes[option] = 0;
+            });
+
+            displayPoll();
+        }
+
+        function displayPoll() {
+            document.getElementById('createView').style.display = 'none';
+            document.getElementById('pollView').classList.add('active');
+            document.getElementById('successAlert').classList.remove('hidden');
+            
+            document.getElementById('pollQuestionDisplay').textContent = currentPoll.question;
+            
+            const shareLink = window.location.href;
+            document.getElementById('shareLink').value = shareLink;
+            
+            renderPollOptions();
+        }
+
+        function renderPollOptions() {
+            const pollOptionsDiv = document.getElementById('pollOptions');
+            pollOptionsDiv.innerHTML = '';
+
+            const totalVotes = Object.values(currentPoll.votes).reduce((a, b) => a + b, 0);
+
+            currentPoll.options.forEach(option => {
+                const votes = currentPoll.votes[option] || 0;
+                const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'poll-option';
+                optionDiv.onclick = () => selectOption(option, optionDiv);
+                
+                optionDiv.innerHTML = `
+                    <div class="poll-option-text">${option}</div>
+                    <div class="poll-bar">
+                        <div class="poll-bar-fill" style="width: ${percentage}%">
+                            <span class="poll-bar-text">${votes} votes (${percentage}%)</span>
+                        </div>
+                    </div>
+                `;
+                
+                pollOptionsDiv.appendChild(optionDiv);
+            });
+        }
+
+        function selectOption(option, element) {
+            document.querySelectorAll('.poll-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedOption = option;
+        }
+
+        function submitVote() {
+            if (!selectedOption) {
+                alert('Please select an option to vote!');
+                return;
+            }
+
+            currentPoll.votes[selectedOption]++;
+            selectedOption = null;
+            
+            document.querySelectorAll('.poll-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            renderPollOptions();
+            
+            setTimeout(() => {
+                alert('Vote submitted! Results updated.');
+            }, 100);
+        }
+
+        function copyLink() {
+            const shareLink = document.getElementById('shareLink');
+            shareLink.select();
+            document.execCommand('copy');
+            
+            const btn = event.target;
+            btn.textContent = 'Copied!';
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+            }, 2000);
+        }
+
+        function createNewPoll() {
+            document.getElementById('createView').style.display = 'block';
+            document.getElementById('pollView').classList.remove('active');
+            
+            document.getElementById('pollQuestion').value = '';
+            document.getElementById('optionsList').innerHTML = `
+                <div class="option-item">
+                    <input type="text" placeholder="Option 1" class="option-input">
+                    <button class="btn-remove" onclick="removeOption(this)">✕</button>
+                </div>
+                <div class="option-item">
+                    <input type="text" placeholder="Option 2" class="option-input">
+                    <button class="btn-remove" onclick="removeOption(this)">✕</button>
+                </div>
+            `;
+            
+            currentPoll = { question: '', options: [], votes: {} };
+            selectedOption = null;
+        }
+    </script>
+</body>
 </html>
