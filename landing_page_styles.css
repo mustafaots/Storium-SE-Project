@@ -3,7 +3,7 @@
     --discord-gray: #36393f;
     --discord-gray-light: #40444b;
     --discord-gray-dark: #2f3136;
-    --industrial-gold: #ffd700;
+    --industrial-gold: #ffbb00;
     --industrial-gold-dark: #b8860b;
     --white: #ffffff;
     --text-light: #f0f0f0;
@@ -22,6 +22,7 @@ body {
     background-color: var(--discord-gray);
     color: var(--text-light);
     line-height: 1.6;
+    overflow-x: hidden;
 }
 
 .container {
@@ -45,6 +46,62 @@ p {
     color: var(--text-gray);
 }
 
+/* Animation Keyframes */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInFromTop {
+    from { 
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInFromBottom {
+    from { 
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInFromLeft {
+    from { 
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from { 
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
 /* Header Styles */
 header {
     background-color: var(--discord-gray-dark);
@@ -54,6 +111,7 @@ header {
     top: 0;
     z-index: 1000;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    animation: slideInFromTop 0.8s ease-out;
 }
 
 .header-container {
@@ -90,10 +148,26 @@ nav a {
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s;
+    position: relative;
 }
 
 nav a:hover {
     color: var(--industrial-gold);
+}
+
+nav a:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -5px;
+    left: 0;
+    background-color: var(--industrial-gold);
+    transition: width 0.3s;
+}
+
+nav a:hover:after {
+    width: 100%;
 }
 
 /* Hero Section */
@@ -101,17 +175,20 @@ nav a:hover {
     background: linear-gradient(to right, var(--discord-gray), var(--discord-gray-dark));
     padding-top: 150px;
     text-align: center;
+    animation: fadeIn 1s ease-out;
 }
 
 .hero h2 {
     font-size: 48px;
     margin-bottom: 20px;
+    animation: slideInFromLeft 1s ease-out 0.3s both;
 }
 
 .hero p {
     font-size: 20px;
     max-width: 700px;
     margin: 0 auto 30px;
+    animation: slideInFromRight 1s ease-out 0.5s both;
 }
 
 .cta-button {
@@ -126,12 +203,14 @@ nav a:hover {
     transition: all 0.3s;
     border: none;
     cursor: pointer;
+    animation: slideInFromBottom 1s ease-out 0.7s both;
 }
 
 .cta-button:hover {
     background-color: var(--industrial-gold-dark);
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    /* Removed the animation property that was causing the issue */
 }
 
 /* Features Section */
@@ -143,6 +222,7 @@ nav a:hover {
     text-align: center;
     margin-bottom: 50px;
     position: relative;
+    animation: slideInFromTop 1s ease-out;
 }
 
 .section-title:after {
@@ -167,7 +247,13 @@ nav a:hover {
     text-align: center;
     transition: transform 0.3s;
     border-left: 4px solid var(--industrial-gold);
+    opacity: 0;
+    animation: slideInFromBottom 0.8s ease-out forwards;
 }
+
+.feature-card:nth-child(1) { animation-delay: 0.1s; }
+.feature-card:nth-child(2) { animation-delay: 0.2s; }
+.feature-card:nth-child(3) { animation-delay: 0.3s; }
 
 .feature-card:hover {
     transform: translateY(-10px);
@@ -177,6 +263,11 @@ nav a:hover {
     font-size: 40px;
     color: var(--industrial-gold);
     margin-bottom: 20px;
+    transition: transform 0.3s;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.2);
 }
 
 .feature-card h3 {
@@ -204,6 +295,12 @@ nav a:hover {
     width: 250px;
     transition: all 0.3s;
     border: 2px solid transparent;
+    opacity: 0;
+    animation: slideInFromBottom 0.8s ease-out forwards;
+}
+
+.download-option {
+    animation-delay: 0.2s;
 }
 
 .download-option:hover {
@@ -231,6 +328,16 @@ footer {
     gap: 40px;
     margin-bottom: 40px;
 }
+
+.footer-column {
+    opacity: 0;
+    animation: fadeIn 1s ease-out forwards;
+}
+
+.footer-column:nth-child(1) { animation-delay: 0.1s; }
+.footer-column:nth-child(2) { animation-delay: 0.2s; }
+.footer-column:nth-child(3) { animation-delay: 0.3s; }
+.footer-column:nth-child(4) { animation-delay: 0.4s; }
 
 .footer-column h3 {
     color: var(--industrial-gold);
@@ -276,6 +383,7 @@ footer {
 .social-links a:hover {
     background-color: var(--industrial-gold);
     color: var(--discord-gray-dark);
+    transform: translateY(-3px);
 }
 
 .copyright {
@@ -284,6 +392,39 @@ footer {
     border-top: 1px solid var(--discord-gray-light);
     color: var(--text-gray);
     font-size: 14px;
+    animation: fadeIn 1s ease-out 0.8s both;
+}
+
+/* Placeholder for missing images */
+.logo-placeholder, .hero-placeholder, .download-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: var(--discord-gray-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-gray);
+    border-radius: 8px;
+}
+
+.logo-placeholder {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+}
+
+.hero-placeholder {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 30px;
+    font-size: 48px;
+}
+
+.download-placeholder {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 20px;
+    font-size: 36px;
 }
 
 /* Responsive Design */
