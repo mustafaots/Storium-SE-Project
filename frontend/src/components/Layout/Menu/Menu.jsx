@@ -1,19 +1,20 @@
+import { useNavigate } from 'react-router-dom';
 import Button from '../../UI/Button/Button';
 import styles from './Menu.module.css';
 
-// Menu component providing navigation options
 function Menu() {
-  // Define menu items with labels and actions
+  const navigate = useNavigate(); // Hook for navigation
+
   const menuItems = [
     { label: 'Enter', action: () => console.log('Enter clicked') },
-    { label: 'Settings', action: () => console.log('Settings clicked') },
+    { label: 'Settings', action: () => navigate('/settings') },
     { label: 'Support', action: () => console.log('Support clicked') },
-    { label: 'Backup', action: () => console.log('Backup clicked') },
+    { label: 'Backup', action: () => navigate('/coming-soon') },
   ];
 
   return (
     <nav className={styles.menu}>
-      {menuItems.map((item, index) => (
+      {menuItems.map((item) => (
         <Button
           key={item.label}
           onClick={item.action}

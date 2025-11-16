@@ -1,0 +1,52 @@
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--discord-gray-dark);
+  padding: 15px 20px;
+  border-top: 1px solid var(--discord-gray-light);
+  gap: 20px;
+}
+
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  min-width: 40px;
+}
+
+.navItem:hover {
+  background: var(--discord-gray-light);
+  color: var(--industrial-gold);
+  transform: translateY(-2px);
+}
+
+.navItem.active {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+}
+
+.icon {
+  font-size: 0.8rem;
+  margin-bottom: 2px;
+  transition: transform 0.3s ease;
+}
+
+.navItem:hover .icon {
+  transform: scale(1.1);
+}
+
+.label {
+  font-size: 0.4rem;
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
