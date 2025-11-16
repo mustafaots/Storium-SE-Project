@@ -35,8 +35,8 @@ The stack is split into two parts:
 The frontend is built in React and communicates with the backend through HTTP requests.
 
 ### Dependencies
-axios ^1.13.1
-react ^19.1.1
+axios ^1.13.1,
+react ^19.1.1,
 react-dom ^19.1.1
 
 ---
@@ -46,9 +46,9 @@ react-dom ^19.1.1
 The backend runs on Node.js using Express, with MySQL handling all persistent data.
 
 ### Dependencies
-cors ^2.8.5
-dotenv ^17.2.3
-express ^5.1.0
+cors ^2.8.5,
+dotenv ^17.2.3,
+express ^5.1.0,
 mysql2 ^3.15.3
 
 ---
