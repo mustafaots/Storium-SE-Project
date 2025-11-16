@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import styles from './LoadingScreen.module.css';
 
+
+// LoadingScreen component that displays a progress bar and a done button
+
 function LoadingScreen({ onLoadingComplete }) {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Simple loading simulation
+    // loading SIMULATION
     const timer = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {

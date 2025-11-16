@@ -1,7 +1,9 @@
 import Button from '../../UI/Button/Button';
 import styles from './Menu.module.css';
 
+// Menu component providing navigation options
 function Menu() {
+  // Define menu items with labels and actions
   const menuItems = [
     { label: 'Enter', action: () => console.log('Enter clicked') },
     { label: 'Settings', action: () => console.log('Settings clicked') },
