@@ -1,0 +1,19 @@
+.homePage {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--discord-gray-dark) 0%, var(--discord-gray) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.version {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  color: var(--text-gray);
+  font-size: 0.8rem;
+  opacity: 0.7;
+  user-select: none;
+}
