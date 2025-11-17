@@ -1,26 +1,64 @@
-import { FaHome, FaCog, FaUser } from 'react-icons/fa';
+import {
+  FaCompass, 
+  FaSitemap, 
+  FaChartBar, 
+  FaDatabase, 
+  FaBox, 
+  FaExchangeAlt, 
+  FaCogs, 
+  FaBell 
+} from 'react-icons/fa';
+
 import styles from './NavBar.module.css';
+import { useNavigate } from 'react-router-dom';
 
 // Default navigation items
-const defaultNavItems = [
-  { 
-    name: 'Home', 
-    icon: <FaHome />,
-    action: () => console.log('Home clicked')
+const defaultNavItems = [ 
+  {
+      name: 'Menu',
+      icon: <FaCompass/>,
+      path: '/'
   },
-  { 
-    name: 'Settings', 
-    icon: <FaCog />,
-    action: () => console.log('Settings clicked')
+  {
+      name: 'Schema',
+      icon: <FaSitemap/>,
+      path: '/schema'
   },
-  { 
-    name: 'Profile', 
-    icon: <FaUser />,
-    action: () => console.log('Profile clicked')
+  {
+      name: 'Visualise',
+      icon: <FaChartBar/>,
+      path: '/visualise'
   },
+  {
+      name: 'Sources',
+      icon: <FaDatabase/>,
+      path: '/sources'
+  },
+  {
+      name: 'Products',
+      icon: <FaBox/>,
+      path: '/products'
+  },
+  {
+      name: 'Transactions',
+      icon: <FaExchangeAlt/>,
+      path: '/transactions'
+  },
+  {
+      name: 'Routines',
+      icon: <FaCogs/>,
+      path: '/routines'
+  },
+  {
+      name: 'Alerts',
+      icon: <FaBell/>,
+      path: '/alerts'
+  }
 ];
 
 function NavBar({ navItems = defaultNavItems, activeItem = '' }) {
+  const navigate = useNavigate();
+
   return (
     <nav className={styles.navbar}>
       {navItems.map((item) => (
@@ -29,7 +67,7 @@ function NavBar({ navItems = defaultNavItems, activeItem = '' }) {
           className={`${styles.navItem} ${
             activeItem === item.name ? styles.active : ''
           }`}
-          onClick={item.action}
+          onClick={() => navigate(item.path)} // Navigate directly here
         >
           <span className={styles.icon}>{item.icon}</span>
           <span className={styles.label}>{item.name}</span>

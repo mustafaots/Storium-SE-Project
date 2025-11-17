@@ -1,16 +1,8 @@
-import styles from './ComingSoon.module.css';
+import styles from './HomePage.module.css';
 import NavBar from '../../components/UI/NavBar/NavBar';
-import { useNavigate } from 'react-router-dom';
-import { FaCompass } from 'react-icons/fa';
 
-function ComingSoonPage() {
-    const navigate = useNavigate();
 
-    const navItems= [ {
-        name: 'Menu',
-        icon: <FaCompass/>,
-        path: '/'
-    } ];
+function HomePage() {
     
     return (
         <div className={styles.pageWrapper}>
@@ -22,9 +14,9 @@ function ComingSoonPage() {
             </div>
             </div>
         </div>
-        <NavBar navItems={navItems}/>
+        <NavBar/>
         </div>
     );
 }
 
-export default ComingSoonPage;
+export default HomePage;

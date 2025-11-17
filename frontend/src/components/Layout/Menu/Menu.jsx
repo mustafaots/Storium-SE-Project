@@ -6,7 +6,7 @@ function Menu() {
   const navigate = useNavigate(); // Hook for navigation
 
   const menuItems = [
-    { label: 'Enter', action: () => console.log('Enter clicked') },
+    { label: 'Enter', action: () => navigate('/home-page') },
     { label: 'Settings', action: () => navigate('/settings') },
     { label: 'Support', action: () => console.log('Support clicked') },
     { label: 'Backup', action: () => navigate('/coming-soon') },

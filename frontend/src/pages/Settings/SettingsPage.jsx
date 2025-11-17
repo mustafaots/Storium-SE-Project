@@ -12,7 +12,7 @@ function Settings() {
     const navItems= [ {
         name: 'Menu',
         icon: <FaCompass/>,
-        action: () => navigate('/')
+        path: '/'
     } ];
 
     // Inventory & Location Control State
