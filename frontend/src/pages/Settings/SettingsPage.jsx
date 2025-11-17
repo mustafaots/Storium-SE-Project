@@ -20,8 +20,6 @@ function Settings() {
     singleLocationPerItem: true,
     singleDepotPerLocation: true,
     allowNegativeStock: false,
-    maxLocations: 1,
-    maxDepots: 1
     });
 
     // Preferences State
@@ -81,107 +79,80 @@ function Settings() {
     </div>
 
     <div className={styles.settingsGrid}>
-    {/* Inventory & Location Control */}
-    <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-        <h2 className={styles.sectionTitle}>Inventory & Location Control</h2>
-        <div className={styles.divider}></div>
-        </div>
+        {/* Inventory & Location Control */}
+        <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Inventory & Location Control</h2>
+            <div className={styles.divider}></div>
+            </div>
 
-        <div className={styles.settingsList}>
-        {/* Single Location */}
-        <div className={styles.settingRow}>
-            <div className={styles.checkboxWrapper}>
-            <input
-                type="checkbox"
-                id="single-location"
-                className={styles.checkbox}
-                checked={inventorySettings.singleLocationPerItem}
-                onChange={(e) => handleInventoryChange('singleLocationPerItem', e.target.checked)}
-            />
+            <div className={styles.settingsList}>
+            {/* Single Location */}
+            <div className={styles.settingRow}>
+                <div className={styles.checkboxWrapper}>
+                <input
+                    type="checkbox"
+                    id="single-location"
+                    className={styles.checkbox}
+                    checked={inventorySettings.singleLocationPerItem}
+                    onChange={(e) => handleInventoryChange('singleLocationPerItem', e.target.checked)}
+                />
+                </div>
+                <div className={styles.settingInfo}>
+                <label htmlFor="single-location" className={styles.settingLabel}>
+                    Limit items to single location
+                </label>
+                <p className={styles.settingDesc}>
+                    Each item can only be stored in one location
+                </p>
+                </div>
+                <div className={styles.settingControl}></div>
             </div>
-            <div className={styles.settingInfo}>
-            <label htmlFor="single-location" className={styles.settingLabel}>
-                Limit items to single location
-            </label>
-            <p className={styles.settingDesc}>
-                Each item can only be stored in one location
-            </p>
-            </div>
-            <div className={styles.settingControl}></div>
-        </div>
 
-        {/* One Depot */}
-        <div className={styles.settingRow}>
-            <div className={styles.checkboxWrapper}>
-            <input
-                type="checkbox"
-                id="one-depot"
-                className={styles.checkbox}
-                checked={inventorySettings.singleDepotPerLocation}
-                onChange={(e) => handleInventoryChange('singleDepotPerLocation', e.target.checked)}
-            />
+            {/* One Depot */}
+            <div className={styles.settingRow}>
+                <div className={styles.checkboxWrapper}>
+                <input
+                    type="checkbox"
+                    id="one-depot"
+                    className={styles.checkbox}
+                    checked={inventorySettings.singleDepotPerLocation}
+                    onChange={(e) => handleInventoryChange('singleDepotPerLocation', e.target.checked)}
+                />
+                </div>
+                <div className={styles.settingInfo}>
+                <label htmlFor="one-depot" className={styles.settingLabel}>
+                    One depot per location
+                </label>
+                <p className={styles.settingDesc}>
+                    Each location can have only one depot
+                </p>
+                </div>
+                <div className={styles.settingControl}></div>
             </div>
-            <div className={styles.settingInfo}>
-            <label htmlFor="one-depot" className={styles.settingLabel}>
-                One depot per location
-            </label>
-            <p className={styles.settingDesc}>
-                Each location can have only one depot
-            </p>
-            </div>
-            <div className={styles.settingControl}></div>
-        </div>
 
-        {/* Negative Stock */}
-        <div className={styles.settingRow}>
-            <div className={styles.checkboxWrapper}>
-            <input
-                type="checkbox"
-                id="negative-stock"
-                className={styles.checkbox}
-                checked={inventorySettings.allowNegativeStock}
-                onChange={(e) => handleInventoryChange('allowNegativeStock', e.target.checked)}
-            />
+            {/* Negative Stock */}
+            <div className={styles.settingRow}>
+                <div className={styles.checkboxWrapper}>
+                <input
+                    type="checkbox"
+                    id="negative-stock"
+                    className={styles.checkbox}
+                    checked={inventorySettings.allowNegativeStock}
+                    onChange={(e) => handleInventoryChange('allowNegativeStock', e.target.checked)}
+                />
+                </div>
+                <div className={styles.settingInfo}>
+                <label htmlFor="negative-stock" className={styles.settingLabel}>
+                    Allow negative stock
+                </label>
+                <p className={styles.settingDesc}>
+                    Permit inventory levels below zero
+                </p>
+                </div>
+                <div className={styles.settingControl}></div>
             </div>
-            <div className={styles.settingInfo}>
-            <label htmlFor="negative-stock" className={styles.settingLabel}>
-                Allow negative stock
-            </label>
-            <p className={styles.settingDesc}>
-                Permit inventory levels below zero
-            </p>
-            </div>
-            <div className={styles.settingControl}></div>
-        </div>
 
-        {/* Max Locations */}
-        <div className={styles.settingRow}>
-            <div className={styles.checkboxWrapper}></div>
-            <div className={styles.settingInfo}>
-            <label htmlFor="max-locations" className={styles.settingLabel}>
-                Storage Limiter
-            </label>
-            <p className={styles.settingDesc}>
-                Set the outermost shell of the physical hierarchy.
-            </p>
-            </div>
-            <div className={styles.settingControl}>
-            <div className={styles.selectWrapper}>
-                <select
-                id="max-locations"
-                className={styles.select}
-                value={inventorySettings.maxLocations}
-                onChange={(e) => handleInventoryChange('maxLocations', parseInt(e.target.value))}
-                >
-                <option value={1}>1 Location</option>
-                <option value={2}>1 Depot</option>
-                <option value={3}>1 Isle</option>
-                <option value={5}>1 Rack</option>
-                </select>
-            </div>
-            </div>
-        </div>
         </div>
     </section>
 
