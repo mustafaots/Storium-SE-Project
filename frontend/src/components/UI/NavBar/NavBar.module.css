@@ -3,9 +3,16 @@
   justify-content: center;
   align-items: center;
   background: var(--discord-gray-dark);
-  padding: 15px 20px;
+  padding: 5px 20px;
   border-top: 1px solid var(--discord-gray-light);
   gap: 20px;
+  
+  /* Add these properties for sticky bottom positioning */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000; /* Ensure it stays above other content */
 }
 
 .navItem {

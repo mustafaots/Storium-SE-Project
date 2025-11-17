@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import LoadingScreen from '../../components/Layout/LoadingScreen/LoadingScreen';
-import StoriumLogo from '../../components/Layout/StoriumLogo/StoriumLogo';
+import LoadingScreen from '../../components/Layout/LoadingScreen/LoadingScreen.jsx';
+import StoriumLogo from '../../components/Layout/StoriumLogo/StoriumLogo.jsx';
 import Menu from '../../components/Layout/Menu/Menu.jsx';
-import Container from '../../components/UI/Container/Container';
-import styles from './HomePage.module.css';
+import Container from '../../components/UI/Container/Container.jsx';
+import styles from './MainPage.module.css';
 
-function HomePage() {
+function MainPage() {
   const [showLoading, setShowLoading] = useState(true);
 
   useEffect(() => {
@@ -42,4 +42,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default MainPage;
