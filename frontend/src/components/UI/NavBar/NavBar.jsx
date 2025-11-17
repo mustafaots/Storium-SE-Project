@@ -67,7 +67,7 @@ function NavBar({ navItems = defaultNavItems, activeItem = '' }) {
           className={`${styles.navItem} ${
             activeItem === item.name ? styles.active : ''
           }`}
-          onClick={() => navigate(item.path)} // Navigate directly here
+          onClick={() => navigate(item.path)}
         >
           <span className={styles.icon}>{item.icon}</span>
           <span className={styles.label}>{item.name}</span>

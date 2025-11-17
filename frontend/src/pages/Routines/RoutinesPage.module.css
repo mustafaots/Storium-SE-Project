@@ -1,0 +1,33 @@
+.pageWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent {
+  flex: 1; /* Takes up all available space */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.comingSoon {
+  background: var(--discord-gray);
+  padding: 20px;
+  text-align: center;
+}
+
+.content {
+  color: var(--text-light);
+}
+
+.title {
+  font-size: 3rem;
+  color: var(--industrial-gold);
+  margin-bottom: 20px;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: var(--text-gray);
+}

@@ -2,18 +2,10 @@ import { useState } from 'react';
 import styles from './Settings.module.css';
 import Button from '../../components/UI/Button/Button.jsx';
 import NavBar from '../../components/UI/NavBar/NavBar';
-import { useNavigate } from 'react-router-dom';
-import { FaCompass } from 'react-icons/fa';
+import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 
-function Settings() {
-
-    const navigate = useNavigate();
-
-    const navItems= [ {
-        name: 'Menu',
-        icon: <FaCompass/>,
-        path: '/'
-    } ];
+function SettingsPage() {
+    const activeItem = useActiveNavItem();
 
     // Inventory & Location Control State
     const [inventorySettings, setInventorySettings] = useState({
@@ -238,7 +230,7 @@ function Settings() {
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
                 <option value="GBP">GBP (£)</option>
-                <option value="DZD">DZD (C$)</option>
+                <option value="DZD">DZD (دج)</option>
                 </select>
             </div>
             </div>
@@ -376,9 +368,9 @@ function Settings() {
             </Button>
         </div>
 
-        <NavBar navItems={navItems}/>
+        <NavBar activeItem={activeItem} />
     </div>
   );
 }
 
-export default Settings;
+export default SettingsPage;
