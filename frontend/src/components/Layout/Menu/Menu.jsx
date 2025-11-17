@@ -9,7 +9,6 @@ function Menu() {
     { label: 'Enter', action: () => navigate('/schema') },
     { label: 'Settings', action: () => navigate('/settings') },
     { label: 'Support', action: () => navigate('/coming-soon') },
-    { label: 'Backup', action: () => navigate('/coming-soon') },
   ];
 
   return (

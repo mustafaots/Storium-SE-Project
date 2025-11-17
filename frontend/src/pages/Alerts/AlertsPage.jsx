@@ -10,7 +10,7 @@ function AlertsPage() {
             <div className={styles.mainContent}>
                 <div className={styles.comingSoon}>
                     <div className={styles.content}>
-                        <h1 className={styles.title}>SCHEMA</h1>
+                        <h1 className={styles.title}>ALERTS</h1>
                         <p className={styles.subtitle}>We're working on it.</p>
                     </div>
                 </div>
