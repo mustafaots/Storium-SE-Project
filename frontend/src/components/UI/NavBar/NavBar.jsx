@@ -5,8 +5,9 @@ import {
   FaDatabase, 
   FaBox, 
   FaExchangeAlt, 
+  FaUsers,
   FaCogs, 
-  FaBell 
+  FaBell
 } from 'react-icons/fa';
 
 import styles from './NavBar.module.css';
@@ -43,6 +44,11 @@ const defaultNavItems = [
       name: 'Transactions',
       icon: <FaExchangeAlt/>,
       path: '/transactions'
+  },
+  {
+      name: 'Clients',
+      icon: <FaUsers/>,
+      path: '/clients'
   },
   {
       name: 'Routines',

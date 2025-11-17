@@ -6,6 +6,7 @@ import SchemaPage from './pages/Schema/SchemaPage';
 import VisualisePage from './pages/Visualise/VisualisePage';
 import SourcesPage from './pages/Sources/SourcesPage';
 import TransactionsPage from './pages/Transactions/TransactionsPage';
+import ClientsPage from './pages/Clients/ClientsPage';
 import RoutinesPage from './pages/Routines/RoutinesPage';
 import ProductsPage from './pages/Products/ProductsPage';
 import AlertsPage from './pages/Alerts/AlertsPage';
@@ -22,6 +23,7 @@ function App() {
         <Route path="/visualise" element={<VisualisePage />} />
         <Route path="/sources" element={<SourcesPage />} />
         <Route path="/transactions" element={<TransactionsPage />} />
+        <Route path="/clients" element={<ClientsPage />} />
         <Route path="/routines" element={<RoutinesPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/alerts" element={<AlertsPage />} />

@@ -3,9 +3,18 @@ import styles from './Settings.module.css';
 import Button from '../../components/UI/Button/Button.jsx';
 import NavBar from '../../components/UI/NavBar/NavBar';
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
+import {FaCompass} from 'react-icons/fa';
 
 function SettingsPage() {
     const activeItem = useActiveNavItem();
+
+    const simpleNavItems = [ 
+        {
+            name: 'Menu',
+            icon: <FaCompass/>,
+            path: '/'
+        },
+    ];
 
     // Inventory & Location Control State
     const [inventorySettings, setInventorySettings] = useState({
@@ -358,7 +367,7 @@ function SettingsPage() {
         </div>
     </section>
     </div>
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0 20px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0 60px 0' }}>
             <Button
                 key={'Save Settings'}
                 onClick={() => {}}
@@ -368,7 +377,7 @@ function SettingsPage() {
             </Button>
         </div>
 
-        <NavBar activeItem={activeItem} />
+        <NavBar navItems={simpleNavItems} activeItem={activeItem} />
     </div>
   );
 }

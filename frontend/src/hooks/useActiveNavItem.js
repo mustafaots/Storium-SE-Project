@@ -11,6 +11,7 @@ export function useActiveNavItem() {
         '/sources': 'Sources',
         '/products': 'Products',
         '/transactions': 'Transactions',
+        '/clients': 'Clients',
         '/routines': 'Routines',
         '/alerts': 'Alerts'
     };
@@ -38,17 +39,19 @@ export function useActiveNavItem() {
         // If no specific feature, try to determine from URL structure
         // or query parameters, or default based on common patterns
         console.log(path);
-        if (path.includes('visualise') || path.includes('chart') || path.includes('analytics')) {
+        if (path.includes('visualise')) {
             return 'Visualise';
-        } else if (path.includes('sources') || path.includes('data') || path.includes('import')) {
+        } else if (path.includes('sources')) {
             return 'Sources';
-        } else if (path.includes('products') || path.includes('items') || path.includes('inventory')) {
+        } else if (path.includes('products')) {
             return 'Products';
-        } else if (path.includes('transactions') || path.includes('sales') || path.includes('purchases')) {
+        } else if (path.includes('transactions')) {
             return 'Transactions';
-        } else if (path.includes('routines') || path.includes('automation') || path.includes('tasks')) {
+        } else if (path.includes('clients')) {
+            return 'Clients';
+        } else if (path.includes('routines')) {
             return 'Routines';
-        } else if (path.includes('alerts') || path.includes('notifications') || path.includes('warnings')) {
+        } else if (path.includes('alerts')) {
             return 'Alerts';
         }
     }
