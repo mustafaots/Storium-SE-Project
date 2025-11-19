@@ -1,150 +1,180 @@
 import React, { useState, useEffect } from 'react';
-import { useClientController } from '../../controllers/clientController'; // Frontend React hook
-import ClientList from '../../components/Layout/ClientsLayout/ClientList';
-import ClientForm from '../../components/Layout/ClientsLayout/ClientForm';
-import ErrorAlert from '../../components/UI/ErrorAlert/ErrorAlert';
-import styles from './ClientsPage.module.css';
-import NavBar from '../../components/UI/NavBar/NavBar';
-import { useActiveNavItem } from '../../hooks/useActiveNavItem';
+import { clientsAPI } from '../../utils/clientsAPI'; // Use the actual API service
 
 function ClientsPage() {
-  const activeItem = useActiveNavItem();
-  const {
-    clients,
-    currentClient,
-    loading,
-    error,
-    pagination,
-    actions,
-  } = useClientController();
-
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [formData, setFormData] = useState({
+    client_name: '',
+    contact_email: '',
+    contact_phone: '',
+    address: ''
+  });
 
+  // Load clients on component mount
   useEffect(() => {
-    actions.loadClients({ page: 1, limit: 10 });
-  }, [actions]);
+    loadClients();
+  }, []);
 
-  const handleCreateClient = async (clientData) => {
+  const loadClients = async () => {
     try {
-      await actions.createClient(clientData);
+      setLoading(true);
+      const data = await clientsAPI.getAll();
+      setClients(data);
+      setError('');
+    } catch (err) {
+      setError('Failed to load clients: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      await clientsAPI.create(formData);
+      setFormData({ client_name: '', contact_email: '', contact_phone: '', address: '' });
       setShowForm(false);
-      actions.clearError();
-    } catch (error) {
-      // Error is handled by controller
+      loadClients(); // Reload the list
+      setError('');
+    } catch (err) {
+      setError('Failed to create client: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleUpdateClient = async (clientData) => {
-    try {
-      await actions.updateClient(currentClient.client_id, clientData);
-      setShowForm(false);
-      setIsEditing(false);
-      actions.clearCurrentClient();
-      actions.clearError();
-    } catch (error) {
-      // Error is handled by controller
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this client?')) {
+      try {
+        await clientsAPI.delete(id);
+        loadClients(); // Reload the list
+        setError('');
+      } catch (err) {
+        setError('Failed to delete client: ' + err.message);
+      }
     }
-  };
-
-  const handleEditClient = (client) => {
-    actions.clearError();
-    actions.loadClient(client.client_id);
-    setIsEditing(true);
-    setShowForm(true);
-  };
-
-  const handleDeleteClient = async (clientId) => {
-    try {
-      await actions.deleteClient(clientId);
-      actions.clearError();
-    } catch (error) {
-      // Error is handled by controller
-    }
-  };
-
-  const handleSearch = (search) => {
-    setSearchTerm(search);
-    actions.loadClients({ 
-      page: 1, 
-      limit: pagination.limit, 
-      search: search || undefined 
-    });
-  };
-
-  const handlePageChange = (newPage) => {
-    actions.loadClients({ 
-      page: newPage, 
-      limit: pagination.limit, 
-      search: searchTerm || undefined 
-    });
-  };
-
-  const handleNewClient = () => {
-    actions.clearError();
-    actions.clearCurrentClient();
-    setIsEditing(false);
-    setShowForm(true);
-  };
-
-  const handleCancelForm = () => {
-    setShowForm(false);
-    setIsEditing(false);
-    actions.clearCurrentClient();
-    actions.clearError();
   };
 
   return (
-    <div className={styles.pageWrapper}>
-      <div className={styles.mainContent}>
-        <div className={styles.content}>
-          <header className={styles.header}>
-            <h1 className={styles.title}>CLIENT MANAGEMENT</h1>
-            <p className={styles.subtitle}>Manage your clients and their information</p>
-            
-            {!showForm && (
-              <button 
-                onClick={handleNewClient}
-                className={styles.primaryButton}
-                disabled={loading}
-              >
-                Add New Client
-              </button>
-            )}
-          </header>
+    <div style={{ padding: '20px' }}>
+      <h1>CLIENT MANAGEMENT</h1>
+      
+      {error && (
+        <div style={{ color: 'red', padding: '10px', margin: '10px 0', border: '1px solid red' }}>
+          {error}
+          <button onClick={() => setError('')} style={{ marginLeft: '10px' }}>×</button>
+        </div>
+      )}
 
-          <ErrorAlert error={error} onClose={actions.clearError} />
+      {!showForm ? (
+        <div>
+          <button 
+            onClick={() => setShowForm(true)}
+            disabled={loading}
+            style={{ padding: '10px 20px', marginBottom: '20px' }}
+          >
+            Add New Client
+          </button>
 
-          {showForm ? (
-            <div className={styles.formSection}>
-              <h2>{isEditing ? 'Edit Client' : 'Create New Client'}</h2>
-              <ClientForm
-                client={currentClient}
-                onSubmit={isEditing ? handleUpdateClient : handleCreateClient}
-                onCancel={handleCancelForm}
-                loading={loading}
-              />
-            </div>
+          {loading ? (
+            <div>Loading clients...</div>
           ) : (
-            <div className={styles.listSection}>
-              <div className={styles.sectionHeader}>
-                <h2>Clients ({pagination.total})</h2>
-              </div>
-              <ClientList
-                clients={clients}
-                pagination={pagination}
-                onEdit={handleEditClient}
-                onDelete={handleDeleteClient}
-                onSearch={handleSearch}
-                onPageChange={handlePageChange}
-                loading={loading}
-              />
+            <div>
+              <h2>Clients ({clients.length})</h2>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f5f5f5' }}>
+                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>ID</th>
+                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Name</th>
+                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Email</th>
+                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Phone</th>
+                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clients.map(client => (
+                    <tr key={client.client_id}>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{client.client_id}</td>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{client.client_name}</td>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{client.contact_email}</td>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>{client.contact_phone}</td>
+                      <td style={{ padding: '10px', border: '1px solid #ddd' }}>
+                        <button 
+                          onClick={() => handleDelete(client.client_id)}
+                          style={{ padding: '5px 10px', backgroundColor: '#ff4444', color: 'white' }}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
-      </div>
-      <NavBar activeItem={activeItem} />
+      ) : (
+        <div>
+          <h2>Create New Client</h2>
+          <form onSubmit={handleSubmit} style={{ maxWidth: '400px' }}>
+            <div style={{ marginBottom: '10px' }}>
+              <input
+                type="text"
+                placeholder="Client Name *"
+                value={formData.client_name}
+                onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+                required
+                style={{ width: '100%', padding: '8px' }}
+              />
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <input
+                type="email"
+                placeholder="Contact Email"
+                value={formData.contact_email}
+                onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                style={{ width: '100%', padding: '8px' }}
+              />
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <input
+                type="tel"
+                placeholder="Contact Phone"
+                value={formData.contact_phone}
+                onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                style={{ width: '100%', padding: '8px' }}
+              />
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <textarea
+                placeholder="Address"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                style={{ width: '100%', padding: '8px', height: '60px' }}
+              />
+            </div>
+            <button 
+              type="submit" 
+              disabled={loading}
+              style={{ padding: '10px 20px', marginRight: '10px' }}
+            >
+              {loading ? 'Creating...' : 'Create Client'}
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setShowForm(false)}
+              disabled={loading}
+              style={{ padding: '10px 20px' }}
+            >
+              Cancel
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
