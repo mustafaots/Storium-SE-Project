@@ -1,17 +1,22 @@
-// src/config/database.js
-const mysql = require('mysql2/promise');
-require('dotenv').config();
+import mysql from 'mysql2';
+import dotenv from 'dotenv';
 
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'storium_ims_rdb',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-};
+dotenv.config();
 
-const pool = mysql.createPool(dbConfig);
+// Fix environment variable names to match .env
+const connection = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+});
 
-module.exports = pool;
+connection.connect((err) => {
+  if (err) {
+    console.error('Error connecting to MySQL:', err);
+    return;
+  }
+  console.log('Connected to MySQL database');
+});
+
+export default connection;
