@@ -1,174 +1,182 @@
-import React, { useState, useEffect } from 'react';
+// represents the form modal that appears when creating or editing a client in the clients page
 
-const ClientForm = ({ client, onSubmit, onCancel, loading }) => {
+import { useState } from 'react';
+import { clientsAPI } from '../../../utils/clientsAPI';
+import { validators, validate } from '../../../utils/validators';
+import styles from '../../../pages/Clients/ClientsPage.module.css';
+
+// ClientForm component for creating/editing clients
+const ClientForm = ({ isEditing, currentClient, loading, error, onSuccess, onCancel, onError }) => {
+
+  // Form state
   const [formData, setFormData] = useState({
-    client_name: '',
-    contact_email: '',
-    contact_phone: '',
-    address: '',
-    note: '',
+    client_name: currentClient?.client_name || '',
+    contact_email: currentClient?.contact_email || '',
+    contact_phone: currentClient?.contact_phone || '',
+    address: currentClient?.address || ''
   });
+  
+  // Form errors state
+  const [formErrors, setFormErrors] = useState({});
 
-  const [errors, setErrors] = useState({});
+  // Validation schema for client form fields using validators utility
+  const clientValidationSchema = {
+    client_name: [
+      validators.required,
+      (value) => validators.minLength(value, 2, 'Client name'),
+      (value) => validators.maxLength(value, 100, 'Client name'),
+      (value) => validators.name(value, 'Client name')
+    ],
+    contact_email: [validators.email],
+    contact_phone: [(value) => validators.phone(value, 'Contact phone')],
+    address: [
+      (value) => validators.maxLength(value, 500, 'Address'),
+      validators.address
+    ]
+  };
 
-  useEffect(() => {
-    if (client) {
-      setFormData({
-        client_name: client.client_name || '',
-        contact_email: client.contact_email || '',
-        contact_phone: client.contact_phone || '',
-        address: client.address || '',
-        note: client.note || '',
-      });
-    } else {
-      setFormData({
-        client_name: '',
-        contact_email: '',
-        contact_phone: '',
-        address: '',
-        note: '',
-      });
-    }
-  }, [client]);
-
+  // Function to validate the entire form
   const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.client_name.trim()) {
-      newErrors.client_name = 'Client name is required';
-    }
-    
-    if (formData.client_name.trim().length > 255) {
-      newErrors.client_name = 'Client name is too long (max 255 characters)';
-    }
-    
-    if (formData.contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contact_email)) {
-      newErrors.contact_email = 'Please enter a valid email address';
-    }
-
-    if (formData.contact_phone && !/^\+?[\d\s\-\(\)]{10,}$/.test(formData.contact_phone)) {
-      newErrors.contact_phone = 'Please enter a valid phone number';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const sanitizedData = validate.sanitize(formData);
+    const validationResult = validate.form(sanitizedData, clientValidationSchema);
+    setFormErrors(validationResult.errors);
+    return validationResult.isValid;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-    
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: '',
-      }));
-    }
-  };
+  // Handle form submission
+  const handleSubmit = async (e) => {
 
-  const handleSubmit = (e) => {
+    // Prevent default form submission behavior
     e.preventDefault();
-    if (validateForm()) {
-      // Prepare data matching your backend expectations
-      const submitData = {
-        client_name: formData.client_name.trim(),
-        contact_email: formData.contact_email.trim() || null,
-        contact_phone: formData.contact_phone.trim() || null,
-        address: formData.address.trim() || null,
-        note: formData.note.trim() || null,
-      };
-      onSubmit(submitData);
+
+    // Validate form before submission
+    if (!validateForm()) return;
+
+
+    // Submit form data to API
+    try {
+
+      // Sanitize data before sending, then call create or update based on isEditing
+      const sanitizedData = validate.sanitize(formData);
+      if (isEditing) {
+        await clientsAPI.update(currentClient.client_id, sanitizedData);
+      } else {
+        await clientsAPI.create(sanitizedData);
+      }
+
+      // Call onSuccess callback to refresh client list and close form
+      onSuccess();
+    } catch (err) {
+
+      // Handle API errors
+      onError('Failed to ' + (isEditing ? 'update' : 'create') + ' client: ' + err.message);
     }
   };
 
+  // Handle input changes and update form state
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  // Render the client form UI
   return (
-    <form onSubmit={handleSubmit} className="client-form">
-      <div className="form-group">
-        <label htmlFor="client_name">Client Name *</label>
-        <input
-          type="text"
-          id="client_name"
-          name="client_name"
-          value={formData.client_name}
-          onChange={handleChange}
-          className={errors.client_name ? 'error' : ''}
-          disabled={loading}
-          placeholder="Enter client name"
-          maxLength={255}
-        />
-        {errors.client_name && <span className="error-text">{errors.client_name}</span>}
-      </div>
+    <div className={styles.formContainer}>
+      <div className={styles.formContent}>
+        <h1 className={styles.title}>
+          {isEditing ? 'EDIT CLIENT' : 'CREATE CLIENT'}
+        </h1>
+        <p className={styles.subtitle}>
+          {isEditing ? 'Update client information' : 'Add a new client to your system'}
+        </p>
 
-      <div className="form-group">
-        <label htmlFor="contact_email">Contact Email</label>
-        <input
-          type="email"
-          id="contact_email"
-          name="contact_email"
-          value={formData.contact_email}
-          onChange={handleChange}
-          className={errors.contact_email ? 'error' : ''}
-          disabled={loading}
-          placeholder="Enter email address"
-        />
-        {errors.contact_email && <span className="error-text">{errors.contact_email}</span>}
-      </div>
+        {error && (
+          <div className={styles.errorAlert}>
+            <div className={styles.errorContent}>
+              <span className={styles.errorMessage}>{error}</span>
+              <button onClick={() => onError('')} className={styles.closeBtn}>×</button>
+            </div>
+          </div>
+        )}
 
-      <div className="form-group">
-        <label htmlFor="contact_phone">Contact Phone</label>
-        <input
-          type="tel"
-          id="contact_phone"
-          name="contact_phone"
-          value={formData.contact_phone}
-          onChange={handleChange}
-          className={errors.contact_phone ? 'error' : ''}
-          disabled={loading}
-          placeholder="Enter phone number"
-        />
-        {errors.contact_phone && <span className="error-text">{errors.contact_phone}</span>}
+        <form onSubmit={handleSubmit} className={styles.clientForm}>
+          <FormField
+            type="text"
+            field="client_name"
+            placeholder="Client Name *"
+            value={formData.client_name}
+            onChange={handleInputChange}
+            error={formErrors.client_name}
+            required
+          />
+          
+          <FormField
+            type="email"
+            field="contact_email"
+            placeholder="Contact Email"
+            value={formData.contact_email}
+            onChange={handleInputChange}
+            error={formErrors.contact_email}
+          />
+          
+          <FormField
+            type="tel"
+            field="contact_phone"
+            placeholder="Contact Phone"
+            value={formData.contact_phone}
+            onChange={handleInputChange}
+            error={formErrors.contact_phone}
+          />
+          
+          <FormField
+            type="textarea"
+            field="address"
+            placeholder="Address"
+            value={formData.address}
+            onChange={handleInputChange}
+            error={formErrors.address}
+            rows="3"
+          />
+          
+          <div className={styles.formActions}>
+            <button type="submit" disabled={loading} className={styles.primaryButton}>
+              {loading ? 'Saving...' : (isEditing ? 'Update Client' : 'Create Client')}
+            </button>
+            <button type="button" onClick={onCancel} disabled={loading} className={styles.secondaryButton}>
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
-
-      <div className="form-group">
-        <label htmlFor="address">Address</label>
-        <textarea
-          id="address"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          rows="3"
-          disabled={loading}
-          placeholder="Enter client address"
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="note">Notes</label>
-        <textarea
-          id="note"
-          name="note"
-          value={formData.note}
-          onChange={handleChange}
-          rows="3"
-          disabled={loading}
-          placeholder="Enter any additional notes"
-        />
-      </div>
-
-      <div className="form-actions">
-        <button type="submit" disabled={loading} className="btn-primary">
-          {loading ? 'Saving...' : (client ? 'Update Client' : 'Create Client')}
-        </button>
-        <button type="button" onClick={onCancel} disabled={loading} className="btn-secondary">
-          Cancel
-        </button>
-      </div>
-    </form>
+    </div>
   );
 };
+
+// Sub-component for individual form fields
+const FormField = ({ type, field, placeholder, value, onChange, error, required, rows }) => (
+  <div className={styles.formGroup}>
+    {type === 'textarea' ? (
+      <textarea
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(field, e.target.value)}
+        rows={rows}
+        className={`${styles.formTextarea} ${error ? styles.inputError : ''}`}
+      />
+    ) : (
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(field, e.target.value)}
+        required={required}
+        className={`${styles.formInput} ${error ? styles.inputError : ''}`}
+      />
+    )}
+    {error && <span className={styles.errorText}>{error}</span>}
+  </div>
+);
 
 export default ClientForm;
