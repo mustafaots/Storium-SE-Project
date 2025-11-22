@@ -1,3 +1,6 @@
+// this file represents the main server setup for the backend of the software
+// it initializes the express server, middleware, and routes
+
 // dont exist yet
 // app.use('/api/alerts', require('./src/routes/alerts.routes'));
 // app.use('/api/products', require('./src/routes/products.routes'));
@@ -20,7 +23,10 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
+
+  // updated CORS origin to allow any localhost port ( dynamic ports for frontend dev servers )
+  // the issue that occurred with me is that vite changed ports from 5173 to 5174 causing CORS issues
+  origin: [/^http:\/\/localhost:\d+$/],
   credentials: true
 }));
 app.use(express.json());
