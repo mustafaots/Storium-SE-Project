@@ -1,9 +1,10 @@
+// A reusable button component with hover sound effect
+
 import { useRef } from 'react';
 import styles from './Button.module.css';
 import ButtonTipSound from '../../../assets/audio/ButtonTipSound.mp3';
 
-// A reusable button component with hover sound effect
-function Button({ children, onClick, variant = 'primary', ...props }) {
+function Button({ children, onClick, variant = 'primary', makes_sound = false, ...props }) {
   // Ref for the hover sound effect
   const tipSound = useRef(new Audio(ButtonTipSound));
 
@@ -17,7 +18,7 @@ function Button({ children, onClick, variant = 'primary', ...props }) {
     <button 
       className={`${styles.button} ${styles[variant]}`}
       onClick={onClick}
-      onMouseEnter={handleHover}
+      onMouseEnter={makes_sound ? handleHover : undefined}
       {...props}
     >
       {children}

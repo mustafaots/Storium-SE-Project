@@ -1,3 +1,5 @@
+/* this file defines universal styling to be used across the entire software */
+
 /* Color Variables */
 :root {
     --discord-gray: #36393f;
@@ -44,4 +46,11 @@ h1, h2, h3 {
 p {
     margin-bottom: 15px;
     color: var(--text-gray);
+}
+
+hr {
+    border: 0;
+    height: 2px;
+    background: var(--discord-gray-light);
+    margin: 25px 0;
 }
