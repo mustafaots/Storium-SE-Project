@@ -1,0 +1,81 @@
+.tableContainer {
+  background: transparent !important;
+  padding: 30px;
+  border-radius: 8px;
+  width: min-content;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--discord-gray-dark);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dataTable th {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+}
+
+.dataTable td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--discord-gray-light);
+  color: var(--text-light);
+  font-size: 14px;
+  background: var(--discord-gray-dark);
+}
+
+.dataTable tr:last-child td {
+  border-bottom: none;
+}
+
+.clickableRow {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickableRow:hover {
+  background-color: var(--discord-gray-light);
+}
+
+/* Loading and Empty States */
+.loadingState, .emptyState {
+  background: var(--discord-gray);
+  padding: 40px;
+  border-radius: 8px;
+  text-align: center;
+  color: var(--text-gray);
+}
+
+.loadingContent p, .emptyContent p {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tableContainer {
+    padding: 20px;
+  }
+  
+  .dataTable {
+    font-size: 12px;
+  }
+  
+  .dataTable th,
+  .dataTable td {
+    padding: 10px 8px;
+  }
+}
