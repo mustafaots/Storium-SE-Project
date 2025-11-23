@@ -131,6 +131,32 @@ Table clients {
 
 
 // =====================
+// AUTOMATION & HISTORY
+// =====================
+
+Table routines {
+  routine_id integer [primary key]
+  name varchar [not null]
+  promise text [note: 'Condition or schedule description']
+  resolve text [note: 'Action to take when triggered']
+  frequency enum('daily', 'weekly', 'monthly', 'on_event')
+  is_active boolean [default: true]
+  last_run timestamp
+  created_at timestamp
+}
+
+Table action_history {
+  action_id integer [primary key]
+  action text [not null]
+  created_at timestamp [default: `now()`]
+  is_automated boolean [default: false]
+  actor_name varchar [note: 'Name of user or "System"']
+  routine_id integer [note: 'If automated, which routine triggered it']
+  note: 'User- or system-triggered operations for audit trail'
+}
+
+
+// =====================
 // STOCK MOVEMENTS
 // =====================
 
@@ -148,33 +174,8 @@ Table transactions {
   from_slot integer [note: 'Slot moved from, for transfers']
   to_slot integer [note: 'Slot moved to, for transfers']
   client_id integer [note: 'Client or consumer for outflows']
-  note: 'Tracks all stock inflows, outflows, transfers, and consumptions'
-}
-
-
-// =====================
-// AUTOMATION & HISTORY
-// =====================
-
-Table action_history {
-  action_id integer [primary key]
-  action text [not null]
-  created_at timestamp [default: `now()`]
-  is_automated boolean [default: false]
-  actor_name varchar [note: 'Name of user or "System"']
   routine_id integer [note: 'If automated, which routine triggered it']
-  note: 'User- or system-triggered operations for audit trail'
-}
-
-Table routines {
-  routine_id integer [primary key]
-  name varchar [not null]
-  promise text [note: 'Condition or schedule description']
-  resolve text [note: 'Action to take when triggered']
-  frequency enum('daily', 'weekly', 'monthly', 'on_event')
-  is_active boolean [default: true]
-  last_run timestamp
-  created_at timestamp
+  note: 'Tracks all stock inflows, outflows, transfers, and consumptions'
 }
 
 
@@ -241,6 +242,7 @@ Ref: transactions.source_id > sources.source_id
 Ref: transactions.client_id > clients.client_id
 Ref: transactions.from_slot > rack_slots.slot_id
 Ref: transactions.to_slot > rack_slots.slot_id
+Ref: transactions.routine_id > routines.routine_id
 
 // Alerts & History
 Ref: alerts.linked_stock > stocks.stock_id

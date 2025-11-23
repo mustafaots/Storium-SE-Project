@@ -532,6 +532,7 @@ CREATE TABLE `transactions` (
   `from_slot` int DEFAULT NULL COMMENT 'Slot moved from, for transfers',
   `to_slot` int DEFAULT NULL COMMENT 'Slot moved to, for transfers',
   `client_id` int DEFAULT NULL COMMENT 'Client or consumer for outflows',
+  `routine_id` int DEFAULT NULL COMMENT 'If automated, which routine triggered it',
   `note` text COMMENT 'Tracks all stock inflows, outflows, transfers, and consumptions',
   PRIMARY KEY (`txn_id`),
   KEY `source_id` (`source_id`),
@@ -542,11 +543,13 @@ CREATE TABLE `transactions` (
   KEY `idx_transactions_type` (`txn_type`),
   KEY `idx_transactions_timestamp` (`timestamp`),
   KEY `idx_transactions_reference` (`reference_number`),
+  KEY `idx_transactions_routine` (`routine_id`),
   CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`stock_id`) REFERENCES `stocks` (`stock_id`) ON DELETE CASCADE,
   CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`source_id`) REFERENCES `sources` (`source_id`) ON DELETE SET NULL,
   CONSTRAINT `transactions_ibfk_3` FOREIGN KEY (`client_id`) REFERENCES `clients` (`client_id`) ON DELETE SET NULL,
   CONSTRAINT `transactions_ibfk_4` FOREIGN KEY (`from_slot`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL,
-  CONSTRAINT `transactions_ibfk_5` FOREIGN KEY (`to_slot`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL
+  CONSTRAINT `transactions_ibfk_5` FOREIGN KEY (`to_slot`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL,
+  CONSTRAINT `transactions_ibfk_6` FOREIGN KEY (`routine_id`) REFERENCES `routines` (`routine_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -568,4 +571,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-18  0:21:09
+-- Dump completed on 2025-11-23  7:56:47

@@ -142,33 +142,6 @@ CREATE TABLE clients (
 
 
 -- =====================
--- STOCK MOVEMENTS
--- =====================
-
-CREATE TABLE transactions (
-    txn_id INT AUTO_INCREMENT PRIMARY KEY,
-    is_automated BOOLEAN DEFAULT FALSE,
-    stock_id INT NOT NULL,
-    txn_type ENUM('inflow', 'outflow', 'transfer', 'consumption', 'adjustment') NOT NULL,
-    quantity INT NOT NULL,
-    total_value DECIMAL(12,2),
-    reference_number VARCHAR(100) COMMENT 'PO number, invoice ID, delivery note',
-    notes TEXT,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    source_id INT COMMENT 'Supplier or origin source, if applicable',
-    from_slot INT COMMENT 'Slot moved from, for transfers',
-    to_slot INT COMMENT 'Slot moved to, for transfers',
-    client_id INT COMMENT 'Client or consumer for outflows',
-    note TEXT COMMENT 'Tracks all stock inflows, outflows, transfers, and consumptions',
-    FOREIGN KEY (stock_id) REFERENCES stocks(stock_id) ON DELETE CASCADE,
-    FOREIGN KEY (source_id) REFERENCES sources(source_id) ON DELETE SET NULL,
-    FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE SET NULL,
-    FOREIGN KEY (from_slot) REFERENCES rack_slots(slot_id) ON DELETE SET NULL,
-    FOREIGN KEY (to_slot) REFERENCES rack_slots(slot_id) ON DELETE SET NULL
-);
-
-
--- =====================
 -- AUTOMATION & HISTORY
 -- =====================
 
@@ -193,6 +166,35 @@ CREATE TABLE action_history (
     actor_name VARCHAR(255) NOT NULL COMMENT 'Name of user or "System"',
     routine_id INT COMMENT 'If automated, which routine triggered it',
     note TEXT COMMENT 'User- or system-triggered operations for audit trail',
+    FOREIGN KEY (routine_id) REFERENCES routines(routine_id) ON DELETE SET NULL
+);
+
+
+-- =====================
+-- STOCK MOVEMENTS
+-- =====================
+
+CREATE TABLE transactions (
+    txn_id INT AUTO_INCREMENT PRIMARY KEY,
+    is_automated BOOLEAN DEFAULT FALSE,
+    stock_id INT NOT NULL,
+    txn_type ENUM('inflow', 'outflow', 'transfer', 'consumption', 'adjustment') NOT NULL,
+    quantity INT NOT NULL,
+    total_value DECIMAL(12,2),
+    reference_number VARCHAR(100) COMMENT 'PO number, invoice ID, delivery note',
+    notes TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    source_id INT COMMENT 'Supplier or origin source, if applicable',
+    from_slot INT COMMENT 'Slot moved from, for transfers',
+    to_slot INT COMMENT 'Slot moved to, for transfers',
+    client_id INT COMMENT 'Client or consumer for outflows',
+    routine_id INT COMMENT 'If automated, which routine triggered it',
+    note TEXT COMMENT 'Tracks all stock inflows, outflows, transfers, and consumptions',
+    FOREIGN KEY (stock_id) REFERENCES stocks(stock_id) ON DELETE CASCADE,
+    FOREIGN KEY (source_id) REFERENCES sources(source_id) ON DELETE SET NULL,
+    FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE SET NULL,
+    FOREIGN KEY (from_slot) REFERENCES rack_slots(slot_id) ON DELETE SET NULL,
+    FOREIGN KEY (to_slot) REFERENCES rack_slots(slot_id) ON DELETE SET NULL,
     FOREIGN KEY (routine_id) REFERENCES routines(routine_id) ON DELETE SET NULL
 );
 
@@ -264,6 +266,7 @@ CREATE INDEX idx_transactions_stock ON transactions(stock_id);
 CREATE INDEX idx_transactions_type ON transactions(txn_type);
 CREATE INDEX idx_transactions_timestamp ON transactions(timestamp);
 CREATE INDEX idx_transactions_reference ON transactions(reference_number);
+CREATE INDEX idx_transactions_routine ON transactions(routine_id);
 
 -- Alert indexes
 CREATE INDEX idx_alerts_type ON alerts(alert_type);
