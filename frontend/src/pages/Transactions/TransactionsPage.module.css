@@ -31,3 +31,113 @@
   font-size: 1.2rem;
   color: var(--text-gray);
 }
+
+
+.transactionsTable {
+    border: 1px solid var(--discord-gray-light);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--discord-gray-dark);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Dynamic grid templates based on filter type */
+.tableHeader[data-filter="automatic"],
+.tableRow[data-filter="automatic"] {
+    grid-template-columns: 200px 120px 1fr;
+}
+
+.tableHeader[data-filter="manual"],
+.tableRow[data-filter="manual"] {
+    grid-template-columns: 200px 1fr;
+}
+
+.tableHeader[data-filter="mixed"],
+.tableRow[data-filter="mixed"] {
+    grid-template-columns: 200px 120px 1fr;
+}
+
+.tableHeader {
+    display: grid;
+    background: linear-gradient(135deg, var(--discord-gray-light) 0%, var(--discord-gray) 100%);
+    border-bottom: 2px solid var(--industrial-gold);
+}
+
+.headerCell {
+    padding: 16px 12px;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--industrial-gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-right: 1px solid var(--discord-gray-light);
+    display: flex;
+    align-items: center;
+}
+
+.headerCell:last-child {
+    border-right: none;
+}
+
+.tableBody {
+    background: var(--discord-gray-dark);
+}
+
+.tableRow {
+    display: grid;
+    border-bottom: 1px solid var(--discord-gray-light);
+    transition: all 0.3s ease;
+}
+
+.tableRow:hover {
+    background: var(--discord-gray-light);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tableRow:last-child {
+    border-bottom: none;
+}
+
+.cell {
+    padding: 14px 12px;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid var(--discord-gray-light);
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.cell:last-child {
+    border-right: none;
+}
+
+/* Badge Styles */
+.routineBadge, .typeBadge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.automatic {
+    background: linear-gradient(135deg, var(--industrial-gold), var(--industrial-gold-dark));
+    color: var(--discord-gray-dark);
+}
+
+.manual {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: var(--text-light);
+}
+
+.timestamp {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+.action {
+    font-weight: 500;
+}
