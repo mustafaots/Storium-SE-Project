@@ -1,3 +1,5 @@
+// for the menu layout, we will use buttons that navigate to different routes
+
 import { useNavigate } from 'react-router-dom';
 import Button from '../../UI/Button/Button';
 import styles from './Menu.module.css';
@@ -17,6 +19,7 @@ function Menu() {
         <Button
           key={item.label}
           onClick={item.action}
+          makes_sound={true}
           variant={item.label === 'Enter' ? 'primary' : 'secondary'}
         >
           {item.label}
