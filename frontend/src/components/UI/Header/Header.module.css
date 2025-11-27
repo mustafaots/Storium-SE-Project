@@ -1,0 +1,147 @@
+.header {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.header.center {
+  text-align: center;
+}
+
+.header.right {
+  text-align: right;
+}
+
+.header.center .headerContent {
+  justify-content: center;
+  text-align: center;
+}
+
+.header.right .headerContent {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+/* Title Section */
+.titleSection {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+}
+
+.header.center .titleSection,
+.header.right .titleSection {
+  justify-content: center;
+}
+
+.header.right .titleSection {
+  justify-content: flex-end;
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--industrial-gold) 0%, var(--industrial-gold-dark) 100%);
+  border-radius: 8px;
+  color: var(--discord-gray-dark);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.textContainer {
+  flex: 1;
+}
+
+/* Title Styles */
+.title {
+  color: var(--industrial-gold);
+  margin: 0 0 8px 0;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.subtitle {
+  color: var(--text-gray);
+  margin: 0;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Size Variations */
+.header.small .title {
+  font-size: 1.8rem;
+}
+
+.header.small .subtitle {
+  font-size: 1rem;
+}
+
+.header.small .iconContainer {
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+}
+
+.header.medium .title {
+  font-size: 2.2rem;
+}
+
+.header.medium .subtitle {
+  font-size: 1.1rem;
+}
+
+.header.large .title {
+  font-size: 2.8rem;
+}
+
+.header.large .subtitle {
+  font-size: 1.3rem;
+}
+
+/* Action Section */
+.actionSection {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .headerContent {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  
+  .titleSection {
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .actionSection {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .header.small .title {
+    font-size: 1.6rem;
+  }
+  
+  .header.medium .title {
+    font-size: 1.8rem;
+  }
+  
+  .header.large .title {
+    font-size: 2.2rem;
+  }
+}
