@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import styles from './Button.module.css';
 import ButtonTipSound from '../../../assets/audio/ButtonTipSound.mp3';
 
-function Button({ children, onClick, variant = 'primary', makes_sound = false, ...props }) {
+function Button({ children, onClick, variant = 'primary', makes_sound = false, leadingIcon, ...props }) {
   // Ref for the hover sound effect
   const tipSound = useRef(new Audio(ButtonTipSound));
 
@@ -21,6 +21,7 @@ function Button({ children, onClick, variant = 'primary', makes_sound = false, .
       onMouseEnter={makes_sound ? handleHover : undefined}
       {...props}
     >
+      {leadingIcon && <span className={styles.icon}>{leadingIcon}</span>}
       {children}
     </button>
   );
