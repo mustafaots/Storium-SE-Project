@@ -27,13 +27,10 @@ CREATE TABLE `action_history` (
   `action` text NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `is_automated` tinyint(1) DEFAULT '0',
-  `actor_name` varchar(255) NOT NULL COMMENT 'Name of user or "System"',
+  `actor_name` varchar(255) DEFAULT NULL COMMENT 'Name of user or "System"',
   `routine_id` int DEFAULT NULL COMMENT 'If automated, which routine triggered it',
-  `note` text COMMENT 'User- or system-triggered operations for audit trail',
   PRIMARY KEY (`action_id`),
   KEY `routine_id` (`routine_id`),
-  KEY `idx_action_history_created` (`created_at`),
-  KEY `idx_action_history_automated` (`is_automated`),
   CONSTRAINT `action_history_ibfk_1` FOREIGN KEY (`routine_id`) REFERENCES `routines` (`routine_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -56,12 +53,11 @@ DROP TABLE IF EXISTS `aisles`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `aisles` (
   `aisle_id` int NOT NULL AUTO_INCREMENT,
-  `parent_depot` int NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `parent_depot` int DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `note` text COMMENT 'Aisle or zone inside a warehouse',
   PRIMARY KEY (`aisle_id`),
-  KEY `idx_aisles_depot` (`parent_depot`),
+  KEY `parent_depot` (`parent_depot`),
   CONSTRAINT `aisles_ibfk_1` FOREIGN KEY (`parent_depot`) REFERENCES `depots` (`depot_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -91,14 +87,11 @@ CREATE TABLE `alerts` (
   `content` text,
   `linked_stock` int DEFAULT NULL,
   `linked_product` int DEFAULT NULL,
-  `note` text COMMENT 'Overstocking, understocking, expiry, or supply warnings',
   PRIMARY KEY (`alert_id`),
-  KEY `linked_stock` (`linked_stock`),
-  KEY `linked_product` (`linked_product`),
-  KEY `idx_alerts_type` (`alert_type`),
-  KEY `idx_alerts_severity` (`severity`),
+  KEY `idx_alerts_linked_stock` (`linked_stock`),
+  KEY `idx_alerts_linked_product` (`linked_product`),
   KEY `idx_alerts_sent_at` (`sent_at`),
-  KEY `idx_alerts_read` (`is_read`),
+  KEY `idx_alerts_is_read` (`is_read`),
   CONSTRAINT `alerts_ibfk_1` FOREIGN KEY (`linked_stock`) REFERENCES `stocks` (`stock_id`) ON DELETE SET NULL,
   CONSTRAINT `alerts_ibfk_2` FOREIGN KEY (`linked_product`) REFERENCES `products` (`product_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -127,8 +120,9 @@ CREATE TABLE `clients` (
   `contact_phone` varchar(50) DEFAULT NULL,
   `address` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `note` text COMMENT 'Buyers, departments, or external customers for stock outflows',
-  PRIMARY KEY (`client_id`)
+  `is_active` tinyint(1) DEFAULT '1',
+  PRIMARY KEY (`client_id`),
+  KEY `idx_clients_is_active` (`is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -150,12 +144,11 @@ DROP TABLE IF EXISTS `depots`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `depots` (
   `depot_id` int NOT NULL AUTO_INCREMENT,
-  `parent_location` int NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `parent_location` int DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `note` text COMMENT 'Storage building or warehouse belonging to a location',
   PRIMARY KEY (`depot_id`),
-  KEY `idx_depots_location` (`parent_location`),
+  KEY `parent_location` (`parent_location`),
   CONSTRAINT `depots_ibfk_1` FOREIGN KEY (`parent_location`) REFERENCES `locations` (`location_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -178,10 +171,9 @@ DROP TABLE IF EXISTS `inventory_records`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory_records` (
   `record_id` int NOT NULL AUTO_INCREMENT,
-  `record_type` varchar(100) NOT NULL COMMENT 'snapshot, report, audit, etc.',
-  `record_data` json NOT NULL COMMENT 'Use JSON instead of BLOB for queryability',
+  `record_type` varchar(100) DEFAULT NULL COMMENT 'snapshot, report, audit, etc.',
+  `record_data` json DEFAULT NULL COMMENT 'Use JSON instead of BLOB for queryability',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `note` text COMMENT 'Archived inventory snapshots or serialized reports',
   PRIMARY KEY (`record_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -204,11 +196,10 @@ DROP TABLE IF EXISTS `locations`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `locations` (
   `location_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `address` varchar(500) DEFAULT NULL,
-  `coordinates` varchar(100) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `address` text,
+  `coordinates` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `note` text COMMENT 'Represents a physical site or campus of the organization',
   PRIMARY KEY (`location_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -223,40 +214,6 @@ LOCK TABLES `locations` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `product_identifiers`
---
-
-DROP TABLE IF EXISTS `product_identifiers`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `product_identifiers` (
-  `ident_id` int NOT NULL AUTO_INCREMENT,
-  `product_id` int NOT NULL,
-  `sku` varchar(100) NOT NULL,
-  `barcode` varchar(100) DEFAULT NULL,
-  `serial_number` varchar(100) DEFAULT NULL,
-  `note` text COMMENT 'Unique reference codes identifying each product or unit',
-  PRIMARY KEY (`ident_id`),
-  UNIQUE KEY `sku` (`sku`),
-  UNIQUE KEY `barcode` (`barcode`),
-  UNIQUE KEY `serial_number` (`serial_number`),
-  KEY `product_id` (`product_id`),
-  KEY `idx_product_identifiers_sku` (`sku`),
-  KEY `idx_product_identifiers_barcode` (`barcode`),
-  CONSTRAINT `product_identifiers_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `product_identifiers`
---
-
-LOCK TABLES `product_identifiers` WRITE;
-/*!40000 ALTER TABLE `product_identifiers` DISABLE KEYS */;
-/*!40000 ALTER TABLE `product_identifiers` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `product_sources`
 --
 
@@ -265,15 +222,15 @@ DROP TABLE IF EXISTS `product_sources`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `product_sources` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `product_id` int NOT NULL,
-  `source_id` int NOT NULL,
+  `product_id` int DEFAULT NULL,
+  `source_id` int DEFAULT NULL,
   `cost_price` decimal(10,2) DEFAULT NULL,
   `lead_time_days` int DEFAULT NULL,
   `is_preferred_supplier` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `note` text COMMENT 'Junction table: many products can have many sources',
+  `is_active` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_product_source` (`product_id`,`source_id`),
+  KEY `product_id` (`product_id`),
   KEY `source_id` (`source_id`),
   CONSTRAINT `product_sources_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE,
   CONSTRAINT `product_sources_ibfk_2` FOREIGN KEY (`source_id`) REFERENCES `sources` (`source_id`) ON DELETE CASCADE
@@ -301,12 +258,11 @@ CREATE TABLE `products` (
   `name` varchar(255) NOT NULL,
   `category` varchar(100) DEFAULT NULL,
   `description` text,
-  `unit` varchar(50) NOT NULL COMMENT 'pcs, kg, liters, boxes, etc.',
+  `image_url` varchar(500) DEFAULT NULL COMMENT 'URL or path to product image',
+  `unit` varchar(50) DEFAULT NULL COMMENT 'pcs, kg, liters, boxes, etc.',
   `min_stock_level` int DEFAULT NULL COMMENT 'Alert threshold for low stock',
   `max_stock_level` int DEFAULT NULL COMMENT 'Alert threshold for overstocking',
-  `reorder_point` int DEFAULT NULL COMMENT 'Trigger for automatic reorder',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `note` text COMMENT 'Defines a product at the conceptual level (not tied to location)',
   PRIMARY KEY (`product_id`),
   KEY `idx_products_category` (`category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -330,19 +286,17 @@ DROP TABLE IF EXISTS `rack_slots`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rack_slots` (
   `slot_id` int NOT NULL AUTO_INCREMENT,
-  `rack_id` int NOT NULL,
-  `direction` enum('right','left') NOT NULL,
+  `rack_id` int DEFAULT NULL,
+  `direction` enum('right','left') DEFAULT NULL,
   `bay_no` int NOT NULL,
   `level_no` int NOT NULL,
   `bin_no` int NOT NULL,
   `capacity` int DEFAULT NULL,
   `is_occupied` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `note` text COMMENT 'Each physical slot identified by (bay, level, bin) coordinates',
   PRIMARY KEY (`slot_id`),
-  UNIQUE KEY `unique_slot_position` (`rack_id`,`bay_no`,`level_no`,`bin_no`),
-  KEY `idx_slots_rack` (`rack_id`),
-  KEY `idx_slots_position` (`bay_no`,`level_no`,`bin_no`),
+  KEY `idx_rack_slots_rack_id` (`rack_id`),
+  KEY `idx_rack_slots_coordinates` (`bay_no`,`level_no`,`bin_no`),
   CONSTRAINT `rack_slots_ibfk_1` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`rack_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -365,12 +319,11 @@ DROP TABLE IF EXISTS `racks`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `racks` (
   `rack_id` int NOT NULL AUTO_INCREMENT,
-  `parent_aisle` int NOT NULL,
-  `rack_code` varchar(100) NOT NULL,
+  `parent_aisle` int DEFAULT NULL,
+  `rack_code` varchar(100) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `note` text COMMENT 'Rack structure containing multiple bays, levels, and bins',
   PRIMARY KEY (`rack_id`),
-  KEY `idx_racks_aisle` (`parent_aisle`),
+  KEY `parent_aisle` (`parent_aisle`),
   CONSTRAINT `racks_ibfk_1` FOREIGN KEY (`parent_aisle`) REFERENCES `aisles` (`aisle_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -401,7 +354,7 @@ CREATE TABLE `routines` (
   `last_run` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`routine_id`),
-  KEY `idx_routines_active` (`is_active`),
+  KEY `idx_routines_is_active` (`is_active`),
   KEY `idx_routines_frequency` (`frequency`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -427,7 +380,6 @@ CREATE TABLE `settings` (
   `setting_value` text,
   `description` varchar(500) DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `note` text COMMENT 'System configuration like inventory_scope (small/industrial)',
   PRIMARY KEY (`setting_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -454,11 +406,12 @@ CREATE TABLE `sources` (
   `contact_email` varchar(255) DEFAULT NULL,
   `contact_phone` varchar(50) DEFAULT NULL,
   `address` text,
-  `coordinates` varchar(100) DEFAULT NULL,
+  `coordinates` varchar(255) DEFAULT NULL,
   `rating` float DEFAULT NULL COMMENT 'Supplier rating or reliability score',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `note` text COMMENT 'Suppliers, factories, or input sources of materials',
-  PRIMARY KEY (`source_id`)
+  `is_active` tinyint(1) DEFAULT '1',
+  PRIMARY KEY (`source_id`),
+  KEY `idx_sources_is_active` (`is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -480,8 +433,8 @@ DROP TABLE IF EXISTS `stocks`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `stocks` (
   `stock_id` int NOT NULL AUTO_INCREMENT,
-  `product_id` int NOT NULL,
-  `slot_id` int NOT NULL,
+  `product_id` int DEFAULT NULL,
+  `slot_id` int DEFAULT NULL,
   `quantity` int NOT NULL,
   `batch_no` varchar(100) DEFAULT NULL,
   `expiry_date` date DEFAULT NULL,
@@ -491,14 +444,14 @@ CREATE TABLE `stocks` (
   `sale_price` decimal(10,2) DEFAULT NULL,
   `cost_price` decimal(10,2) DEFAULT NULL,
   `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `note` text COMMENT 'Physical stock of a given product stored in a particular slot',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT 'Soft delete flag',
   PRIMARY KEY (`stock_id`),
-  KEY `idx_stocks_product` (`product_id`),
-  KEY `idx_stocks_slot` (`slot_id`),
-  KEY `idx_stocks_expiry` (`expiry_date`),
-  KEY `idx_stocks_type` (`product_type`),
-  CONSTRAINT `stocks_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE,
-  CONSTRAINT `stocks_ibfk_2` FOREIGN KEY (`slot_id`) REFERENCES `rack_slots` (`slot_id`) ON DELETE CASCADE
+  KEY `idx_stocks_product_id` (`product_id`),
+  KEY `idx_stocks_slot_id` (`slot_id`),
+  KEY `idx_stocks_is_active` (`is_active`),
+  KEY `idx_stocks_expiry_date` (`expiry_date`),
+  CONSTRAINT `stocks_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE RESTRICT,
+  CONSTRAINT `stocks_ibfk_2` FOREIGN KEY (`slot_id`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -521,32 +474,38 @@ DROP TABLE IF EXISTS `transactions`;
 CREATE TABLE `transactions` (
   `txn_id` int NOT NULL AUTO_INCREMENT,
   `is_automated` tinyint(1) DEFAULT '0',
-  `stock_id` int NOT NULL,
+  `routine_id` int DEFAULT NULL,
+  `stock_id` int DEFAULT NULL,
+  `product_id` int NOT NULL COMMENT 'Denormalized for historical integrity',
+  `from_slot_id` int DEFAULT NULL COMMENT 'Denormalized slot reference for historical integrity',
+  `to_slot_id` int DEFAULT NULL COMMENT 'Denormalized slot reference for historical integrity',
   `txn_type` enum('inflow','outflow','transfer','consumption','adjustment') NOT NULL,
   `quantity` int NOT NULL,
   `total_value` decimal(12,2) DEFAULT NULL,
-  `reference_number` varchar(100) DEFAULT NULL COMMENT 'PO number, invoice ID, delivery note',
+  `reference_number` varchar(255) DEFAULT NULL COMMENT 'PO number, invoice ID, delivery note',
   `notes` text,
   `timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `source_id` int DEFAULT NULL COMMENT 'Supplier or origin source, if applicable',
-  `from_slot` int DEFAULT NULL COMMENT 'Slot moved from, for transfers',
-  `to_slot` int DEFAULT NULL COMMENT 'Slot moved to, for transfers',
   `client_id` int DEFAULT NULL COMMENT 'Client or consumer for outflows',
-  `note` text COMMENT 'Tracks all stock inflows, outflows, transfers, and consumptions',
+  `stock_snapshot` json DEFAULT NULL COMMENT 'JSON snapshot of stock details at time of transaction',
   PRIMARY KEY (`txn_id`),
   KEY `source_id` (`source_id`),
   KEY `client_id` (`client_id`),
-  KEY `from_slot` (`from_slot`),
-  KEY `to_slot` (`to_slot`),
-  KEY `idx_transactions_stock` (`stock_id`),
-  KEY `idx_transactions_type` (`txn_type`),
+  KEY `routine_id` (`routine_id`),
+  KEY `from_slot_id` (`from_slot_id`),
+  KEY `to_slot_id` (`to_slot_id`),
+  KEY `idx_transactions_stock_id` (`stock_id`),
+  KEY `idx_transactions_product_id` (`product_id`),
+  KEY `idx_transactions_txn_type` (`txn_type`),
   KEY `idx_transactions_timestamp` (`timestamp`),
-  KEY `idx_transactions_reference` (`reference_number`),
-  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`stock_id`) REFERENCES `stocks` (`stock_id`) ON DELETE CASCADE,
-  CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`source_id`) REFERENCES `sources` (`source_id`) ON DELETE SET NULL,
-  CONSTRAINT `transactions_ibfk_3` FOREIGN KEY (`client_id`) REFERENCES `clients` (`client_id`) ON DELETE SET NULL,
-  CONSTRAINT `transactions_ibfk_4` FOREIGN KEY (`from_slot`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL,
-  CONSTRAINT `transactions_ibfk_5` FOREIGN KEY (`to_slot`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL
+  KEY `idx_transactions_reference_number` (`reference_number`),
+  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`stock_id`) REFERENCES `stocks` (`stock_id`) ON DELETE SET NULL,
+  CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE RESTRICT,
+  CONSTRAINT `transactions_ibfk_3` FOREIGN KEY (`source_id`) REFERENCES `sources` (`source_id`) ON DELETE SET NULL,
+  CONSTRAINT `transactions_ibfk_4` FOREIGN KEY (`client_id`) REFERENCES `clients` (`client_id`) ON DELETE SET NULL,
+  CONSTRAINT `transactions_ibfk_5` FOREIGN KEY (`routine_id`) REFERENCES `routines` (`routine_id`) ON DELETE SET NULL,
+  CONSTRAINT `transactions_ibfk_6` FOREIGN KEY (`from_slot_id`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL,
+  CONSTRAINT `transactions_ibfk_7` FOREIGN KEY (`to_slot_id`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -568,4 +527,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-18  0:21:09
+-- Dump completed on 2025-11-28 15:06:00
