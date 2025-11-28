@@ -33,7 +33,7 @@ const paginatedResponse = (data, pagination) => {
   };
 };
 
-export default {
+module.exports = {
   successResponse,
   errorResponse,
   paginatedResponse
