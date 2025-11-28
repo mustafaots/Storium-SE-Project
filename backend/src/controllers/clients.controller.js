@@ -1,12 +1,17 @@
 import clientsService from '../services/clients.service.js';
-import apiResponse from '../utils/apiResponse.js'; // Import default
-import { formatPhone, formatDate } from '../utils/formatters.js'; // Fixed formatters import
+import apiResponse from '../utils/apiResponse.js';
+import { formatPhone, formatDate } from '../utils/formatters.js';
+import { constants } from '../utils/constants.js';
 
 const clientsController = {
-  // Get all clients
+  // FIXED: Get all clients with pagination
   getAllClients: async (req, res) => {
     try {
-      const clients = await clientsService.getAll();
+      const page = parseInt(req.query.page) || constants.PAGINATION.DEFAULT_PAGE;
+      const limit = parseInt(req.query.limit) || constants.PAGINATION.DEFAULT_LIMIT;
+      
+      // FIX: Call the paginated service method
+      const { clients, pagination } = await clientsService.getAllPaginated(page, limit);
       
       // Format data for response
       const formattedClients = clients.map(client => ({
@@ -15,13 +20,14 @@ const clientsController = {
         created_at: formatDate(client.created_at)
       }));
       
-      res.json(apiResponse.successResponse(formattedClients, 'Clients retrieved successfully'));
+      // FIX: Use paginatedResponse instead of successResponse
+      res.json(apiResponse.paginatedResponse(formattedClients, pagination));
     } catch (error) {
       res.status(500).json(apiResponse.errorResponse(error.message));
     }
   },
 
-  // Get client by ID
+  // Keep existing methods unchanged
   getClientById: async (req, res) => {
     try {
       const client = await clientsService.getById(req.params.id);
@@ -30,7 +36,6 @@ const clientsController = {
         return res.status(404).json(apiResponse.errorResponse('Client not found'));
       }
       
-      // Format data for response
       const formattedClient = {
         ...client,
         contact_phone: formatPhone(client.contact_phone),
@@ -43,7 +48,6 @@ const clientsController = {
     }
   },
 
-  // Create client
   createClient: async (req, res) => {
     try {
       const clientData = req.body;
@@ -55,7 +59,6 @@ const clientsController = {
     }
   },
 
-  // Update client
   updateClient: async (req, res) => {
     try {
       const clientData = req.body;
@@ -71,7 +74,6 @@ const clientsController = {
     }
   },
 
-  // Delete client
   deleteClient: async (req, res) => {
     try {
       const result = await clientsService.delete(req.params.id);

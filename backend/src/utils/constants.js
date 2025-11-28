@@ -44,7 +44,7 @@ const ALERT_SEVERITIES = {
 // Default pagination settings
 const PAGINATION = {
   DEFAULT_PAGE: 1,
-  DEFAULT_LIMIT: 10,
+  DEFAULT_LIMIT: 9,
   MAX_LIMIT: 100
 };
 
