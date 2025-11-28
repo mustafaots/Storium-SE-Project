@@ -1,11 +1,12 @@
 // Necessary imports
+import React from 'react';
 import NavBar from '../../components/UI/NavBar/NavBar';
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import Header from '../../components/UI/Header/Header';
 import Button from '../../components/UI/Button/Button';
 import DataTable from '../../components/UI/DataTable/DataTable';
 import ClientForm from '../../components/Layout/ClientsLayout/ClientForm';
-import { FaUsers } from 'react-icons/fa';
+import { FaUsers, FaFile } from 'react-icons/fa';
 
 // Local imports
 import { useClients } from '../../hooks/useClients';
@@ -91,10 +92,19 @@ function ClientsPage() {
                 icon={<FaUsers size={30}/>}
               />
 
-              <div className={styles.buttonContainer}>
-                <Button onClick={handlers.onNewClient} makes_sound={false}>
-                  Add Client
-                </Button>
+              <div className={styles.actionsContainer}>
+                <div className={styles.buttonGroup}>
+                  <Button variant='secondary' onClick={handlers.onNewClient}>
+                    Add Client
+                  </Button>
+                  <Button 
+                    onClick={()=>{}}
+                    variant="primary"
+                    leadingIcon={<FaFile />}
+                  >
+                    Export
+                  </Button>
+                </div>
               </div>
 
               <ErrorAlert error={error} onClose={() => setError('')} />

@@ -92,11 +92,26 @@
   font-family: inherit;
 }
 
+
 .formActions {
   display: flex;
   gap: 12px;
   justify-content: center;
   margin-top: 30px;
+}
+
+/*for the collection of buttons*/
+
+.actionsContainer {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 /* Button Styles */
