@@ -1,4 +1,4 @@
-import { errorResponse } from '../utils/apiResponse.js';
+import errorResponse from '../utils/apiResponse.js';
 
 /**
  * Handles requests to routes that don't exist

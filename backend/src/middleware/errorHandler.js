@@ -1,4 +1,4 @@
-import { errorResponse } from '../utils/apiResponse.js';
+import errorResponse from '../utils/apiResponse.js';
 
 /**
  * Global error handling middleware
@@ -37,4 +37,4 @@ const errorHandler = (err, req, res, next) => {
   res.status(statusCode).json(errorResponse(message, details));
 };
 
-export { errorHandler };
+export default errorHandler;

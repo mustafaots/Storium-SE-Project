@@ -1,6 +1,6 @@
 import express from 'express';
-import { clientsController } from '../controllers/clients.controller.js';
-import { validateClients } from '../middleware/special_validators/validateClients.js';
+import clientsController from '../controllers/clients.controller.js';
+import validateClients from '../middleware/special_validators/validateClients.js';
 
 const router = express.Router();
 

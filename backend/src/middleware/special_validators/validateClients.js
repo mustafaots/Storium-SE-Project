@@ -37,4 +37,4 @@ const validateClients = (req, res, next) => {
   next(); // next controller/middleware
 };
 
-export { validateClients };
+export default validateClients;

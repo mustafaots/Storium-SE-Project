@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 // Import middleware
 import requestLogger from './src/middleware/logger.js';
 import notFoundHandler from './src/middleware/notFound.js';
-import { errorHandler } from './src/middleware/errorHandler.js';
+import errorHandler from './src/middleware/errorHandler.js';
 
 dotenv.config();
 

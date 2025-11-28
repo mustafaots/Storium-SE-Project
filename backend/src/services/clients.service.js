@@ -1,6 +1,6 @@
-import { Client } from './clients.model.js';
+import { Client } from '../models/clients.model.js';
 
-export const clientsService = {
+const clientsService = {
   getAll: () => Client.getAll(),
   
   getById: (id) => Client.getById(id),
@@ -11,3 +11,5 @@ export const clientsService = {
   
   delete: (id) => Client.delete(id)
 };
+
+export default clientsService;
