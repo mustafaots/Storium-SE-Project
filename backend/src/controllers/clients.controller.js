@@ -1,8 +1,8 @@
-import { clientsService } from '../services/clients.service.js';
-import { successResponse, errorResponse } from '../utils/apiResponse.js';
-import { formatPhone, formatDate } from '../utils/formatters.js';
+import clientsService from '../services/clients.service.js';
+import apiResponse from '../utils/apiResponse.js'; // Import default
+import { formatPhone, formatDate } from '../utils/formatters.js'; // Fixed formatters import
 
-export const clientsController = {
+const clientsController = {
   // Get all clients
   getAllClients: async (req, res) => {
     try {
@@ -15,9 +15,9 @@ export const clientsController = {
         created_at: formatDate(client.created_at)
       }));
       
-      res.json(successResponse(formattedClients, 'Clients retrieved successfully'));
+      res.json(apiResponse.successResponse(formattedClients, 'Clients retrieved successfully'));
     } catch (error) {
-      res.status(500).json(errorResponse(error.message));
+      res.status(500).json(apiResponse.errorResponse(error.message));
     }
   },
 
@@ -27,7 +27,7 @@ export const clientsController = {
       const client = await clientsService.getById(req.params.id);
       
       if (!client) {
-        return res.status(404).json(errorResponse('Client not found'));
+        return res.status(404).json(apiResponse.errorResponse('Client not found'));
       }
       
       // Format data for response
@@ -37,9 +37,9 @@ export const clientsController = {
         created_at: formatDate(client.created_at)
       };
       
-      res.json(successResponse(formattedClient, 'Client retrieved successfully'));
+      res.json(apiResponse.successResponse(formattedClient, 'Client retrieved successfully'));
     } catch (error) {
-      res.status(500).json(errorResponse(error.message));
+      res.status(500).json(apiResponse.errorResponse(error.message));
     }
   },
 
@@ -49,9 +49,9 @@ export const clientsController = {
       const clientData = req.body;
       const newClient = await clientsService.create(clientData);
       
-      res.status(201).json(successResponse(newClient, 'Client created successfully'));
+      res.status(201).json(apiResponse.successResponse(newClient, 'Client created successfully'));
     } catch (error) {
-      res.status(400).json(errorResponse(error.message));
+      res.status(400).json(apiResponse.errorResponse(error.message));
     }
   },
 
@@ -62,12 +62,12 @@ export const clientsController = {
       const result = await clientsService.update(req.params.id, clientData);
       
       if (result.affectedRows === 0) {
-        return res.status(404).json(errorResponse('Client not found'));
+        return res.status(404).json(apiResponse.errorResponse('Client not found'));
       }
       
-      res.json(successResponse(null, 'Client updated successfully'));
+      res.json(apiResponse.successResponse(null, 'Client updated successfully'));
     } catch (error) {
-      res.status(400).json(errorResponse(error.message));
+      res.status(400).json(apiResponse.errorResponse(error.message));
     }
   },
 
@@ -77,12 +77,14 @@ export const clientsController = {
       const result = await clientsService.delete(req.params.id);
       
       if (result.affectedRows === 0) {
-        return res.status(404).json(errorResponse('Client not found'));
+        return res.status(404).json(apiResponse.errorResponse('Client not found'));
       }
       
-      res.json(successResponse(null, 'Client deleted successfully'));
+      res.json(apiResponse.successResponse(null, 'Client deleted successfully'));
     } catch (error) {
-      res.status(500).json(errorResponse(error.message));
+      res.status(500).json(apiResponse.errorResponse(error.message));
     }
   }
 };
+
+export default clientsController;
