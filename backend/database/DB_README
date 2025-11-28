@@ -4,6 +4,9 @@ This is documentation on the database compartment of this software.
 
 schema.dbio is a declarative sql friendly format to be used and displayed in the following website: `https://dbdiagram.io`
 schema.sql is the SQL code to be injected for constructing the local relational database.
+
+REMARK: run mysql commands in the cmd prompt, not powershell.
+
 Must run the cmd: `mysql -u root -p storium_ims_rdb < database/schema.sql;`
 
 REMARK: (BEFORE YOU RUN THE CMD)
