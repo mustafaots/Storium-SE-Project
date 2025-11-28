@@ -37,7 +37,7 @@ const handleDatabaseError = (error) => {
   throw new Error('Database operation failed');
 };
 
-module.exports = {
+export {
   buildSearchConditions,
   buildPagination,
   handleDatabaseError

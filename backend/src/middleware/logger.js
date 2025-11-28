@@ -19,4 +19,4 @@ const requestLogger = (req, res, next) => {
   next(); // Move to the next middleware
 };
 
-module.exports = requestLogger;
+export default requestLogger;

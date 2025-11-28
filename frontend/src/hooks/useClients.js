@@ -10,16 +10,48 @@ export const useClients = () => {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentClient, setCurrentClient] = useState(null);
+  
+  // NEW: Pagination state
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 9,
+    totalCount: 0,
+    totalPages: 0
+  });
 
-  // Load clients function
-  const loadClients = useCallback(() => {
-    clientsController.loadClients(setClients, setLoading, setError);
+  // UPDATED: Load clients function with pagination
+  // limit default changed to 9  [[[ THIS CONTROLS THE CURRENT]]]
+  const loadClients = useCallback((page = 1, limit = 9) => {
+    clientsController.loadClients(
+      setClients, 
+      setLoading, 
+      setError, 
+      setPagination,
+      page, 
+      limit
+    );
   }, []);
+
+  // NEW: Handle page change
+  const handlePageChange = useCallback((newPage) => {
+    loadClients(newPage, pagination.pageSize);
+  }, [loadClients, pagination.pageSize]);
+
+  // NEW: Handle page size change
+  const handlePageSizeChange = useCallback((newSize) => {
+    loadClients(1, newSize); // Reset to page 1 when changing size
+  }, [loadClients]);
 
   // Delete client function
   const deleteClient = useCallback((id) => {
-    clientsController.deleteClient(id, setClients, setLoading, setError, loadClients);
-  }, [loadClients]);
+    clientsController.deleteClient(
+      id, 
+      setClients, 
+      setLoading, 
+      setError, 
+      () => loadClients(pagination.currentPage, pagination.pageSize)
+    );
+  }, [loadClients, pagination.currentPage, pagination.pageSize]);
 
   // Initialize
   useEffect(() => {
@@ -34,6 +66,7 @@ export const useClients = () => {
     showForm,
     isEditing,
     currentClient,
+    pagination,
     
     // Setters
     setClients,
@@ -45,6 +78,8 @@ export const useClients = () => {
     
     // Actions
     loadClients,
-    deleteClient
+    deleteClient,
+    handlePageChange,
+    handlePageSizeChange
   };
 };

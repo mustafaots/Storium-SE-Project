@@ -47,7 +47,7 @@ const truncateText = (text, maxLength = 100) => {
   return text.substring(0, maxLength) + '...';
 };
 
-module.exports = {
+export {
   formatCurrency,
   formatNumber,
   formatDate,
