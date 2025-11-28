@@ -1,6 +1,8 @@
 /**
  * Global error handling middleware
  * This catches any errors that happen in our routes and sends nice error messages
+ * 
+ * Remark: use it as the last middleware to be called on the server
  */
 const errorHandler = (err, req, res, next) => {
   console.error('🚨 Error caught by middleware:', err);
@@ -33,4 +35,4 @@ const errorHandler = (err, req, res, next) => {
   res.status(err.status || 500).json(error);
 };
 
-module.exports = errorHandler;
+export { errorHandler };

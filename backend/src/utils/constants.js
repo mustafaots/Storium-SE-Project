@@ -51,7 +51,7 @@ const PAGINATION = {
 // Measurement units
 const MEASUREMENT_UNITS = ['pcs', 'kg', 'g', 'lb', 'oz', 'liters', 'ml', 'boxes', 'pallets'];
 
-module.exports = {
+const constants = {
   INVENTORY_SCOPES,
   PRODUCT_TYPES,
   TRANSACTION_TYPES,
@@ -60,3 +60,5 @@ module.exports = {
   PAGINATION,
   MEASUREMENT_UNITS
 };
+
+export { constants };

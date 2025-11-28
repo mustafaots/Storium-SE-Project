@@ -16,6 +16,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { errorHandler } from './src/middleware/errorHandler.js';
 
 dotenv.config();
 
@@ -40,6 +41,9 @@ app.use('/api/clients', clientsRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Storium IMS API is running' });
 });
+
+// deploying error handler, [[[     MUST BE THE LAST MIDDLEWARE    ]]]
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

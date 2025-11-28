@@ -1,81 +1,183 @@
-.tableContainer {
-  background: transparent !important;
-  padding: 30px;
-  border-radius: 8px;
-  width: min-content;
-  border: none !important;
-  box-shadow: none !important;
+.table {
+    border: 1px solid #40444b;
+    border-radius: 6px; 
+    width: 100%;
+    overflow: hidden;
+    min-width: 600px;
 }
 
-.tableWrapper {
-  overflow-x: auto;
+.tableHeader {
+    display: grid;
+    background: linear-gradient(135deg, var(--discord-gray-light) 0%, var(--discord-gray) 100%);
+    border-bottom: 2px solid var(--industrial-gold);
+    grid-template-columns: inherit;
 }
 
-.dataTable {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--discord-gray-dark);
-  border-radius: 4px;
-  overflow: hidden;
+.headerCell {
+    padding: 14px; /* Slightly reduced padding */
+    font-weight: 700;
+    font-size: .85em; /* Smaller font size */
+    color: var(--industrial-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px; /* Slightly reduced letter spacing */
+    border-right: 1px solid #40444b;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.dataTable th {
-  background: var(--industrial-gold);
-  color: var(--discord-gray-dark);
-  padding: 16px 12px;
-  text-align: left;
-  font-weight: 600;
-  font-size: 14px;
-  border: none;
+.headerCell:last-child {
+    border-right: none;
 }
 
-.dataTable td {
-  padding: 14px 12px;
-  border-bottom: 1px solid var(--discord-gray-light);
-  color: var(--text-light);
-  font-size: 14px;
-  background: var(--discord-gray-dark);
+.tableBody {
+    background: var(--discord-gray-dark);
 }
 
-.dataTable tr:last-child td {
-  border-bottom: none;
+.tableRow {
+    display: grid;
+    border-bottom: 1px solid #40444b;
+    transition: all 0.3s ease;
+    grid-template-columns: inherit;
 }
 
+.tableRow:hover {
+    background: var(--discord-gray-light);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tableRow:last-child {
+    border-bottom: none;
+}
+
+.cell {
+    padding: 14px; /* Slightly reduced padding */
+    display: flex;
+    align-items: center;
+    border-right: 1px solid #40444b;
+    color: var(--text-light);
+    font-size: .85em; /* Smaller font size */
+    min-width: 0;
+    overflow: hidden;
+}
+
+.cell:last-child {
+    border-right: none;
+}
+
+/* Text truncation for all cell content */
+.cell > * {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%; /* Ensure it takes full cell width */
+}
+
+/* Specific truncation for text nodes */
+.cell {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* Ensure buttons and interactive elements don't get truncated */
+.cell .actions,
+.cell button,
+.cell a {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+    min-width: auto;
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+
+/* Clickable Rows */
 .clickableRow {
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+    cursor: pointer;
 }
 
-.clickableRow:hover {
-  background-color: var(--discord-gray-light);
+/* Badge Styles */
+.routineBadge {
+    background: var(--industrial-gold);
+    color: var(--discord-gray-dark);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 1.1em; /* Smaller badge font */
+    font-weight: 600;
+    white-space: nowrap;
 }
 
-/* Loading and Empty States */
-.loadingState, .emptyState {
-  background: var(--discord-gray);
-  padding: 40px;
-  border-radius: 8px;
-  text-align: center;
-  color: var(--text-gray);
+
+/* Loading State */
+.loadingState {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    background: var(--discord-gray);
+    border-radius: 6px;
 }
 
-.loadingContent p, .emptyContent p {
-  margin: 0;
-  font-size: 16px;
+.loadingContent p {
+    margin: 0;
+    color: var(--text-gray);
+    font-style: italic;
+    font-size: 14px;
 }
 
-/* Responsive */
+/* Empty State */
+.emptyState {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    color: var(--text-gray);
+    font-style: italic;
+    background: var(--discord-gray);
+    border-radius: 6px;
+}
+
+.emptyMessage {
+    text-align: center;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .tableContainer {
-    padding: 20px;
-  }
-  
-  .dataTable {
-    font-size: 12px;
-  }
-  
-  .dataTable th,
-  .dataTable td {
-    padding: 10px 8px;
-  }
+    .table {
+        font-size: 11px;
+        min-width: 500px;
+    }
+    
+    .headerCell,
+    .cell {
+        padding: 10px 6px;
+        font-size: 11px;
+    }
+    
+    .headerCell {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .table {
+        min-width: 400px;
+    }
+    
+    .headerCell,
+    .cell {
+        padding: 8px 4px;
+        font-size: 10px;
+    }
+    
+    .headerCell {
+        font-size: 9px;
+    }
 }
