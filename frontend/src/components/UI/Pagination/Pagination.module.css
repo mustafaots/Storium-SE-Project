@@ -1,0 +1,82 @@
+.pagination {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.paginationButton {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--industrial-gold);
+  background: var(--discord-gray-dark);
+  color: var(--text-light);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: var(--discord-gray-light);
+}
+
+.pageInfo {
+  color: var(--text-light);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.pageSizeSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pageSizeSelector label {
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.pageSizeSelect {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 4px;
+  background: var(--discord-gray-dark);
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.pageSizeSelect:focus {
+  outline: none;
+  border-color: var(--industrial-gold);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pagination {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .paginationControls {
+    justify-content: center;
+  }
+  
+  .pageSizeSelector {
+    justify-content: center;
+  }
+}
