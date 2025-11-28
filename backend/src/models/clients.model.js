@@ -1,7 +1,8 @@
 import connection from '../config/database.js';
+import { buildPagination } from '../utils/database.js';
 
 export const Client = {
-  // Get all clients
+  // Get all clients (keep existing for backward compatibility)
   getAll: () => {
     return new Promise((resolve, reject) => {
       connection.query('SELECT * FROM clients ORDER BY created_at DESC', (err, results) => {
@@ -11,7 +12,33 @@ export const Client = {
     });
   },
 
-  // Get client by ID
+  // NEW: Get paginated clients
+  getAllPaginated: (page = 1, limit = 10) => {
+    return new Promise((resolve, reject) => {
+      const { limit: queryLimit, offset } = buildPagination(page, limit);
+      
+      connection.query(
+        'SELECT * FROM clients ORDER BY created_at DESC LIMIT ? OFFSET ?',
+        [queryLimit, offset],
+        (err, results) => {
+          if (err) reject(err);
+          else resolve(results);
+        }
+      );
+    });
+  },
+
+  // NEW: Get total count of clients
+  getTotalCount: () => {
+    return new Promise((resolve, reject) => {
+      connection.query('SELECT COUNT(*) as total FROM clients', (err, results) => {
+        if (err) reject(err);
+        else resolve(results[0].total);
+      });
+    });
+  },
+
+  // Keep existing methods unchanged
   getById: (id) => {
     return new Promise((resolve, reject) => {
       connection.query('SELECT * FROM clients WHERE client_id = ?', [id], (err, results) => {
@@ -21,7 +48,6 @@ export const Client = {
     });
   },
 
-  // Create new client
   create: (clientData) => {
     return new Promise((resolve, reject) => {
       const { client_name, contact_email, contact_phone, address } = clientData;
@@ -36,7 +62,6 @@ export const Client = {
     });
   },
 
-  // Update client
   update: (id, clientData) => {
     return new Promise((resolve, reject) => {
       const { client_name, contact_email, contact_phone, address } = clientData;
@@ -51,7 +76,6 @@ export const Client = {
     });
   },
 
-  // Delete client
   delete: (id) => {
     return new Promise((resolve, reject) => {
       connection.query('DELETE FROM clients WHERE client_id = ?', [id], (err, results) => {

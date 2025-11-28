@@ -1,13 +1,10 @@
 .header {
-  margin-bottom: 30px;
-  padding-bottom: 20px;
 }
 
 .headerContent {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 20px;
 }
 
 .header.center {
@@ -32,7 +29,7 @@
 .titleSection {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap:25px;
   flex: 1;
 }
 
@@ -49,12 +46,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   background: linear-gradient(135deg, var(--industrial-gold) 0%, var(--industrial-gold-dark) 100%);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--discord-gray-dark);
-  font-size: 20px;
+  font-size: 16px;
   flex-shrink: 0;
 }
 
@@ -65,7 +62,7 @@
 /* Title Styles */
 .title {
   color: var(--industrial-gold);
-  margin: 0 0 8px 0;
+  margin: 0 0 5px 0;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -74,38 +71,38 @@
   color: var(--text-gray);
   margin: 0;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
-/* Size Variations */
+/* Size Variations - Made more compact */
 .header.small .title {
-  font-size: 1.8rem;
+  font-size: 1.4rem;
 }
 
 .header.small .subtitle {
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .header.small .iconContainer {
-  width: 36px;
-  height: 36px;
-  font-size: 18px;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
 }
 
 .header.medium .title {
-  font-size: 2.2rem;
+  font-size: 1.6rem;
 }
 
 .header.medium .subtitle {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
 }
 
 .header.large .title {
-  font-size: 2.8rem;
+  font-size: 2rem;
 }
 
 .header.large .subtitle {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
 }
 
 /* Action Section */
@@ -117,15 +114,21 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .header {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+  }
+  
   .headerContent {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     text-align: center;
   }
   
   .titleSection {
     justify-content: center;
     text-align: center;
+    gap: 10px;
   }
   
   .actionSection {
@@ -134,14 +137,20 @@
   }
   
   .header.small .title {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
   }
   
   .header.medium .title {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
   }
   
   .header.large .title {
-    font-size: 2.2rem;
+    font-size: 1.8rem;
+  }
+  
+  .iconContainer {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
   }
 }
