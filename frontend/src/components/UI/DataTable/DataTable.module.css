@@ -4,6 +4,7 @@
     width: 100%;
     overflow: hidden;
     min-width: 600px;
+    margin-bottom: 20px;
 }
 
 .tableHeader {
@@ -14,12 +15,12 @@
 }
 
 .headerCell {
-    padding: 14px; /* Slightly reduced padding */
+    padding: 14px;
     font-weight: 700;
-    font-size: .85em; /* Smaller font size */
+    font-size: .85em;
     color: var(--industrial-gold);
     text-transform: uppercase;
-    letter-spacing: 0.5px; /* Slightly reduced letter spacing */
+    letter-spacing: 0.5px;
     border-right: 1px solid #40444b;
     display: flex;
     align-items: center;
@@ -55,12 +56,12 @@
 }
 
 .cell {
-    padding: 14px; /* Slightly reduced padding */
+    padding: 14px;
     display: flex;
     align-items: center;
     border-right: 1px solid #40444b;
     color: var(--text-light);
-    font-size: .85em; /* Smaller font size */
+    font-size: .85em;
     min-width: 0;
     overflow: hidden;
 }
@@ -69,23 +70,22 @@
     border-right: none;
 }
 
-/* Text truncation for all cell content */
+/* Text truncation */
 .cell > * {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    width: 100%; /* Ensure it takes full cell width */
+    width: 100%;
 }
 
-/* Specific truncation for text nodes */
 .cell {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
 }
 
-/* Ensure buttons and interactive elements don't get truncated */
+/* Ensure buttons don't get truncated */
 .cell .actions,
 .cell button,
 .cell a {
@@ -93,25 +93,13 @@
     overflow: visible;
     text-overflow: clip;
     min-width: auto;
-    flex-shrink: 0; /* Prevent buttons from shrinking */
+    flex-shrink: 0;
 }
 
 /* Clickable Rows */
 .clickableRow {
     cursor: pointer;
 }
-
-/* Badge Styles */
-.routineBadge {
-    background: var(--industrial-gold);
-    color: var(--discord-gray-dark);
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 1.1em; /* Smaller badge font */
-    font-weight: 600;
-    white-space: nowrap;
-}
-
 
 /* Loading State */
 .loadingState {
@@ -148,6 +136,65 @@
     font-size: 14px;
 }
 
+/* Table wrapper */
+.tableWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* NEW: Combined controls row */
+.controlsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Search Styles */
+.searchContainer {
+  position: relative;
+  max-width: 300px;
+  flex: 1;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 6px;
+  background: var(--discord-gray-dark);
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--industrial-gold);
+}
+
+.searchInput::placeholder {
+  color: var(--text-gray);
+}
+
+.clearSearch {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+}
+
+.clearSearch:hover {
+  color: var(--text-light);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .table {
@@ -163,6 +210,15 @@
     
     .headerCell {
         font-size: 10px;
+    }
+
+    .controlsRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .searchContainer {
+        max-width: 100%;
     }
 }
 
@@ -181,3 +237,45 @@
         font-size: 9px;
     }
 }
+
+/* Search and Controls */
+.controlsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.searchBox {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-gray);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 6px;
+  color: var(--text-light);
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--industrial-gold);
+}
+
+.addButton {
+  white-space: nowrap;
+}
+
