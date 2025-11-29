@@ -145,7 +145,8 @@ backend/
 │   ├── controllers/
 │   ├── middleware/
 │   ├── models/
-│   └── routes/
+│   ├── routes/
+│   ├── services/
 │   └── utils/
 │
 ├── .env
