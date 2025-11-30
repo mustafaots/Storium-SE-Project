@@ -1,10 +1,12 @@
-/* Layout */
+/* --- LAYOUT FIX (Matching RoutinesPage) --- */
 .pageWrapper {
     display: flex;
-    background-color: #36393f; /* Dark Background */
-    min-height: 100vh;
+    background-color: #36393f;
+    height: 100vh; /* Force full screen height */
+    width: 100vw;  /* Force full screen width */
+    overflow: hidden; /* Prevent body scrolling */
     color: #ffffff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
 }
 
 .mainContent {
@@ -13,25 +15,24 @@
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
+    
+    /* Scrollbar Logic: Scroll INSIDE this div only */
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #202225 #2f3136;
 }
 
-/* Header */
-.dashboardHeader {
-    margin-bottom: 30px;
-}
+/* Custom Scrollbar Styling */
+.mainContent::-webkit-scrollbar { width: 8px; }
+.mainContent::-webkit-scrollbar-track { background: #2f3136; }
+.mainContent::-webkit-scrollbar-thumb { background-color: #202225; border-radius: 4px; }
 
-.title {
-    color: #f0b90b; /* Accent Yellow */
-    font-size: 24px;
-    margin: 0 0 5px 0;
-    letter-spacing: 1px;
-    font-weight: 600;
-}
-
-.subtitle {
-    color: #b9bbbe; /* Muted Text */
-    font-size: 14px;
-    margin: 0;
+/* Header Wrapper */
+.headerWrapper {
+    margin-bottom: 25px;
+    border-bottom: 1px solid #40444b; /* Optional: Separator line */
+    padding-bottom: 15px;
 }
 
 /* Filters */
@@ -56,9 +57,9 @@
 }
 
 .filterGroup select {
-    background-color: #2f3136;
+    background-color: #202225; /* Darker input bg to match other pages */
     color: #ffffff;
-    border: 1px solid #202225;
+    border: 1px solid #40444b;
     padding: 10px 15px;
     border-radius: 4px;
     min-width: 160px;
@@ -74,7 +75,7 @@
 
 .statusBtn {
     background: transparent;
-    border: 1px solid #202225;
+    border: 1px solid #40444b;
     color: #b9bbbe;
     padding: 10px 20px;
     border-radius: 4px;
@@ -84,6 +85,7 @@
 
 .statusBtn:hover {
     border-color: #f0b90b;
+    color: #fff;
 }
 
 .statusBtn.active {
@@ -108,7 +110,7 @@
 /* Badges (Type) */
 .badge {
     padding: 5px 12px;
-    border-radius: 20px;
+    border-radius: 4px; /* Squared corners like Routines page */
     font-size: 11px;
     font-weight: bold;
     text-transform: uppercase;
@@ -130,7 +132,7 @@
 .actionButtons {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 15px;
 }
 
 .iconBtn {
@@ -139,13 +141,14 @@
     cursor: pointer;
     font-size: 15px;
     padding: 5px;
-    transition: transform 0.2s;
+    color: #b9bbbe;
+    transition: transform 0.2s, color 0.2s;
 }
 
 .iconBtn:hover { transform: scale(1.2); }
 
-.checkBtn { color: #3ba55c; }
-.trashBtn { color: #ed4245; }
+.checkBtn:hover { color: #3ba55c; }
+.trashBtn:hover { color: #ed4245; }
 
 .tableContainer {
     background-color: #2f3136;

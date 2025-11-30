@@ -3,11 +3,14 @@ import styles from './AlertsPage.module.css';
 import NavBar from '../../components/UI/NavBar/NavBar';
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 
-// 1. Import your EXISTING Table component
+// 1. Import Header Component (Matches Transactions & Routines)
+import Header from '../../components/UI/Header/Header.jsx';
+
+// 2. Import your EXISTING Table component
 import Table from "../../components/Layout/Table/table.jsx";
 
-// 2. Import Icons
-import { FaExclamationTriangle, FaInfoCircle, FaCheck, FaTrash, FaSortUp } from 'react-icons/fa';
+// 3. Import Icons
+import { FaExclamationTriangle, FaInfoCircle, FaCheck, FaTrash, FaSortUp, FaBell } from 'react-icons/fa';
 
 function AlertsPage() {
     const activeItem = useActiveNavItem();
@@ -37,8 +40,7 @@ function AlertsPage() {
         }
     };
 
-    // --- COLUMN DEFINITION (The Core of Modularity) ---
-    // We pass this to your Table component to tell it how to render specific cells
+    // --- COLUMN DEFINITION ---
     const alertColumns = [
         {
             key: 'severity',
@@ -57,15 +59,14 @@ function AlertsPage() {
             }
         },
         {
-            key: 'timestamp', // Matches your Table's internal key for width (200px)
+            key: 'timestamp',
             label: <span className={styles.sortHeader}>Timestamp <FaSortUp /></span>,
             render: (item) => <span className={styles.timestampText}>{item.timestamp}</span>
         },
         {
-            key: 'type', // Matches your Table's internal key for width (120px)
+            key: 'type',
             label: 'TYPE',
             render: (item) => {
-                // Dynamic class for badge color
                 const badgeType = item.type.toLowerCase().replace(' ', '');
                 return <span className={`${styles.badge} ${styles[badgeType]}`}>{item.type}</span>;
             }
@@ -81,11 +82,11 @@ function AlertsPage() {
             render: (item) => (
                 <div className={styles.actionButtons}>
                     {!item.isRead && (
-                        <button className={`${styles.iconBtn} ${styles.checkBtn}`} onClick={() => handleMarkRead(item.id)}>
+                        <button className={`${styles.iconBtn} ${styles.checkBtn}`} onClick={() => handleMarkRead(item.id)} title="Mark Read">
                             <FaCheck />
                         </button>
                     )}
-                    <button className={`${styles.iconBtn} ${styles.trashBtn}`} onClick={() => handleDelete(item.id)}>
+                    <button className={`${styles.iconBtn} ${styles.trashBtn}`} onClick={() => handleDelete(item.id)} title="Delete">
                         <FaTrash />
                     </button>
                 </div>
@@ -105,11 +106,16 @@ function AlertsPage() {
         <div className={styles.pageWrapper}>
             <div className={styles.mainContent}>
                 
-                {/* 1. Header */}
-                <header className={styles.dashboardHeader}>
-                    <h1 className={styles.title}>ALERTS</h1>
-                    <p className={styles.subtitle}>Monitor and manage system alerts</p>
-                </header>
+                {/* 1. Replaced Manual Header with Header Component */}
+                <div className={styles.headerWrapper}>
+                    <Header 
+                        title="ALERTS" 
+                        subtitle="Monitor and manage system alerts" 
+                        icon={<FaBell size={28}/>}
+                        size='medium'
+                        align='left'
+                    />
+                </div>
 
                 {/* 2. Filter Controls */}
                 <div className={styles.filterControls}>

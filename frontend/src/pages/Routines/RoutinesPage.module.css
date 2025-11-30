@@ -1,10 +1,10 @@
-/* --- LAYOUT FIX (Prevents NavBar Jumping) --- */
+/* --- LAYOUT --- */
 .pageWrapper {
     display: flex;
     background-color: #36393f;
-    height: 100vh; /* Force full viewport height */
-    width: 100vw;  /* Force full viewport width */
-    overflow: hidden; /* Prevent body scroll */
+    height: 100vh; /* FIX: Full Height */
+    width: 100vw;
+    overflow: hidden; /* FIX: No body scroll */
     color: #ffffff;
     font-family: 'Segoe UI', sans-serif;
 }
@@ -16,14 +16,14 @@
     margin: 0 auto;
     width: 100%;
     
-    /* Scrollbar Logic */
+    /* Internal Scrollbar */
     height: 100%;
-    overflow-y: auto; /* Scrollbar appears inside here */
+    overflow-y: auto; 
     scrollbar-width: thin;
     scrollbar-color: #202225 #2f3136;
 }
 
-/* Custom Scrollbar Styling */
+/* Scrollbar Style */
 .mainContent::-webkit-scrollbar { width: 8px; }
 .mainContent::-webkit-scrollbar-track { background: #2f3136; }
 .mainContent::-webkit-scrollbar-thumb { background-color: #202225; border-radius: 4px; }
@@ -32,12 +32,11 @@
 .header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end; /* Align button with text bottom */
     margin-bottom: 30px;
+    border-bottom: 1px solid #40444b;
+    padding-bottom: 16px;
 }
-
-.title { margin: 0; font-size: 24px; color: #fff; }
-.subtitle { margin: 5px 0 0; color: #b9bbbe; font-size: 14px; }
 
 .primaryBtn {
     background-color: #f0b90b;
@@ -51,6 +50,8 @@
     align-items: center;
     gap: 8px;
     transition: filter 0.2s;
+    height: 40px;
+    margin-bottom: 5px;
 }
 .primaryBtn:hover { filter: brightness(1.1); }
 
@@ -98,7 +99,7 @@
 .filterActions { display: flex; align-items: center; gap: 10px; padding-right: 10px; }
 .filterActions select { background-color: #202225; color: #fff; border: 1px solid #40444b; padding: 5px; border-radius: 4px; outline: none; cursor: pointer; }
 
-/* --- TABLE STYLES --- */
+/* --- TABLE CONTENT STYLES --- */
 .tableContainer { background-color: #2f3136; border-radius: 8px; overflow: hidden; }
 
 .routineName { font-weight: bold; font-size: 15px; color: #fff; }
@@ -122,7 +123,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 
 .errorIcon { color: #ed4245; font-size: 16px; }
 
-/* --- ACTION BUTTONS (Updated with Colors) --- */
+/* --- ACTION BUTTONS --- */
 .actionButtons { display: flex; justify-content: flex-end; gap: 15px; }
 
 .iconBtn { 
@@ -135,13 +136,12 @@ input:checked + .slider:before { transform: translateX(20px); }
     transition: transform 0.2s, color 0.2s; 
 }
 
-.iconBtn:hover { transform: scale(1.2); } /* Zoom effect */
+.iconBtn:hover { transform: scale(1.2); }
 
-/* Specific Colors */
+/* Colors */
 .playBtn:hover { color: #3ba55c; }   /* Green */
 .editBtn:hover { color: #f0b90b; }   /* Yellow */
 .deleteBtn:hover { color: #ed4245; } /* Red */
-
 
 /* --- MODAL --- */
 .modalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }

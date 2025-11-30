@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
 import styles from './RoutinesPage.module.css';
 import NavBar from '../../components/UI/NavBar/NavBar';
+import Header from '../../components/UI/Header/Header.jsx'; 
+import Table from "../../components/Layout/Table/table.jsx"; // Adjust path if needed
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 
-// 1. Import your EXISTING Table component
-import Table from "../../components/Layout/Table/table.jsx";
-
 // Icons
-import { FaChartLine, FaExclamationTriangle, FaClock, FaSearch, FaFilter, FaPlus, FaBolt, FaTimes, FaPlay, FaPen, FaTrash } from 'react-icons/fa';
+import { 
+    FaChartLine, FaExclamationTriangle, FaClock, FaSearch, FaFilter, 
+    FaPlus, FaBolt, FaTimes, FaPlay, FaPen, FaTrash 
+} from 'react-icons/fa';
 import { FaRegClock } from 'react-icons/fa';
 
 function RoutinesPage() {
     const activeItem = useActiveNavItem();
 
-    // 1. DATA STATE
+    // --- 1. DATA STATE ---
     const [routines, setRoutines] = useState([
         { id: 1, name: 'Low Stock Monitor - Hydraulic Oil', description: 'Create Alert: Critical Severity Alert', trigger: 'Hydraulic Oil ISO 68 < 10', frequency: 'On Event', lastRun: '21 Nov 2025, 11:30', status: true, error: false },
         { id: 2, name: 'Daily Transaction Summary', description: 'Email Report: Send to Admin', trigger: 'Every Day at 08:00', frequency: 'Daily', lastRun: '21 Nov 2025, 08:00', status: true, error: false },
@@ -21,11 +23,11 @@ function RoutinesPage() {
         { id: 4, name: 'Auto-Reorder Steel Bolts', description: 'Create PO: Vendor: Fasteners Inc.', trigger: 'M12x50mm Bolts < 50', frequency: 'On Event', lastRun: '20 Nov 2025, 17:20', status: false, error: true }
     ]);
 
-    // 2. FILTER STATE
+    // --- 2. FILTER STATE ---
     const [searchText, setSearchText] = useState("");
     const [freqFilter, setFreqFilter] = useState("All");
 
-    // 3. MODAL STATE
+    // --- 3. MODAL STATE ---
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         name: "", frequency: "Daily", trigger: "", actionType: "Create Alert", actionDetails: ""
@@ -102,12 +104,10 @@ function RoutinesPage() {
                     <button className={`${styles.iconBtn} ${styles.playBtn}`} title="Run Now">
                         <FaPlay />
                     </button>
-                    
                     {/* Edit Button - Yellow Hover */}
                     <button className={`${styles.iconBtn} ${styles.editBtn}`} title="Edit">
                         <FaPen />
                     </button>
-                    
                     {/* Delete Button - Red Hover */}
                     <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => deleteRoutine(item.id)}>
                         <FaTrash />
@@ -128,16 +128,21 @@ function RoutinesPage() {
         <div className={styles.pageWrapper}>
             <div className={styles.mainContent}>
                 
+                {/* Header Section */}
                 <header className={styles.header}>
-                    <div>
-                        <h1 className={styles.title}>System Routines</h1>
-                        <p className={styles.subtitle}>Manage automation triggers, promises, and resolutions.</p>
-                    </div>
+                    <Header 
+                        title="SYSTEM ROUTINES" 
+                        subtitle="Manage automation triggers, promises, and resolutions" 
+                        icon={<FaBolt size={28}/>} 
+                        size='medium'
+                        align='left'
+                    />
                     <button className={styles.primaryBtn} onClick={() => setIsModalOpen(true)}>
                         <FaPlus /> New Routine
                     </button>
                 </header>
 
+                {/* Stats Grid */}
                 <div className={styles.statsGrid}>
                     <div className={styles.statCard}>
                         <div><span className={styles.statLabel}>ACTIVE ROUTINES</span><span className={styles.statValue}>{routines.filter(r => r.status).length}</span></div>
@@ -153,6 +158,7 @@ function RoutinesPage() {
                     </div>
                 </div>
 
+                {/* Filter Bar */}
                 <div className={styles.filterBar}>
                     <div className={styles.searchWrapper}>
                         <FaSearch className={styles.searchIcon} />
@@ -169,6 +175,7 @@ function RoutinesPage() {
                     </div>
                 </div>
 
+                {/* Table */}
                 <div className={styles.tableContainer}>
                     <Table data={filteredData} columns={routineColumns} size="medium" />
                 </div>
@@ -176,6 +183,7 @@ function RoutinesPage() {
 
             <NavBar activeItem={activeItem} />
 
+            {/* Modal */}
             {isModalOpen && (
                 <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
                     <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
