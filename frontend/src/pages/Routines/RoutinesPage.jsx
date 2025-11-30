@@ -128,19 +128,16 @@ function RoutinesPage() {
         <div className={styles.pageWrapper}>
             <div className={styles.mainContent}>
                 
-                {/* Header Section */}
-                <header className={styles.header}>
-                    <Header 
-                        title="SYSTEM ROUTINES" 
-                        subtitle="Manage automation triggers, promises, and resolutions" 
-                        icon={<FaBolt size={28}/>} 
-                        size='medium'
-                        align='left'
-                    />
-                    <button className={styles.primaryBtn} onClick={() => setIsModalOpen(true)}>
-                        <FaPlus /> New Routine
-                    </button>
-                </header>
+                <Header 
+                    title="ROUTINES" 
+                    subtitle="Manage automation triggers, promises, and resolutions" 
+                    icon={<FaBolt size={28}/>} 
+                    size='medium'
+                    align='left'
+                />
+                <button className={styles.primaryBtn} onClick={() => setIsModalOpen(true)}>
+                    <FaPlus /> New Routine
+                </button>
 
                 {/* Stats Grid */}
                 <div className={styles.statsGrid}>
