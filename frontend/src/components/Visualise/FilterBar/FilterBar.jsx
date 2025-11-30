@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styles from './FilterBar.module.css';
 import { FaChevronDown, FaCalendarAlt } from 'react-icons/fa';
+import Button from '../../UI/Button/Button';
 
 function FilterBar() {
   const [filters, setFilters] = useState({
@@ -90,9 +91,12 @@ function FilterBar() {
         </div>
       </div>
 
-      <button className={styles.applyButton} onClick={handleApplyFilters}>
+      <Button 
+        variant="primary" 
+        onClick={handleApplyFilters}
+      >
         Apply Filters
-      </button>
+      </Button>
     </div>
   );
 }

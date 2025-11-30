@@ -2,19 +2,20 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--discord-gray);
 }
 
 .mainContent {
   flex: 1;
-  overflow-y: auto;
-  padding-bottom: 80px;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
 }
 
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
+.content {
+  width: 100%;
+}
+
+.listContainer {
   width: 100%;
 }
 
@@ -22,21 +23,6 @@
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid rgba(255, 187, 0, 0.1);
-}
-
-.title {
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: var(--text-light);
-  margin: 0 0 0.5rem 0;
-  letter-spacing: -0.015em;
-}
-
-.subtitle {
-  font-size: 0.95rem;
-  color: var(--text-gray);
-  margin: 0;
-  font-weight: 400;
 }
 
 .statsGrid {
@@ -65,32 +51,11 @@
   .chartsGrid {
     grid-template-columns: 1fr 1fr;
   }
-
-  .container {
-    padding: 1.5rem;
-  }
-
-  .title {
-    font-size: 2rem;
-  }
 }
 
 @media (max-width: 768px) {
-  .container {
-    padding: 1rem;
-  }
-
-  .header {
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-  }
-
-  .title {
-    font-size: 1.75rem;
-  }
-
-  .subtitle {
-    font-size: 0.85rem;
+  .mainContent {
+    padding: 10px;
   }
 
   .statsGrid {
@@ -104,21 +69,9 @@
     gap: 1rem;
     margin-top: 1.5rem;
   }
-
-  .mainContent {
-    padding-bottom: 70px;
-  }
 }
 
 @media (max-width: 480px) {
-  .container {
-    padding: 0.75rem;
-  }
-
-  .title {
-    font-size: 1.5rem;
-  }
-
   .statsGrid {
     gap: 0.75rem;
     margin: 1rem 0;
@@ -127,9 +80,5 @@
   .chartsGrid {
     gap: 0.75rem;
     margin-top: 1rem;
-  }
-
-  .mainContent {
-    padding-bottom: 60px;
   }
 }
