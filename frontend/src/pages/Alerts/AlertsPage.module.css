@@ -1,33 +1,155 @@
+/* Layout */
 .pageWrapper {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    background-color: #36393f; /* Dark Background */
+    min-height: 100vh;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .mainContent {
-  flex: 1; /* Takes up all available space */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    flex: 1;
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
 }
 
-.comingSoon {
-  background: var(--discord-gray);
-  padding: 20px;
-  text-align: center;
-}
-
-.content {
-  color: var(--text-light);
+/* Header */
+.dashboardHeader {
+    margin-bottom: 30px;
 }
 
 .title {
-  font-size: 3rem;
-  color: var(--industrial-gold);
-  margin-bottom: 20px;
+    color: #f0b90b; /* Accent Yellow */
+    font-size: 24px;
+    margin: 0 0 5px 0;
+    letter-spacing: 1px;
+    font-weight: 600;
 }
 
 .subtitle {
-  font-size: 1.2rem;
-  color: var(--text-gray);
+    color: #b9bbbe; /* Muted Text */
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Filters */
+.filterControls {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 25px;
+    align-items: flex-end;
+}
+
+.filterGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filterGroup label {
+    color: #72767d;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.filterGroup select {
+    background-color: #2f3136;
+    color: #ffffff;
+    border: 1px solid #202225;
+    padding: 10px 15px;
+    border-radius: 4px;
+    min-width: 160px;
+    cursor: pointer;
+    outline: none;
+}
+
+/* Status Buttons */
+.statusGroup {
+    display: flex;
+    gap: 10px;
+}
+
+.statusBtn {
+    background: transparent;
+    border: 1px solid #202225;
+    color: #b9bbbe;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.statusBtn:hover {
+    border-color: #f0b90b;
+}
+
+.statusBtn.active {
+    background-color: #f0b90b;
+    color: #000;
+    font-weight: bold;
+    border-color: #f0b90b;
+}
+
+/* --- Table Content Styles --- */
+
+/* Severity */
+.severityCell { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 13px; }
+.sevCritical { color: #ed4245; } /* Red */
+.sevWarning { color: #f0b90b; } /* Orange */
+.sevInfo { color: #5865f2; }    /* Blue */
+
+/* Timestamp */
+.timestampText { color: #b9bbbe; font-size: 14px; }
+.sortHeader { display: flex; align-items: center; gap: 5px; }
+
+/* Badges (Type) */
+.badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+    display: inline-block;
+    min-width: 90px;
+    text-align: center;
+}
+
+.lowstock { background-color: #ed4245; }
+.expiry { background-color: #f0b90b; }
+.overstock { background-color: #5865f2; }
+.reorder { background-color: #3ba55c; }
+
+/* Message */
+.messageText { color: #dcddde; font-size: 14px; }
+
+/* Actions */
+.actionButtons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.iconBtn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 5px;
+    transition: transform 0.2s;
+}
+
+.iconBtn:hover { transform: scale(1.2); }
+
+.checkBtn { color: #3ba55c; }
+.trashBtn { color: #ed4245; }
+
+.tableContainer {
+    background-color: #2f3136;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
