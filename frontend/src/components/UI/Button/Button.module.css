@@ -1,0 +1,43 @@
+.button {
+  padding: 12px 50px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 90px;
+  
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+}
+
+.primary {
+  background: linear-gradient(135deg, var(--industrial-gold), var(--industrial-gold-dark));
+  color: var(--discord-gray-dark);
+}
+
+.primary:hover {
+  transform: translateY(-2px);}
+
+.secondary {
+  background-color: var(--discord-gray-light);
+  color: var(--text-light);
+  border: 2px solid var(--industrial-gold);
+}
+
+.secondary:hover {
+  background-color: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,0 +1,416 @@
+.pageWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.content {
+  width: 100%;
+}
+
+/* Modal Form Overlay - MATCHING CLIENT STYLE */
+/* Modal Form Overlay - CENTERED & SCROLLABLE */
+.formContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* grey overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  overflow-y: auto; /* Allow scrolling if content is too tall */
+  padding: 20px; /* Padding around the form */
+}
+
+.formContent {
+  background: var(--discord-gray);
+  padding: 40px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh; /* Limit height to 90% of viewport */
+  overflow-y: auto; /* Scrollable content inside form */
+  text-align: center;
+  position: relative;
+  margin: auto; /* Center vertically when scrolling */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); /* Nice shadow for depth */
+}
+
+/* Smooth scrollbar for form content */
+.formContent::-webkit-scrollbar {
+  width: 8px;
+}
+
+.formContent::-webkit-scrollbar-thumb {
+  background: var(--discord-gray-light);
+  border-radius: 4px;
+}
+/* List Container */
+.listContainer {
+  width: 100%;
+}
+
+/* Header */
+.title {
+  font-size: 3rem;
+  color: var(--industrial-gold);
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: var(--text-gray);
+  margin-bottom: 30px;
+}
+
+/* Form Styles */
+.clientForm {
+  text-align: left;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formInput, .formTextarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 4px;
+  color: var(--text-light);
+  font-size: 14px;
+}
+
+.formInput::placeholder, .formTextarea::placeholder {
+  color: var(--text-gray);
+}
+
+.formInput:focus, .formTextarea:focus {
+  outline: none;
+  border-color: var(--industrial-gold);
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.formActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+/* Actions Container - For Add/Export Buttons */
+.actionsContainer {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--discord-gray-light);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Buttons */
+.primaryButton {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: var(--industrial-gold-dark);
+  transform: translateY(-1px);
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  background: transparent;
+  color: var(--text-gray);
+  border: 1px solid var(--discord-gray-light);
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: var(--discord-gray-light);
+  color: var(--text-light);
+}
+
+/* Action Buttons in Table */
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.editBtn, .deleteBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.editBtn {
+  color: var(--industrial-gold);
+}
+
+.editBtn:hover {
+  background: rgba(212, 175, 55, 0.1);
+  transform: scale(1.1);
+}
+
+.deleteBtn {
+  color: #e74c3c;
+}
+
+.deleteBtn:hover {
+  background: rgba(231, 76, 60, 0.1);
+  transform: scale(1.1);
+}
+
+/* Error Alert */
+.errorAlert {
+  background: #e74c3c;
+  color: white;
+  padding: 16px 20px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.errorContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.errorMessage {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  opacity: 0.8;
+}
+
+/* Loading / Empty States */
+.loadingState, .emptyState {
+  background: var(--discord-gray);
+  padding: 60px 40px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.loadingContent h2, .emptyContent h2 {
+  color: var(--industrial-gold);
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.loadingContent p, .emptyContent p {
+  color: var(--text-gray);
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+/* Pagination Info */
+.paginationInfoContainer {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--discord-gray);
+  border-radius: 8px;
+  border: 1px solid var(--discord-gray-light);
+}
+
+.paginationInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.resultsText {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.resultsText strong {
+  color: var(--industrial-gold);
+  font-weight: 600;
+}
+
+.searchInfo {
+  color: var(--text-gray);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.searchInfo strong {
+  color: var(--industrial-gold);
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* Form Input Errors */
+.inputError {
+  border-color: #e74c3c !important;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.3) !important;
+}
+
+.errorText {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 6px;
+  display: block;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 10px;
+  }
+  
+  .title {
+    font-size: 2rem;
+  }
+  
+  .formContent {
+    padding: 20px;
+    max-width: 90%;
+  }
+  
+  .formActions {
+    flex-direction: column;
+  }
+  
+  .actionsContainer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .buttonGroup {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .paginationInfo {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .resultsText, .searchInfo {
+    font-size: 0.85rem;
+  }
+  
+  .paginationInfoContainer {
+    padding: 0.75rem;
+    margin: 1rem 0;
+  }
+}
+/* Product Image in Form */
+.productImageContainer {
+  width: 100%;
+  margin-bottom: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--discord-gray-dark);
+  border: 2px solid var(--discord-gray-light);
+}
+
+.productImage {
+  width: 100%;
+  height: 400px; /* Changed from 250px to 400px */
+  object-fit: cover;
+  display: block;
+}
+
+.imagePlaceholder {
+  width: 100%;
+  height: 400px; /* Changed from 250px to 400px */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--discord-gray-dark);
+  color: var(--text-gray);
+}
+
+.imagePlaceholder span {
+  font-size: 5rem; /* Increased from 4rem */
+  margin-bottom: 10px;
+}
+
+.imagePlaceholder p {
+  font-size: 1rem;
+  margin: 0;
+  color: var(--text-gray);
+}
+
+/* Responsive image */
+@media (max-width: 768px) {
+  .productImage,
+  .imagePlaceholder {
+    height: 250px; /* Mobile height */
+  }
+  
+  .imagePlaceholder span {
+    font-size: 3rem;
+  }
+}

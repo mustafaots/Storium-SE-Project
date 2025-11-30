@@ -1,0 +1,59 @@
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--discord-gray-dark);
+  padding: 6px 15px; /* Reduced padding */
+  border-top: 1px solid var(--discord-gray-light);
+  gap: 12px; /* Reduced gap */
+  
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 50px; /* Fixed height */
+}
+
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  cursor: pointer;
+  padding: 8px 12px; /* Reduced padding */
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  min-width: 35px; /* Slightly smaller */
+}
+
+.navItem:hover {
+  background: var(--discord-gray-light);
+  color: var(--industrial-gold);
+  transform: translateY(-1px); /* Smaller lift */
+}
+
+.navItem.active {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+}
+
+.icon {
+  font-size: 1rem; /* Smaller icons */
+  margin-bottom: 1px; /* Reduced spacing */
+  transition: transform 0.3s ease;
+}
+
+.navItem:hover .icon {
+  transform: scale(1.05); /* More subtle scale */
+}
+
+.label {
+  font-size: .5rem; /* Smaller text */
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.3px; /* Tighter spacing */
+}

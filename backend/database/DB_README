@@ -1,0 +1,34 @@
+This is documentation on the database compartment of this software.
+
+#########################################################################################################################################################
+
+schema.dbio is a declarative sql friendly format to be used and displayed in the following website: `https://dbdiagram.io`
+schema.sql is the SQL code to be injected for constructing the local relational database.
+
+REMARK: run mysql commands in the cmd prompt, not powershell.
+
+Must run the cmd: `mysql -u root -p storium_ims_rdb < database/schema.sql;`
+
+REMARK: (BEFORE YOU RUN THE CMD)
+For consistency, use the namings and naming used in /backend/.env.example
+
+HOW TO CREATE THE DATABASE FROM SCRATCH:
+
+Enter mysql by running:                             `mysql -u root -p;`
+Enter your password: (simply set it to mysql)       `mysql`
+Create the local database:                          `create database storium_ims_rdb;`
+In the terminal, navigate to ./backend and run:     `mysql -u root -p storium_ims_rdb < database/schema.sql`
+
+Check that the database has been correctly created: `use storium_ims_rdb`
+                                                    `show tables`
+                                                
+#########################################################################################################################################################
+
+HOW TO IMPORT THE DATABASE VIA MIGRATION: (RECOMMENDED)
+
+I generated a backup from my local database into database/backup.sql using the cmd:     `mysqldump -u root -p storium_ims_rdb > database/backup.sql`
+Remark: I was in the /backend directory
+
+TO DO:
+How you import the schema:
+In the /backend directory, run the cmd:             `mysql -u root -p < database/backup.sql`

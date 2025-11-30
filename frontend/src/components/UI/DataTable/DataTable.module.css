@@ -1,0 +1,281 @@
+.table {
+    border: 1px solid #40444b;
+    border-radius: 6px; 
+    width: 100%;
+    overflow: hidden;
+    min-width: 600px;
+    margin-bottom: 20px;
+}
+
+.tableHeader {
+    display: grid;
+    background: linear-gradient(135deg, var(--discord-gray-light) 0%, var(--discord-gray) 100%);
+    border-bottom: 2px solid var(--industrial-gold);
+    grid-template-columns: inherit;
+}
+
+.headerCell {
+    padding: 14px;
+    font-weight: 700;
+    font-size: .85em;
+    color: var(--industrial-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 1px solid #40444b;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.headerCell:last-child {
+    border-right: none;
+}
+
+.tableBody {
+    background: var(--discord-gray-dark);
+}
+
+.tableRow {
+    display: grid;
+    border-bottom: 1px solid #40444b;
+    transition: all 0.3s ease;
+    grid-template-columns: inherit;
+}
+
+.tableRow:hover {
+    background: var(--discord-gray-light);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tableRow:last-child {
+    border-bottom: none;
+}
+
+.cell {
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid #40444b;
+    color: var(--text-light);
+    font-size: .85em;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.cell:last-child {
+    border-right: none;
+}
+
+/* Text truncation */
+.cell > * {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.cell {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* Ensure buttons don't get truncated */
+.cell .actions,
+.cell button,
+.cell a {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+    min-width: auto;
+    flex-shrink: 0;
+}
+
+/* Clickable Rows */
+.clickableRow {
+    cursor: pointer;
+}
+
+/* Loading State */
+.loadingState {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    background: var(--discord-gray);
+    border-radius: 6px;
+}
+
+.loadingContent p {
+    margin: 0;
+    color: var(--text-gray);
+    font-style: italic;
+    font-size: 14px;
+}
+
+/* Empty State */
+.emptyState {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    color: var(--text-gray);
+    font-style: italic;
+    background: var(--discord-gray);
+    border-radius: 6px;
+}
+
+.emptyMessage {
+    text-align: center;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+/* Table wrapper */
+.tableWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* NEW: Combined controls row */
+.controlsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Search Styles */
+.searchContainer {
+  position: relative;
+  max-width: 300px;
+  flex: 1;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 6px;
+  background: var(--discord-gray-dark);
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--industrial-gold);
+}
+
+.searchInput::placeholder {
+  color: var(--text-gray);
+}
+
+.clearSearch {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+}
+
+.clearSearch:hover {
+  color: var(--text-light);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .table {
+        font-size: 11px;
+        min-width: 500px;
+    }
+    
+    .headerCell,
+    .cell {
+        padding: 10px 6px;
+        font-size: 11px;
+    }
+    
+    .headerCell {
+        font-size: 10px;
+    }
+
+    .controlsRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .searchContainer {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .table {
+        min-width: 400px;
+    }
+    
+    .headerCell,
+    .cell {
+        padding: 8px 4px;
+        font-size: 10px;
+    }
+    
+    .headerCell {
+        font-size: 9px;
+    }
+}
+
+/* Search and Controls */
+.controlsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.searchBox {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-gray);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 6px;
+  color: var(--text-light);
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--industrial-gold);
+}
+
+.addButton {
+  white-space: nowrap;
+}
+
