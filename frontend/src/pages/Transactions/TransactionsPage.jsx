@@ -30,39 +30,47 @@ function TransactionsPage() {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    useEffect(() => {
-        // Fetch transactions from the backend API
-        const fetchTransactions = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                const data = await transactionsAPI.getTransactions();
-                setTransactions(data);
-            } catch (err) {
-                setError(err.message || 'Failed to fetch transactions');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchTransactions();
-    }, []);
-
-    const [activeTab, setActiveTab] = useState("all")
     const [searchQuery, setSearchQuery] = useState("")
     const [dateFilter, setDateFilter] = useState("today")
     const [filterType, setFilterType] = useState('mixed'); // mixed, automatic, manual
     const [searchTerm, setSearchTerm] = useState('');
     const [showExportModal, setShowExportModal] = useState(false);
-    const [showFilters, setShowFilters] = useState(false);
-    
+
+    useEffect(() => {
+        const fetchTransactions = async () => {
+        try {
+        setLoading(true);
+        setError(null);
+
+        const data = await transactionsAPI.getTransactions({
+            filterType,        // 'automatic' | 'manual' | 'mixed'
+            dateFilter,        // 'today' | 'week' | 'month' | 'all'
+            search: searchTerm // string from your search box
+        });
+
+        setTransactions(data);
+        } catch (err) {
+        setError(err.message || 'Failed to load transactions');
+        } finally {
+        setLoading(false);
+        }
+    };
+
+        fetchTransactions();
+  }, [filterType, dateFilter, searchTerm]);
+
+
+   
+
+
+    // handel Export CSV
     const handleExportCSV = () => {
         // Use the already filtered transactions (includes date, type, and search filters)
         const dataToExport = filteredTransactions.map(item => ({
             'Timestamp': item.timestamp,
             ...(filterType === 'automatic' && { 'Routine': `R${item.routine_id}` }),
             ...(filterType !== 'automatic' && { 'Type': item.is_automated ? `R${item.routine_id}` : 'Manual' }),
-            'Action': item.note
+            'Action': item.notes
         }));
         
         exportToCSV(dataToExport, 'transactions');
@@ -78,22 +86,24 @@ function TransactionsPage() {
             columns = [
                 { key: 'timestamp', label: 'Timestamp' },
                 { key: 'routine_id', label: 'Routine' },
-                { key: 'note', label: 'Action' }
+                { key: 'notes', label: 'Action' }
             ];
         } else if (filterType === 'manual') {
             columns = [
                 { key: 'timestamp', label: 'Timestamp' },
-                { key: 'note', label: 'Action' }
+                { key: 'notes', label: 'Action' }
             ];
         } else {
             // mixed
             columns = [
                 { key: 'timestamp', label: 'Timestamp' },
                 { key: 'type', label: 'Type' },
-                { key: 'note', label: 'Action' }
+                { key: 'notes', label: 'Action' }
             ];
         }
+
         
+
         // Transform data for PDF export
         const pdfData = filteredTransactions.map(item => ({
             ...item,
@@ -103,66 +113,8 @@ function TransactionsPage() {
         exportToPDF(pdfData, columns, 'Transactions Report', 'transactions');
         setShowExportModal(false);
     };
-    
-    // Filter transactions based on is_automated field
-    const getFilteredTransactions = () => {
-        if (filterType === 'automatic') {
-            return transactions.filter(t => t.is_automated === true);
-        } else if (filterType === 'manual') {
-            return transactions.filter(t => t.is_automated === false);
-        } else {
-            // mixed - return all
-            return transactions;
-        }
-    };
-    
-    // Helper function to check if transaction is within date range
-    const isWithinDateRange = (timestamp, dateFilter) => {
-        const txnDate = new Date(timestamp);
-        const today = new Date();
-        
-        // Reset time to midnight for accurate date comparison
-        today.setHours(0, 0, 0, 0);
-        txnDate.setHours(0, 0, 0, 0);
-        
-        if (dateFilter === 'today') {
-            return txnDate.getTime() === today.getTime();
-        } else if (dateFilter === 'week') {
-            // Current week (Monday to Sunday)
-            const startOfWeek = new Date(today);
-            startOfWeek.setDate(today.getDate() - today.getDay()); // Get Monday
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6); // Get Sunday
-            return txnDate >= startOfWeek && txnDate <= endOfWeek;
-        } else if (dateFilter === 'month') {
-            // Current month
-            return txnDate.getMonth() === today.getMonth() && 
-                   txnDate.getFullYear() === today.getFullYear();
-        } else {
-            // 'all' - include everything
-            return true;
-        }
-    };
 
-     const filteredTransactions = useMemo(() => {
-         let filtered = getFilteredTransactions();
-         
-         // Apply date filter
-         filtered = filtered.filter(transaction => 
-             isWithinDateRange(transaction.timestamp, dateFilter)
-         );
-         
-         // Apply search filter on note field
-         if (searchTerm) {
-             filtered = filtered.filter(transaction => 
-                 transaction.note.toLowerCase().includes(searchTerm.toLowerCase())
-             );
-         }
-         
-         return filtered;
-     }, [transactions, searchTerm, filterType, dateFilter]);
-
-    
+    const filteredTransactions = transactions;
 
     return (
         <div className={styles.pageWrapper}>
