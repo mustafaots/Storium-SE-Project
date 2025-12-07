@@ -5,9 +5,11 @@ import Table from '../../components/Layout/Table/table.jsx';
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import ExportModal from '../../components/UI/Export/export.jsx';
 import { exportToCSV, exportToPDF, prepareDataForExport } from '../../utils/export.js';
-import { useState, useMemo } from 'react';
+import { useState, useMemo , useEffect } from 'react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { transactionsAPI } from '../../utils/transactionsAPI';
+
 import { 
   FaSearch, 
   FaFilter, 
@@ -25,240 +27,26 @@ import {
 
 function TransactionsPage() {
     const activeItem = useActiveNavItem();
-     // Mock data based on your screenshot
-     const [transactions, setTransactions] = useState([
-    {
-        txn_id: 1,
-        is_automated: true,
-        stock_id: 145,
-        txn_type: 'outflow',
-        quantity: 20,
-        total_value: 400.00,
-        reference_number: 'ISS-001',
-        notes: 'Issued to Department C for medical procedures',
-        timestamp: '2025-11-27 10:26:05',
-        client_id: 3,
-        routine_id: 1,
-        note: 'Issued 20 units of Product ID #145 (Thermometers) to Department C for usage.'
-    },
-    {
-        txn_id: 2,
-        is_automated: true,
-        stock_id: 310,
-        txn_type: 'transfer',
-        quantity: 30,
-        total_value: 750.00,
-        reference_number: 'TRF-001',
-        notes: 'Space optimization reorganization',
-        timestamp: '2025-11-27 10:22:31',
-        from_slot: 15,
-        to_slot: 22,
-        routine_id: 3,
-        note: 'Transferred 30 units of Product ID #310 (IV Sets) from Aisle 1, Rack D → Aisle 2, Rack A due to space optimization.'
-    },
-    {
-        txn_id: 3,
-        is_automated: true,
-        stock_id: 278,
-        txn_type: 'inflow',
-        quantity: 50,
-        total_value: 1250.00,
-        reference_number: 'PO-78451',
-        notes: 'Regular monthly restocking',
-        timestamp: '2025-11-27 09:15:42',
-        source_id: 5,
-        routine_id: 1,
-        note: 'Restocked 50 units of Product ID #278 (Syringes) from Supplier MedEquip Inc.'
-    },
-    {
-        txn_id: 4,
-        is_automated: true,
-        stock_id: 145,
-        txn_type: 'adjustment',
-        quantity: -5,
-        total_value: -100.00,
-        reference_number: 'AUD-001',
-        notes: 'Discrepancy found during quarterly audit',
-        timestamp: '2025-10-26 15:45:18',
-        routine_id: 2,
-        note: 'Adjusted inventory count for Product ID #145 (Thermometers) - discrepancy found during audit.'
-    },
-    {
-        txn_id: 5,
-        is_automated: false,
-        stock_id: 189,
-        txn_type: 'inflow',
-        quantity: 100,
-        total_value: 2500.00,
-        reference_number: 'PO-78452',
-        notes: 'Emergency order for upcoming surgery',
-        timestamp: '2025-10-26 14:30:00',
-        source_id: 2,
-        note: 'Manual order: Received 100 units of Product ID #189 (Surgical Gloves) from HealthSupplies Co.'
-    },
-    {
-        txn_id: 6,
-        is_automated: false,
-        stock_id: 422,
-        txn_type: 'consumption',
-        quantity: 15,
-        total_value: 450.00,
-        reference_number: 'CON-001',
-        notes: 'Used in emergency room procedure',
-        timestamp: '2025-10-26 11:20:15',
-        client_id: 1,
-        note: 'Consumed 15 units of Product ID #422 (Bandages) during emergency treatment'
-    },
-    {
-        txn_id: 7,
-        is_automated: true,
-        stock_id: 310,
-        txn_type: 'outflow',
-        quantity: 10,
-        total_value: 250.00,
-        reference_number: 'ISS-002',
-        notes: 'Routine issuance to pediatric ward',
-        timestamp: '2025-10-25 16:10:33',
-        client_id: 4,
-        routine_id: 1,
-        note: 'Automated issuance: 10 units of Product ID #310 (IV Sets) to Pediatric Ward'
-    },
-    {
-        txn_id: 8,
-        is_automated: false,
-        stock_id: 278,
-        txn_type: 'transfer',
-        quantity: 25,
-        total_value: 625.00,
-        reference_number: 'TRF-002',
-        notes: 'Moving to high-demand area',
-        timestamp: '2025-10-25 13:45:22',
-        from_slot: 8,
-        to_slot: 12,
-        note: 'Manual transfer: 25 units of Product ID #278 (Syringes) moved to ER storage'
-    },
-    {
-        txn_id: 9,
-        is_automated: true,
-        stock_id: 533,
-        txn_type: 'inflow',
-        quantity: 75,
-        total_value: 1875.00,
-        reference_number: 'PO-78453',
-        notes: 'Scheduled weekly delivery',
-        timestamp: '2025-10-25 09:00:00',
-        source_id: 3,
-        routine_id: 4,
-        note: 'Automated restock: 75 units of Product ID #533 (Alcohol Swabs) received from MedSupply Ltd.'
-    },
-    {
-        txn_id: 10,
-        is_automated: false,
-        stock_id: 189,
-        txn_type: 'adjustment',
-        quantity: 12,
-        total_value: 300.00,
-        reference_number: 'ADJ-001',
-        notes: 'Found extra boxes during inventory check',
-        timestamp: '2025-10-24 17:30:45',
-        note: 'Manual adjustment: Added 12 units of Product ID #189 (Surgical Gloves) found in overflow storage'
-    },
-    {
-        txn_id: 11,
-        is_automated: true,
-        stock_id: 422,
-        txn_type: 'consumption',
-        quantity: 8,
-        total_value: 240.00,
-        reference_number: 'CON-002',
-        notes: 'Daily ward consumption',
-        timestamp: '2025-10-24 14:15:20',
-        client_id: 2,
-        routine_id: 5,
-        note: 'Automated consumption: 8 units of Product ID #422 (Bandages) used in General Ward'
-    },
-    {
-        txn_id: 12,
-        is_automated: false,
-        stock_id: 145,
-        txn_type: 'outflow',
-        quantity: 35,
-        total_value: 700.00,
-        reference_number: 'ISS-003',
-        notes: 'Bulk issue to outpatient department',
-        timestamp: '2025-10-24 10:05:10',
-        client_id: 6,
-        note: 'Manual issue: 35 units of Product ID #145 (Thermometers) to Outpatient Department'
-    },
-    {
-        txn_id: 13,
-        is_automated: true,
-        stock_id: 310,
-        txn_type: 'transfer',
-        quantity: 20,
-        total_value: 500.00,
-        reference_number: 'TRF-003',
-        notes: 'Optimizing storage locations',
-        timestamp: '2025-10-23 15:40:18',
-        from_slot: 22,
-        to_slot: 18,
-        routine_id: 3,
-        note: 'Automated transfer: 20 units of Product ID #310 (IV Sets) relocated for better accessibility'
-    },
-    {
-        txn_id: 14,
-        is_automated: false,
-        stock_id: 533,
-        txn_type: 'inflow',
-        quantity: 200,
-        total_value: 5000.00,
-        reference_number: 'PO-78454',
-        notes: 'Bulk purchase for upcoming project',
-        timestamp: '2025-10-23 11:25:30',
-        source_id: 1,
-        note: 'Manual bulk order: 200 units of Product ID #533 (Alcohol Swabs) from PrimeMedical Corp.'
-    },
-    {
-        txn_id: 15,
-        is_automated: true,
-        stock_id: 278,
-        txn_type: 'adjustment',
-        quantity: -3,
-        total_value: -75.00,
-        reference_number: 'AUD-002',
-        notes: 'Damaged items identified',
-        timestamp: '2025-10-22 16:55:42',
-        routine_id: 2,
-        note: 'Automated adjustment: Removed 3 damaged units of Product ID #278 (Syringes) from inventory'
-    },
-    {
-        txn_id: 16,
-        is_automated: false,
-        stock_id: 145,
-        txn_type: 'outflow',
-        quantity: 15,
-        total_value: 300.00,
-        reference_number: 'ISS-004',
-        notes: 'Manual issue to Emergency Department',
-        timestamp: '2025-11-27 14:30:22',
-        client_id: 2,
-        note: 'Manual issue: 15 units of Product ID #145 (Thermometers) to Emergency Department'
-    },
-    {
-        txn_id: 17,
-        is_automated: true,
-        stock_id: 533,
-        txn_type: 'inflow',
-        quantity: 60,
-        total_value: 1500.00,
-        reference_number: 'PO-78455',
-        notes: 'Routine delivery today',
-        timestamp: '2025-11-25 08:45:33',
-        source_id: 3,
-        routine_id: 4,
-        note: 'Automated restock: 60 units of Product ID #533 (Alcohol Swabs) received today'
-    }
-]);
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    useEffect(() => {
+        // Fetch transactions from the backend API
+        const fetchTransactions = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const data = await transactionsAPI.getTransactions();
+                setTransactions(data);
+            } catch (err) {
+                setError(err.message || 'Failed to fetch transactions');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTransactions();
+    }, []);
 
     const [activeTab, setActiveTab] = useState("all")
     const [searchQuery, setSearchQuery] = useState("")
@@ -385,7 +173,7 @@ function TransactionsPage() {
                           title="TRANSACTIONS" 
                           subtitle="Manage and track all inventory transactions" 
                           icon={<FaExchangeAlt size={30}/>}
-                          size='medium'
+                          size='small'
                           align='left'
                         />
 
@@ -460,10 +248,14 @@ function TransactionsPage() {
                             </div>
                       
                            {/* Transactions Table */}
+                           {loading && <p>Loading transactions...</p>}
+                           {error && <p style={{ color: 'red' }}>{error}</p>}
+                                {!loading && !error && (
                                     <Table 
                                         data={filteredTransactions}
                                         filterType={filterType}
                                     />
+                                 )}
                     </div>
                 {/* </div> */}
             </div>

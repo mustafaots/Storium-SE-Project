@@ -30,11 +30,6 @@
   margin-bottom: 70px;
 }
 
-.comingSoon {
-  background: var(--discord-gray);
-  padding: 20px;
-  text-align: center;
-}
 
 .transactionsContainer {
     background: var(--discord-gray-dark);
