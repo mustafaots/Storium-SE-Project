@@ -1,4 +1,5 @@
 import { clientsHelpers } from '../utils/clientsHelpers';
+import { FaTrashAlt , FaEdit } from 'react-icons/fa';
 
 export const clientsConfig = {
   // Table columns configuration
@@ -49,7 +50,7 @@ export const clientsConfig = {
             }}
             className={styles.editButton}
           >
-            Edit
+            <FaEdit/>
           </button>
           <button 
             onClick={(e) => {
@@ -58,7 +59,7 @@ export const clientsConfig = {
             }}
             className={styles.deleteButton}
           >
-            Delete
+            <FaTrashAlt/>
           </button>
         </div>
       )

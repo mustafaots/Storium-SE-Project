@@ -44,14 +44,14 @@ const ALERT_SEVERITIES = {
 // Default pagination settings
 const PAGINATION = {
   DEFAULT_PAGE: 1,
-  DEFAULT_LIMIT: 10,
+  DEFAULT_LIMIT: 9,
   MAX_LIMIT: 100
 };
 
 // Measurement units
 const MEASUREMENT_UNITS = ['pcs', 'kg', 'g', 'lb', 'oz', 'liters', 'ml', 'boxes', 'pallets'];
 
-module.exports = {
+const constants = {
   INVENTORY_SCOPES,
   PRODUCT_TYPES,
   TRANSACTION_TYPES,
@@ -60,3 +60,5 @@ module.exports = {
   PAGINATION,
   MEASUREMENT_UNITS
 };
+
+export { constants };

@@ -2,7 +2,7 @@
  * Frontend error handling utilities
  */
 
-export const errorHandler = {
+const errorHandler = {
   handleApiError: (error, customMessage = 'An error occurred') => {
     console.error('API Error:', error);
     
@@ -13,6 +13,8 @@ export const errorHandler = {
     return error.message || customMessage;
   },
 };
+
+export default errorHandler;
 
 // Higher-order function for API error handling
 export const withErrorHandling = (apiFunction) => {

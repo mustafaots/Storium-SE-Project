@@ -1,17 +1,19 @@
 .button {
-  padding: 15px 60px;
+  padding: 12px 50px;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 1px;
-  width: 100px;
+  width: 90px;
   
   display: inline-flex;
   justify-content: center;
+  align-items: center;
+  gap: 8px;
   line-height: 1;
 }
 
@@ -32,4 +34,10 @@
 .secondary:hover {
   background-color: var(--industrial-gold);
   color: var(--discord-gray-dark);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

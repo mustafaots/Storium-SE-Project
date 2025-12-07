@@ -1,33 +1,158 @@
+/* --- LAYOUT FIX (Matching RoutinesPage) --- */
 .pageWrapper {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    background-color: #36393f;
+    height: 100vh; /* Force full screen height */
+    width: 100vw;  /* Force full screen width */
+    overflow: hidden; /* Prevent body scrolling */
+    color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
 }
 
 .mainContent {
-  flex: 1; /* Takes up all available space */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    flex: 1;
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    
+    /* Scrollbar Logic: Scroll INSIDE this div only */
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #202225 #2f3136;
 }
 
-.comingSoon {
-  background: var(--discord-gray);
-  padding: 20px;
-  text-align: center;
+/* Custom Scrollbar Styling */
+.mainContent::-webkit-scrollbar { width: 8px; }
+.mainContent::-webkit-scrollbar-track { background: #2f3136; }
+.mainContent::-webkit-scrollbar-thumb { background-color: #202225; border-radius: 4px; }
+
+/* Header Wrapper */
+.headerWrapper {
+    margin-bottom: 25px;
+    border-bottom: 1px solid #40444b; /* Optional: Separator line */
+    padding-bottom: 15px;
 }
 
-.content {
-  color: var(--text-light);
+/* Filters */
+.filterControls {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 25px;
+    align-items: flex-end;
 }
 
-.title {
-  font-size: 3rem;
-  color: var(--industrial-gold);
-  margin-bottom: 20px;
+.filterGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.subtitle {
-  font-size: 1.2rem;
-  color: var(--text-gray);
+.filterGroup label {
+    color: #72767d;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.filterGroup select {
+    background-color: #202225; /* Darker input bg to match other pages */
+    color: #ffffff;
+    border: 1px solid #40444b;
+    padding: 10px 15px;
+    border-radius: 4px;
+    min-width: 160px;
+    cursor: pointer;
+    outline: none;
+}
+
+/* Status Buttons */
+.statusGroup {
+    display: flex;
+    gap: 10px;
+}
+
+.statusBtn {
+    background: transparent;
+    border: 1px solid #40444b;
+    color: #b9bbbe;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.statusBtn:hover {
+    border-color: #f0b90b;
+    color: #fff;
+}
+
+.statusBtn.active {
+    background-color: #f0b90b;
+    color: #000;
+    font-weight: bold;
+    border-color: #f0b90b;
+}
+
+/* --- Table Content Styles --- */
+
+/* Severity */
+.severityCell { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 13px; }
+.sevCritical { color: #ed4245; } /* Red */
+.sevWarning { color: #f0b90b; } /* Orange */
+.sevInfo { color: #5865f2; }    /* Blue */
+
+/* Timestamp */
+.timestampText { color: #b9bbbe; font-size: 14px; }
+.sortHeader { display: flex; align-items: center; gap: 5px; }
+
+/* Badges (Type) */
+.badge {
+    padding: 5px 12px;
+    border-radius: 4px; /* Squared corners like Routines page */
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+    display: inline-block;
+    min-width: 90px;
+    text-align: center;
+}
+
+.lowstock { background-color: #ed4245; }
+.expiry { background-color: #f0b90b; }
+.overstock { background-color: #5865f2; }
+.reorder { background-color: #3ba55c; }
+
+/* Message */
+.messageText { color: #dcddde; font-size: 14px; }
+
+/* Actions */
+.actionButtons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.iconBtn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 5px;
+    color: #b9bbbe;
+    transition: transform 0.2s, color 0.2s;
+}
+
+.iconBtn:hover { transform: scale(1.2); }
+
+.checkBtn:hover { color: #3ba55c; }
+.trashBtn:hover { color: #ed4245; }
+
+.tableContainer {
+    background-color: #2f3136;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
