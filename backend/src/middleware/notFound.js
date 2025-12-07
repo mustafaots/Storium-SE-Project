@@ -1,4 +1,4 @@
-import errorResponse from '../utils/apiResponse.js';
+import apiResponse from '../utils/apiResponse.js';
 
 /**
  * Handles requests to routes that don't exist
@@ -6,7 +6,7 @@ import errorResponse from '../utils/apiResponse.js';
  */
 const notFoundHandler = (req, res) => {
   res.status(404).json(
-    errorResponse(`Route not found: ${req.method} ${req.originalUrl}`)
+    apiResponse.errorResponse(`Route not found: ${req.method} ${req.originalUrl}`)
   );
 };
 
