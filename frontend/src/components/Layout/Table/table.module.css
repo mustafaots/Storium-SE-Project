@@ -1,0 +1,99 @@
+.table {
+    border: 1px solid #40444b;
+    border-radius: 6px; 
+    width: 100%;
+    overflow: hidden;
+    /* background:#1971c2; */
+    /* background: var(--discord-gray); */
+}
+
+.tableHeader {
+    display: grid;
+    grid-template-columns: 200px 120px 1fr;
+    background: linear-gradient(135deg, var(--discord-gray-light) 0%, var(--discord-gray) 100%);
+    border-bottom: 2px solid var(--industrial-gold);
+}
+
+.headerCell {
+    padding: 16px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--industrial-gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-right: 1px solid #40444b;
+}
+
+.headerCell:last-child {
+    border-right: none;
+}
+
+.tableBody {
+    /* background: var(--discord-gray); */
+    background:var(--discord-gray-dark) ;
+}
+
+.tableRow {
+    display: grid;
+    grid-template-columns: 200px 120px 1fr;
+    border-bottom: 1px solid #40444b;
+    transition: all 0.3s ease;
+}
+
+.tableRow:hover {
+    background: var(--discord-gray-light);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tableRow:last-child {
+    border-bottom: none;
+}
+
+.cell {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid #40444b;
+    color: var(--text-light);
+}
+
+.cell:last-child {
+    border-right: none;
+}
+
+.routineBadge {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.userIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--discord-gray-light);
+  border-radius: 50%;
+  color: var(--industrial-gold);
+  font-size: 16px;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  color: var(--text-gray);
+  font-style: italic;
+}
+
+.emptyMessage {
+  text-align: center;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
