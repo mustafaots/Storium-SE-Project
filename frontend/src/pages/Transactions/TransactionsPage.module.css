@@ -417,18 +417,24 @@
     font-weight: 400;
 }
 
-.paginationInfo {
-    margin-top: 20px;
-    text-align: center;
-    color: var(--text-gray);
-    font-size: 13px;
-    padding: 16px;
-    background: var(--discord-gray-light);
-    border-radius: 6px;
-    border: 1px solid #40444b;
-    font-weight: 500;
+/* Pagination Info */
+.paginationInfoContainer {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--discord-gray);
+  border-radius: 8px;
+  border: 1px solid var(--discord-gray-light);
 }
 
+.paginationInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
 /* Responsive Design */
 @media (max-width: 768px) {
     .mainContent {
@@ -504,7 +510,26 @@
         padding: 4px 8px;
     }
 }
-
+/* Responsive */
+@media (max-width: 768px) {
+  
+  
+  .actionsContainer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  
+  .paginationInfo {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .paginationInfoContainer {
+    padding: 0.75rem;
+    margin: 1rem 0;
+  }
+}
 /* Custom Scrollbar for Webkit browsers */
 .transactionsTable::-webkit-scrollbar {
     width: 8px;

@@ -2,12 +2,11 @@ import { TransactionsModel } from '../models/transactions.model.js';
 
 export const TransactionsService = {
   async getTransactions(filters = {}) {
-    const { filterType, dateFilter, search } = filters;
+    const { filterType, dateFilter, search, page = 1, pageSize = 10 } = filters;
 
     const whereClauses = [];
     const params = [];
 
-    // Automatic / manual / mixed
     if (filterType === 'automatic') {
       whereClauses.push('is_automated = ?');
       params.push(1);
@@ -15,20 +14,15 @@ export const TransactionsService = {
       whereClauses.push('is_automated = ?');
       params.push(0);
     }
-    // 'mixed' or undefined → no is_automated condition
 
-    // Date filter based on `timestamp`
     if (dateFilter === 'today') {
       whereClauses.push('DATE(`timestamp`) = CURDATE()');
     } else if (dateFilter === 'week') {
-      // current ISO week
-      whereClauses.push('YEARWEEK(`timestamp`, 1) = YEARWEEK(CURDATE(), 1)');
+      whereClauses.push('`timestamp` >= NOW() - INTERVAL 7 DAY');
     } else if (dateFilter === 'month') {
       whereClauses.push('YEAR(`timestamp`) = YEAR(CURDATE()) AND MONTH(`timestamp`) = MONTH(CURDATE())');
     }
-    // 'all' or undefined → no date condition
 
-    // Search in notes or reference_number
     if (search && search.trim() !== '') {
       whereClauses.push('(notes LIKE ? OR reference_number LIKE ?)');
       const like = `%${search.trim()}%`;
@@ -37,10 +31,13 @@ export const TransactionsService = {
 
     const whereSql = whereClauses.length ? 'WHERE ' + whereClauses.join(' AND ') : '';
 
+    const limit = Number(pageSize) || 10;
+    const offset = ((Number(page) || 1) - 1) * limit;
+
     return new Promise((resolve, reject) => {
-      TransactionsModel.getByFilter(whereSql, params, (err, rows) => {
+      TransactionsModel.getPaginated(whereSql, params, { limit, offset }, (err, result) => {
         if (err) return reject(err);
-        resolve(rows);
+        resolve(result); // { rows, totalCount }
       });
     });
   }

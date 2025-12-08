@@ -9,7 +9,8 @@ import { useState, useMemo , useEffect } from 'react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { transactionsAPI } from '../../utils/transactionsAPI';
-
+import DataTable from '../../components/UI/DataTable/DataTable.jsx';
+import { transactionsConfig } from '../../config/transactionsConfig.jsx';
 import { 
   FaSearch, 
   FaFilter, 
@@ -19,6 +20,7 @@ import {
   FaEdit, 
   FaTrashAlt, 
   FaEye, 
+  FaUser,
   FaPlus, 
   FaChevronDown, 
   FaChevronUp ,
@@ -31,37 +33,61 @@ function TransactionsPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState("")
-    const [dateFilter, setDateFilter] = useState("today")
+    const [dateFilter, setDateFilter] = useState("all")
     const [filterType, setFilterType] = useState('mixed'); // mixed, automatic, manual
     const [searchTerm, setSearchTerm] = useState('');
     const [showExportModal, setShowExportModal] = useState(false);
+    const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 10,
+    totalCount: 0,
+    totalPages: 1
+    });
+
 
     useEffect(() => {
         const fetchTransactions = async () => {
-        try {
-        setLoading(true);
-        setError(null);
+            try {
+            setLoading(true);
+            setError(null);
 
-        const data = await transactionsAPI.getTransactions({
-            filterType,        // 'automatic' | 'manual' | 'mixed'
-            dateFilter,        // 'today' | 'week' | 'month' | 'all'
-            search: searchTerm // string from your search box
-        });
+            const response = await transactionsAPI.getTransactions({
+                filterType,
+                dateFilter,
+                search: searchTerm,
+                page: pagination.currentPage,
+                pageSize: pagination.pageSize
+            });
+            console.log('transactions response', response);
 
-        setTransactions(data);
-        } catch (err) {
-        setError(err.message || 'Failed to load transactions');
-        } finally {
-        setLoading(false);
-        }
-    };
+            if (response.success) {
+                setTransactions(response.data || []);
+
+                if (response.pagination) {
+                setPagination(prev => ({
+                    ...prev,
+                    currentPage: response.pagination.currentPage,
+                    pageSize: response.pagination.pageSize,
+                    totalCount: response.pagination.totalCount,
+                    totalPages: response.pagination.totalPages
+                }));
+                }
+            } else {
+                setError(response.error || 'Failed to load transactions');
+            }
+            } catch (err) {
+            setError(err.message || 'Failed to load transactions');
+            } finally {
+            setLoading(false);
+            }
+        };
 
         fetchTransactions();
-  }, [filterType, dateFilter, searchTerm]);
+        }, [filterType, dateFilter, searchTerm, pagination.currentPage, pagination.pageSize]);
 
-
-   
-
+        useEffect(() => {
+        console.log('pagination state', pagination);
+        }, [pagination]);
 
     // handel Export CSV
     const handleExportCSV = () => {
@@ -115,6 +141,19 @@ function TransactionsPage() {
     };
 
     const filteredTransactions = transactions;
+    const transactionColumns = transactionsConfig.columns(styles, filterType);
+
+    const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, currentPage: newPage }));
+    };
+
+    const handlePageSizeChange = (newSize) => {
+    setPagination(prev => ({
+        ...prev,
+        pageSize: newSize,
+        currentPage: 1
+    }));
+    };
 
     return (
         <div className={styles.pageWrapper}>
@@ -202,12 +241,22 @@ function TransactionsPage() {
                            {/* Transactions Table */}
                            {loading && <p>Loading transactions...</p>}
                            {error && <p style={{ color: 'red' }}>{error}</p>}
-                                {!loading && !error && (
-                                    <Table 
+                               {!loading && !error && (
+                                    <DataTable
                                         data={filteredTransactions}
-                                        filterType={filterType}
-                                    />
-                                 )}
+                                        columns={transactionColumns}
+                                        keyField="txn_id"
+                                        loading={loading}
+                                        emptyMessage="No transactions found"
+                                        className={styles.transactionsTable}
+                                        pagination={pagination}
+                                        onPageChange={handlePageChange}
+                                        onPageSizeChange={handlePageSizeChange}
+                                        showPagination={true}
+                                        showSearch={false}
+                                        />
+                                    )}
+
                     </div>
                 {/* </div> */}
             </div>
