@@ -5,7 +5,7 @@ const clientsService = {
   // Keep existing method for backward compatibility
   getAll: () => Client.getAll(),
   
-  // NEW: Get paginated clients with total count
+  // Get paginated clients with total count (supports search)
   getAllPaginated: async (
     page = constants.PAGINATION.DEFAULT_PAGE,
     limit = constants.PAGINATION.DEFAULT_LIMIT,
@@ -34,7 +34,7 @@ const clientsService = {
     };
   },
   
-  // Keep existing methods unchanged
+  // Pass-through CRUD helpers
   getById: (id) => Client.getById(id),
   create: (clientData) => Client.create(clientData),
   update: (id, clientData) => Client.update(id, clientData),

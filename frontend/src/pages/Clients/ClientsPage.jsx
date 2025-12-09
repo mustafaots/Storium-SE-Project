@@ -1,5 +1,5 @@
-// Necessary imports
-import { useEffect } from 'react'; // ← ADD useEffect back
+// Clients page: wires search, pagination, and CRUD handlers into the shared DataTable
+import { useEffect } from 'react';
 import NavBar from '../../components/UI/NavBar/NavBar';
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import Header from '../../components/UI/Header/Header';
@@ -37,15 +37,15 @@ function ClientsPage() {
     handlePageSizeChange
   } = useClients();
 
-  // NEW: Add search hook
+  // Track search term with debounce so we don't spam requests
   const search = useTableSearch('');
 
-  // NEW: Handle search changes - triggers API call
+  // When debounced search changes, reload from page 1 with current page size
   useEffect(() => {
     loadClients(1, pagination.pageSize, search.debouncedSearch);
   }, [search.debouncedSearch, loadClients, pagination.pageSize]);
 
-  // Handler functions
+  // Centralized handlers so child components stay dumb
   const handlers = {
     onEdit: (client) => clientsHandlers.handleEdit(
       client, setCurrentClient, setIsEditing, setShowForm, setError

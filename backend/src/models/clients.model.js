@@ -12,7 +12,7 @@ export const Client = {
     });
   },
 
-  // NEW: Get paginated clients
+  // Get paginated clients with optional search filter
   getAllPaginated: (page = 1, limit = 10, search = '') => {
     return new Promise((resolve, reject) => {
       const { limit: queryLimit, offset } = buildPagination(page, limit);
@@ -35,7 +35,7 @@ export const Client = {
     });
   },
 
-  // NEW: Get total count of clients
+  // Count clients matching search filter (keeps pagination in sync)
   getTotalCount: (search = '') => {
     return new Promise((resolve, reject) => {
       const { conditions, params } = buildSearchConditions(

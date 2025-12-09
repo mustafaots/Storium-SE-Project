@@ -1,7 +1,7 @@
 import { clientsAPI } from '../utils/clientsAPI.js';
 
 export const clientsController = {
-  // UPDATED: Load clients with pagination using clientsAPI
+  // Load clients with pagination + search; updates both rows and pagination state
   loadClients: async (
     setClients,
     setLoading,
@@ -38,7 +38,7 @@ export const clientsController = {
     }
   },
 
-  // UPDATED: Delete client using clientsAPI
+  // Delete client then let caller decide how to refresh
   deleteClient: async (id, setClients, setLoading, setError, onSuccess) => {
     try {
       setLoading(true);
@@ -56,7 +56,7 @@ export const clientsController = {
     }
   },
 
-  // UPDATED: Create client using clientsAPI
+  // Create client and invoke caller callbacks (UI success + refresh)
   createClient: async (formData, onSuccess, onError, onFormSuccess) => {
     try {
       const response = await clientsAPI.create(formData);
@@ -72,7 +72,7 @@ export const clientsController = {
     }
   },
 
-  // UPDATED: Update client using clientsAPI
+  // Update client and invoke caller callbacks (UI success + refresh)
   updateClient: async (id, formData, onSuccess, onError, onFormSuccess) => {
     try {
       const response = await clientsAPI.update(id, formData);
