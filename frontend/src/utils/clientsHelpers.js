@@ -30,6 +30,16 @@ export const clientsHelpers = {
     return errors;
   },
 
+  // Format phone for display: 4-2-2-2 grouping (e.g., 0556 26 88 76)
+  formatPhone: (phone) => {
+    if (!phone) return '-';
+    const digits = String(phone).replace(/\D/g, '');
+    if (digits.length === 10) {
+      return `${digits.slice(0, 4)} ${digits.slice(4, 6)} ${digits.slice(6, 8)} ${digits.slice(8, 10)}`;
+    }
+    return phone;
+  },
+
   // Filter clients by search term
   filterClients: (clients, searchTerm) => {
     if (!searchTerm.trim()) return clients;

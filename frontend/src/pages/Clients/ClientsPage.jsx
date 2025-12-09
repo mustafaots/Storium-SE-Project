@@ -1,5 +1,5 @@
-// Necessary imports
-import { useEffect } from 'react'; // ← ADD useEffect back
+// Clients page: wires search, pagination, and CRUD handlers into the shared DataTable
+import { useEffect } from 'react';
 import NavBar from '../../components/UI/NavBar/NavBar';
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import Header from '../../components/UI/Header/Header';
@@ -12,6 +12,7 @@ import { FaUsers, FaFile, FaUserPlus } from 'react-icons/fa';
 import { useClients } from '../../hooks/useClients';
 import { clientsHandlers } from '../../handlers/clientsHandlers';
 import { clientsConfig } from '../../config/clientsConfig';
+import { clientsController } from '../../controllers/clientsController';
 import useTableSearch from '../../hooks/useTableSearch'; // ← ADD this import
 import styles from './ClientsPage.module.css';
 
@@ -36,15 +37,15 @@ function ClientsPage() {
     handlePageSizeChange
   } = useClients();
 
-  // NEW: Add search hook
+  // Track search term with debounce so we don't spam requests
   const search = useTableSearch('');
 
-  // NEW: Handle search changes - triggers API call
+  // When debounced search changes, reload from page 1 with current page size
   useEffect(() => {
     loadClients(1, pagination.pageSize, search.debouncedSearch);
   }, [search.debouncedSearch, loadClients, pagination.pageSize]);
 
-  // Handler functions
+  // Centralized handlers so child components stay dumb
   const handlers = {
     onEdit: (client) => clientsHandlers.handleEdit(
       client, setCurrentClient, setIsEditing, setShowForm, setError
@@ -75,8 +76,8 @@ function ClientsPage() {
       currentClient.client_id, formData, () => {}, setError, handlers.onFormSuccess
     ),
 
-    onPageChange: handlePageChange,
-    onPageSizeChange: handlePageSizeChange
+    onPageChange: (page) => handlePageChange(page, search.debouncedSearch),
+    onPageSizeChange: (size) => handlePageSizeChange(size, search.debouncedSearch)
   };
 
   // Get table columns configuration
@@ -111,8 +112,6 @@ function ClientsPage() {
 
               {loading && clients.length === 0 ? (
                 <LoadingState />
-              ) : clients.length === 0 ? (
-                <EmptyState onAddClient={handlers.onNewClient} />
               ) : (
                 <>
                   <DataTable
@@ -120,18 +119,32 @@ function ClientsPage() {
                     columns={clientColumns}
                     keyField="client_id"
                     loading={loading}
-                    emptyMessage="No clients found"
+                    emptyMessage={search.debouncedSearch ? 'No clients found for this search' : 'No clients found'}
                     className={styles.clientsTable}
                     // Pagination props
                     pagination={pagination}
-                    onPageChange={handlePageChange}
-                    onPageSizeChange={handlePageSizeChange}
+                    onPageChange={(page) => handlePageChange(page, search.debouncedSearch)}
+                    onPageSizeChange={(size) => handlePageSizeChange(size, search.debouncedSearch)}
                     showPagination={true}
                     // Search props
                     showSearch={true}
                     searchPlaceholder="Search clients..."
                     onSearchChange={search.setSearchTerm}
                     searchTerm={search.searchTerm}
+                    rightControls={(
+                      <div className={styles.buttonGroupInline}>
+                        <Button variant='secondary' leadingIcon={<FaUserPlus />} onClick={handlers.onNewClient}>
+                          Add
+                        </Button>
+                        <Button 
+                          onClick={()=>{}}
+                          variant="primary"
+                          leadingIcon={<FaFile />}
+                        >
+                          Export
+                        </Button>
+                      </div>
+                    )}
                   />
 
                   {/* NEW: Separate container for pagination info */}
@@ -150,21 +163,7 @@ function ClientsPage() {
                     </div>
                   )}
 
-                  {/* UPDATED: Separate containers for buttons and pagination info */}
-                  <div className={styles.actionsContainer}>
-                    <div className={styles.buttonGroup}>
-                      <Button variant='secondary' leadingIcon={<FaUserPlus />} onClick={handlers.onNewClient}>
-                        Add
-                      </Button>
-                      <Button 
-                        onClick={()=>{}}
-                        variant="primary"
-                        leadingIcon={<FaFile />}
-                      >
-                        Export
-                      </Button>
-                    </div>
-                  </div>
+                  {/* Buttons now live inline with the search bar via rightControls */}
                 </>
               )}
             </div>
@@ -194,18 +193,6 @@ const LoadingState = () => (
     <div className={styles.loadingContent}>
       <h2>Loading Clients...</h2>
       <p>Please wait while we fetch your client data</p>
-    </div>
-  </div>
-);
-
-const EmptyState = ({ onAddClient }) => (
-  <div className={styles.emptyState}>
-    <div className={styles.emptyContent}>
-      <h2>No Clients Found</h2>
-      <p>Create your first client to get started</p>
-      <button onClick={onAddClient} className={styles.primaryButton}>
-        Add Your First Client
-      </button>
     </div>
   </div>
 );

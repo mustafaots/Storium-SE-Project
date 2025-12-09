@@ -2,7 +2,7 @@ import { clientsHelpers } from '../utils/clientsHelpers';
 import { FaTrashAlt , FaEdit } from 'react-icons/fa';
 
 export const clientsConfig = {
-  // Table columns configuration
+  // Table columns configuration for clients DataTable
   columns: (styles, handlers) => [
     {
       key: 'client_id',
@@ -22,7 +22,7 @@ export const clientsConfig = {
     {
       key: 'contact_phone',
       header: 'Phone',
-      render: (client) => client.contact_phone || '-'
+      render: (client) => clientsHelpers.formatPhone(client.contact_phone)
     },
     {
       key: 'address',
