@@ -32,13 +32,13 @@ const formatDate = (dateString) => {
 const formatPhone = (phone) => {
   if (!phone) return 'N/A';
   
-  // Simple formatting for US numbers, you can expand this
+  // Format 10-digit numbers as 4-2-2-2 blocks (e.g., 0556 26 88 76)
   const cleaned = phone.replace(/\D/g, '');
   if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 6)} ${cleaned.slice(6, 8)} ${cleaned.slice(8, 10)}`;
   }
-  
-  return phone; // Return as-is for international numbers
+
+  return phone; // Fallback: return as-is for other lengths
 };
 
 // Truncate long text with ellipsis
