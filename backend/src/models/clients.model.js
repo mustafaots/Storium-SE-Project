@@ -1,5 +1,5 @@
 import connection from '../config/database.js';
-import { buildPagination } from '../utils/database.js';
+import { buildPagination, buildSearchConditions } from '../utils/database.js';
 
 export const Client = {
   // Get all clients (keep existing for backward compatibility)
@@ -13,13 +13,20 @@ export const Client = {
   },
 
   // NEW: Get paginated clients
-  getAllPaginated: (page = 1, limit = 10) => {
+  getAllPaginated: (page = 1, limit = 10, search = '') => {
     return new Promise((resolve, reject) => {
       const { limit: queryLimit, offset } = buildPagination(page, limit);
+      const { conditions, params } = buildSearchConditions(
+        ['client_name', 'contact_email', 'contact_phone', 'address'],
+        search
+      );
+
+      const whereClause = conditions ? `WHERE ${conditions}` : '';
+      const queryParams = [...params, queryLimit, offset];
       
       connection.query(
-        'SELECT * FROM clients ORDER BY created_at DESC LIMIT ? OFFSET ?',
-        [queryLimit, offset],
+        `SELECT * FROM clients ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        queryParams,
         (err, results) => {
           if (err) reject(err);
           else resolve(results);
@@ -29,12 +36,23 @@ export const Client = {
   },
 
   // NEW: Get total count of clients
-  getTotalCount: () => {
+  getTotalCount: (search = '') => {
     return new Promise((resolve, reject) => {
-      connection.query('SELECT COUNT(*) as total FROM clients', (err, results) => {
-        if (err) reject(err);
-        else resolve(results[0].total);
-      });
+      const { conditions, params } = buildSearchConditions(
+        ['client_name', 'contact_email', 'contact_phone', 'address'],
+        search
+      );
+
+      const whereClause = conditions ? `WHERE ${conditions}` : '';
+
+      connection.query(
+        `SELECT COUNT(*) as total FROM clients ${whereClause}`,
+        params,
+        (err, results) => {
+          if (err) reject(err);
+          else resolve(results[0].total);
+        }
+      );
     });
   },
 

@@ -19,37 +19,39 @@ export const useClients = () => {
     totalPages: 0
   });
 
-  // UPDATED: Load clients function with pagination
+  // UPDATED: Load clients function with pagination and search
   // limit default changed to 9  [[[ THIS CONTROLS THE CURRENT]]]
-  const loadClients = useCallback((page = 1, limit = 9) => {
+  const loadClients = useCallback((page = 1, limit = 9, search = '') => {
     clientsController.loadClients(
       setClients, 
       setLoading, 
       setError, 
       setPagination,
       page, 
-      limit
+      limit,
+      search
     );
   }, []);
 
   // NEW: Handle page change
-  const handlePageChange = useCallback((newPage) => {
-    loadClients(newPage, pagination.pageSize);
+  const handlePageChange = useCallback((newPage, search = '') => {
+    loadClients(newPage, pagination.pageSize, search);
   }, [loadClients, pagination.pageSize]);
 
   // NEW: Handle page size change
-  const handlePageSizeChange = useCallback((newSize) => {
-    loadClients(1, newSize); // Reset to page 1 when changing size
+  const handlePageSizeChange = useCallback((newSize, search = '') => {
+    // Reset to page 1 when changing size
+    loadClients(1, newSize, search);
   }, [loadClients]);
 
   // Delete client function
-  const deleteClient = useCallback((id) => {
+  const deleteClient = useCallback((id, search = '') => {
     clientsController.deleteClient(
       id, 
       setClients, 
       setLoading, 
       setError, 
-      () => loadClients(pagination.currentPage, pagination.pageSize)
+      () => loadClients(pagination.currentPage, pagination.pageSize, search)
     );
   }, [loadClients, pagination.currentPage, pagination.pageSize]);
 

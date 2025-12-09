@@ -12,6 +12,7 @@ import { FaUsers, FaFile, FaUserPlus } from 'react-icons/fa';
 import { useClients } from '../../hooks/useClients';
 import { clientsHandlers } from '../../handlers/clientsHandlers';
 import { clientsConfig } from '../../config/clientsConfig';
+import { clientsController } from '../../controllers/clientsController';
 import useTableSearch from '../../hooks/useTableSearch'; // ← ADD this import
 import styles from './ClientsPage.module.css';
 
@@ -75,8 +76,8 @@ function ClientsPage() {
       currentClient.client_id, formData, () => {}, setError, handlers.onFormSuccess
     ),
 
-    onPageChange: handlePageChange,
-    onPageSizeChange: handlePageSizeChange
+    onPageChange: (page) => handlePageChange(page, search.debouncedSearch),
+    onPageSizeChange: (size) => handlePageSizeChange(size, search.debouncedSearch)
   };
 
   // Get table columns configuration
@@ -111,8 +112,6 @@ function ClientsPage() {
 
               {loading && clients.length === 0 ? (
                 <LoadingState />
-              ) : clients.length === 0 ? (
-                <EmptyState onAddClient={handlers.onNewClient} />
               ) : (
                 <>
                   <DataTable
@@ -120,12 +119,12 @@ function ClientsPage() {
                     columns={clientColumns}
                     keyField="client_id"
                     loading={loading}
-                    emptyMessage="No clients found"
+                    emptyMessage={search.debouncedSearch ? 'No clients found for this search' : 'No clients found'}
                     className={styles.clientsTable}
                     // Pagination props
                     pagination={pagination}
-                    onPageChange={handlePageChange}
-                    onPageSizeChange={handlePageSizeChange}
+                    onPageChange={(page) => handlePageChange(page, search.debouncedSearch)}
+                    onPageSizeChange={(size) => handlePageSizeChange(size, search.debouncedSearch)}
                     showPagination={true}
                     // Search props
                     showSearch={true}
@@ -194,18 +193,6 @@ const LoadingState = () => (
     <div className={styles.loadingContent}>
       <h2>Loading Clients...</h2>
       <p>Please wait while we fetch your client data</p>
-    </div>
-  </div>
-);
-
-const EmptyState = ({ onAddClient }) => (
-  <div className={styles.emptyState}>
-    <div className={styles.emptyContent}>
-      <h2>No Clients Found</h2>
-      <p>Create your first client to get started</p>
-      <button onClick={onAddClient} className={styles.primaryButton}>
-        Add Your First Client
-      </button>
     </div>
   </div>
 );

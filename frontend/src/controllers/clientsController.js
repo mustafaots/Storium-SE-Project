@@ -2,12 +2,20 @@ import { clientsAPI } from '../utils/clientsAPI.js';
 
 export const clientsController = {
   // UPDATED: Load clients with pagination using clientsAPI
-  loadClients: async (setClients, setLoading, setError, setPagination, page = 1, limit = 10) => {
+  loadClients: async (
+    setClients,
+    setLoading,
+    setError,
+    setPagination,
+    page = 1,
+    limit = 10,
+    search = ''
+  ) => {
     try {
       setLoading(true);
       setError('');
       
-      const response = await clientsAPI.getAll(page, limit);
+      const response = await clientsAPI.getAll(page, limit, search);
       
       if (response.success) {
         setClients(response.data);

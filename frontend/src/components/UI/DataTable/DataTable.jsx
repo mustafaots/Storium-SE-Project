@@ -42,25 +42,7 @@ const DataTable = ({
     }
   };
 
-  if (loading) {
-    return (
-      <div className={styles.loadingState}>
-        <div className={styles.loadingContent}>
-          <p>Loading data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!tableData || tableData.length === 0) {
-    return (
-      <div className={styles.emptyState}>
-        <div className={styles.emptyMessage}>
-          {emptyMessage}
-        </div>
-      </div>
-    );
-  }
+  const isEmpty = !tableData || tableData.length === 0;
 
   return (
     <div className={styles.tableWrapper}>
@@ -103,38 +85,52 @@ const DataTable = ({
         </div>
       )}
 
-      {/* Table */}
-      <div className={`${styles.table} ${styles[size]} ${className}`}>
-        {/* Table Header */}
-        <div 
-          className={styles.tableHeader} 
-          style={{ gridTemplateColumns: gridTemplate }}
-        >
-          {columns.map((column) => (
-            <div key={column.key} className={styles.headerCell}>
-              {column.header || column.label}
-            </div>
-          ))}
+      {/* Table or empty state */}
+      {loading ? (
+        <div className={styles.loadingState}>
+          <div className={styles.loadingContent}>
+            <p>Loading data...</p>
+          </div>
         </div>
+      ) : isEmpty ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyMessage}>
+            {emptyMessage}
+          </div>
+        </div>
+      ) : (
+        <div className={`${styles.table} ${styles[size]} ${className}`}>
+          {/* Table Header */}
+          <div 
+            className={styles.tableHeader} 
+            style={{ gridTemplateColumns: gridTemplate }}
+          >
+            {columns.map((column) => (
+              <div key={column.key} className={styles.headerCell}>
+                {column.header || column.label}
+              </div>
+            ))}
+          </div>
 
-        {/* Table Body */}
-        <div className={styles.tableBody}>
-          {tableData.map((item) => (
-            <div 
-              key={item[keyField]} 
-              className={`${styles.tableRow} ${onRowClick ? styles.clickableRow : ''}`}
-              style={{ gridTemplateColumns: gridTemplate }}
-              onClick={() => onRowClick && onRowClick(item)}
-            >
-              {columns.map((column) => (
-                <div key={column.key} className={styles.cell}>
-                  {column.render ? column.render(item) : item[column.key]}
-                </div>
-              ))}
-            </div>
-          ))}
+          {/* Table Body */}
+          <div className={styles.tableBody}>
+            {tableData.map((item) => (
+              <div 
+                key={item[keyField]} 
+                className={`${styles.tableRow} ${onRowClick ? styles.clickableRow : ''}`}
+                style={{ gridTemplateColumns: gridTemplate }}
+                onClick={() => onRowClick && onRowClick(item)}
+              >
+                {columns.map((column) => (
+                  <div key={column.key} className={styles.cell}>
+                    {column.render ? column.render(item) : item[column.key]}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

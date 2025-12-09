@@ -9,9 +9,10 @@ const clientsController = {
     try {
       const page = parseInt(req.query.page) || constants.PAGINATION.DEFAULT_PAGE;
       const limit = parseInt(req.query.limit) || constants.PAGINATION.DEFAULT_LIMIT;
+      const search = (req.query.search || '').trim();
       
       // FIX: Call the paginated service method
-      const { clients, pagination } = await clientsService.getAllPaginated(page, limit);
+      const { clients, pagination } = await clientsService.getAllPaginated(page, limit, search);
       
       // Format data for response
       const formattedClients = clients.map(client => ({
