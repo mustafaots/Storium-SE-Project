@@ -131,6 +131,20 @@ function ClientsPage() {
                     searchPlaceholder="Search clients..."
                     onSearchChange={search.setSearchTerm}
                     searchTerm={search.searchTerm}
+                    rightControls={(
+                      <div className={styles.buttonGroupInline}>
+                        <Button variant='secondary' leadingIcon={<FaUserPlus />} onClick={handlers.onNewClient}>
+                          Add
+                        </Button>
+                        <Button 
+                          onClick={()=>{}}
+                          variant="primary"
+                          leadingIcon={<FaFile />}
+                        >
+                          Export
+                        </Button>
+                      </div>
+                    )}
                   />
 
                   {/* NEW: Separate container for pagination info */}
@@ -149,21 +163,7 @@ function ClientsPage() {
                     </div>
                   )}
 
-                  {/* UPDATED: Separate containers for buttons and pagination info */}
-                  <div className={styles.actionsContainer}>
-                    <div className={styles.buttonGroup}>
-                      <Button variant='secondary' leadingIcon={<FaUserPlus />} onClick={handlers.onNewClient}>
-                        Add
-                      </Button>
-                      <Button 
-                        onClick={()=>{}}
-                        variant="primary"
-                        leadingIcon={<FaFile />}
-                      >
-                        Export
-                      </Button>
-                    </div>
-                  </div>
+                  {/* Buttons now live inline with the search bar via rightControls */}
                 </>
               )}
             </div>

@@ -19,7 +19,9 @@ const DataTable = ({
   showSearch = false,
   searchPlaceholder = "Search...",
   onSearchChange,
-  searchTerm = ''
+  searchTerm = '',
+  // Optional right-side controls (e.g., action buttons)
+  rightControls = null
 }) => {
   // Handle both array and object formats
   const tableData = Array.isArray(data) ? data : (data?.data || data?.items || data?.records || []);
@@ -47,7 +49,7 @@ const DataTable = ({
   return (
     <div className={styles.tableWrapper}>
       {/* Combined Search and Pagination Controls */}
-      {(showSearch || showPagination) && (
+      {(showSearch || showPagination || rightControls) && (
         <div className={styles.controlsRow}>
           {/* Search Bar */}
           {showSearch && (
@@ -81,6 +83,13 @@ const DataTable = ({
               onPageSizeChange={onPageSizeChange}
               className={styles.pagination}
             />
+          )}
+
+          {/* Right-side custom controls */}
+          {rightControls && (
+            <div className={styles.rightControls}>
+              {rightControls}
+            </div>
           )}
         </div>
       )}
