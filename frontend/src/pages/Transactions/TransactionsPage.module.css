@@ -7,15 +7,11 @@
 .mainContent {
   flex: 1; /* Takes up all available space */
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center; 
+  justify-content: center; 
 }
 
-.comingSoon {
-  background: var(--discord-gray);
-  padding: 20px;
-  text-align: center;
-}
+
 
 .content {
   color: var(--text-light);
@@ -25,9 +21,509 @@
   font-size: 3rem;
   color: var(--industrial-gold);
   margin-bottom: 20px;
+  
 }
 
 .subtitle {
   font-size: 1.2rem;
   color: var(--text-gray);
+  margin-bottom: 70px;
+}
+
+.comingSoon {
+  background: var(--discord-gray);
+  padding: 20px;
+  text-align: center;
+}
+
+.transactionsContainer {
+    background: var(--discord-gray-dark);
+    border-radius: 8px;
+    border: 1px solid #40444b;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.header {
+    margin-bottom: 24px;
+    border-bottom: 1px solid #40444b;
+    padding-bottom: 16px;
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color:  #b8860b;
+    margin: 0 0 8px 0;
+    background: linear-gradient(135deg, var(--industrial-gold) 0%, var(--industrial-gold-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header p {
+    color: var(--text-gray);
+    margin: 0;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.filterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filterTabs {
+    display: flex;
+    gap: 15px;
+    /* margin-bottom: 24px;
+    border-bottom: 1px solid #40444b;
+    padding-bottom: 16px; */
+    margin-right: auto;
+    align-items: center;
+}
+
+.tab {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-gray);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex: 1;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 16px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.tab:hover {
+    /* background: var(--discord-gray-light);
+    border-color: var(--industrial-gold); */
+    color: var(--text-light);
+}
+
+.tab.active {
+    /* background: linear-gradient(135deg, var(--industrial-gold) 0%, var(--industrial-gold-dark) 100%);
+    color: var(--discord-gray-dark);
+    border-color: var(--industrial-gold); */
+    text-decoration: underline; /* Underline when active */
+    text-underline-offset: 4px; /* Space between text and underline */
+    text-decoration-thickness: 2px; /* Underline thickness */
+    text-decoration-color:var(--industrial-gold); /* Underline color */
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.filtersContainer {
+    display: flex;
+    gap: 20px;
+    /* margin-bottom: 24px; */
+    align-items: center;
+    /* flex-wrap: wrap; */
+    /* margin-left: auto; */
+}
+
+/* Search Box Styles */
+.searchBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width:30%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-gray);
+  width: 16px;
+  height: 16px;
+  z-index: 10;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid var(--discord-gray-light);
+  background-color: var(--discord-gray-dark);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-light);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.2s ease-in-out;
+  appearance: none;
+}
+
+.searchInput:hover {
+  background-color: var(--discord-gray-light);
+  border-color: var(--industrial-gold);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--industrial-gold);
+  box-shadow: 0 0 0 2px rgba(255, 187, 0, 0.2);
+  background-color: var(--discord-gray-dark);
+}
+
+.searchInput::placeholder {
+  color: var(--text-gray);
+}
+
+/* Export Button */
+.exportBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--industrial-gold), var(--industrial-gold-dark));
+  color: var(--discord-gray-dark);
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.exportBtn:hover {
+  background: linear-gradient(135deg, var(--industrial-gold-dark), var(--industrial-gold));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 187, 0, 0.3);
+}
+
+.exportBtn:active {
+  transform: translateY(0);
+}
+
+.exportBtn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 187, 0, 0.4);
+}
+
+.exportIcon {
+  width: 16px;
+  height: 16px;
+}
+
+
+.transactionsTable {
+    border: 1px solid #40444b;
+    border-radius: 6px;
+    overflow: hidden;
+    /* background:#1971c2; */
+    /* background: var(--discord-gray); */
+}
+
+.tableHeader {
+    display: grid;
+    grid-template-columns: 200px 120px 1fr;
+    background: linear-gradient(135deg, var(--discord-gray-light) 0%, var(--discord-gray) 100%);
+    border-bottom: 2px solid var(--industrial-gold);
+}
+
+.headerCell {
+    padding: 16px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--industrial-gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-right: 1px solid #40444b;
+}
+
+.headerCell:last-child {
+    border-right: none;
+}
+
+.tableBody {
+    /* background: var(--discord-gray); */
+    background:var(--discord-gray-dark) ;
+}
+
+.tableRow {
+    display: grid;
+    grid-template-columns: 200px 120px 1fr;
+    border-bottom: 1px solid #40444b;
+    transition: all 0.3s ease;
+}
+
+.tableRow:hover {
+    background: var(--discord-gray-light);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tableRow:last-child {
+    border-bottom: none;
+}
+
+.cell {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid #40444b;
+    color: var(--text-light);
+}
+
+.cell:last-child {
+    border-right: none;
+}
+
+/* Select Container Styles */
+.customSelect {
+  border: 1px solid var(--discord-gray-light);
+  background-color: var(--discord-gray-dark);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-light);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffbb00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 40px;
+}
+
+.customSelect:hover {
+  background-color: var(--discord-gray-light);
+  border-color: var(--industrial-gold);
+}
+
+.customSelect:focus {
+  outline: none;
+  border-color: var(--industrial-gold);
+  box-shadow: 0 0 0 2px rgba(255, 187, 0, 0.2);
+}
+
+/* Select Options Styles */
+.customSelect option {
+  background-color: var(--discord-gray-dark);
+  color: var(--text-light);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  padding: 12px 16px;
+  border: none;
+  margin: 2px 0;
+}
+
+.customSelect option:hover {
+  background-color: var(--industrial-gold) !important;
+  color: var(--discord-gray-dark) !important;
+}
+
+.customSelect option:checked {
+  background-color: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+  font-weight: 600;
+}
+
+.customSelect option:focus {
+  background-color: var(--industrial-gold-dark);
+  color: var(--text-light);
+}
+
+/* Select dropdown arrow */
+.customSelect::-ms-expand {
+  display: none;
+}
+
+/* For Webkit browsers */
+.customSelect::-webkit-scrollbar {
+  width: 8px;
+}
+
+.customSelect::-webkit-scrollbar-track {
+  background: var(--discord-gray-dark);
+  border-radius: 4px;
+}
+
+.customSelect::-webkit-scrollbar-thumb {
+  background: var(--industrial-gold);
+  border-radius: 4px;
+}
+
+.customSelect::-webkit-scrollbar-thumb:hover {
+  background: var(--industrial-gold-dark);
+}
+
+/* Dropdown container styling */
+.customSelect:active,
+.customSelect:focus {
+  background-color: var(--discord-gray-dark);
+}
+
+/* Disabled state */
+.customSelect:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--discord-gray);
+}
+
+.customSelect:disabled:hover {
+  border-color: var(--discord-gray-light);
+  background-color: var(--discord-gray);
+}
+
+
+.timestamp {
+    font-size: 13px;
+    color: var(--text-gray);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-weight: 500;
+}
+
+.routineBadge {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.routineBadge.automatic {
+    background: linear-gradient(135deg, #00d4aa 0%, #009975 100%);
+    color: var(--discord-gray-dark);
+}
+
+.routineBadge.manual {
+    background: linear-gradient(135deg, #4dabf7 0%, #1971c2 100%);
+    color: var(--text-light);
+}
+
+.routineBadge:not(.automatic):not(.manual) {
+    background: linear-gradient(135deg, var(--industrial-gold) 0%, var(--industrial-gold-dark) 100%);
+    color: var(--discord-gray-dark);
+}
+
+.action {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+.paginationInfo {
+    margin-top: 20px;
+    text-align: center;
+    color: var(--text-gray);
+    font-size: 13px;
+    padding: 16px;
+    background: var(--discord-gray-light);
+    border-radius: 6px;
+    border: 1px solid #40444b;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .mainContent {
+        margin-left: 0;
+        padding: 16px;
+    }
+
+    .filtersContainer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .searchBox {
+        min-width: auto;
+    }
+
+    .dateFilters {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .dateInputField {
+        width: 120px;
+    }
+
+    .tableHeader,
+    .tableRow {
+        grid-template-columns: 150px 100px 1fr;
+    }
+
+    .headerCell,
+    .cell {
+        padding: 12px 8px;
+        font-size: 12px;
+    }
+
+    .timestamp {
+        font-size: 11px;
+    }
+
+    .action {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .filterTabs {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .tab {
+        flex: 1;
+        min-width: 80px;
+        text-align: center;
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .tableHeader,
+    .tableRow {
+        grid-template-columns: 120px 80px 1fr;
+    }
+
+    .headerCell,
+    .cell {
+        padding: 10px 6px;
+        font-size: 11px;
+    }
+
+    .routineBadge {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+}
+
+/* Custom Scrollbar for Webkit browsers */
+.transactionsTable::-webkit-scrollbar {
+    width: 8px;
+}
+
+.transactionsTable::-webkit-scrollbar-track {
+    background: var(--discord-gray);
+}
+
+.transactionsTable::-webkit-scrollbar-thumb {
+    background: var(--industrial-gold);
+    border-radius: 4px;
+}
+
+.transactionsTable::-webkit-scrollbar-thumb:hover {
+    background: var(--industrial-gold-dark);
 }

@@ -1,0 +1,148 @@
+/* Color Variables */
+:root {
+    --discord-gray: #36393f;
+    --discord-gray-light: #40444b;
+    --discord-gray-dark: #2f3136;
+    --industrial-gold: #ffbb00;
+    --industrial-gold-dark: #b8860b;
+    --white: #ffffff;
+    --text-light: #f0f0f0;
+    --text-gray: #b9bbbe;
+}
+
+/* Modal Overlay */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Modal Content */
+.modalContent {
+    background: var(--discord-gray-light);
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--discord-gray);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modalContent h3 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    color: var(--white);
+}
+
+.modalContent p {
+    margin: 0 0 25px 0;
+    color: var(--text-gray);
+    font-size: 14px;
+}
+
+/* Export Options Container */
+.exportOptions {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Export Option Button */
+.exportOptionBtn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    border: 2px solid var(--discord-gray);
+    border-radius: 8px;
+    background: var(--discord-gray-dark);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-light);
+}
+
+.exportOptionBtn:hover {
+    border-color: var(--industrial-gold);
+    background: var(--discord-gray-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 187, 0, 0.2);
+}
+
+.exportOptionIcon {
+    font-size: 40px;
+    margin-bottom: 10px;
+    color: var(--industrial-gold);
+}
+
+.exportOptionBtn span {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--white);
+    margin-bottom: 5px;
+}
+
+.exportOptionBtn small {
+    font-size: 12px;
+    color: var(--text-gray);
+    text-align: center;
+}
+
+/* Cancel Button */
+.cancelBtn {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--discord-gray);
+    border-radius: 6px;
+    background: var(--discord-gray-dark);
+    color: var(--text-gray);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancelBtn:hover {
+    background: var(--discord-gray-light);
+    border-color: var(--industrial-gold);
+    color: var(--text-light);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .exportOptions {
+        flex-direction: column;
+    }
+    
+    .modalContent {
+        padding: 20px;
+    }
+}
