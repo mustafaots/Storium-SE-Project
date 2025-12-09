@@ -15,7 +15,7 @@ import { useClients } from '../../hooks/useClients';
 import { clientsHandlers } from '../../handlers/clientsHandlers';
 import { clientsConfig } from '../../config/clientsConfig';
 import { clientsController } from '../../controllers/clientsController';
-import useTableSearch from '../../hooks/useTableSearch'; // ← ADD this import
+import useTableSearch from '../../hooks/useTableSearch';
 import { clientsHelpers } from '../../utils/clientsHelpers';
 import { clientsAPI } from '../../utils/clientsAPI';
 import styles from './ClientsPage.module.css';
@@ -42,6 +42,7 @@ function ClientsPage() {
   } = useClients();
 
   const [showExportMenu, setShowExportMenu] = useState(false);
+  // Export scope separates "what" to export from "how" (CSV/PDF): current view vs full dataset
   const [exportScope, setExportScope] = useState('current'); // 'current' | 'all'
 
   // Track search term with debounce so we don't spam requests
@@ -88,6 +89,7 @@ function ClientsPage() {
   };
 
   // Export helpers
+  // Column definitions reused by CSV/PDF so both formats stay in sync
   const exportHeaders = [
     { key: 'client_id', label: 'ID' },
     { key: 'client_name', label: 'Name' },
@@ -97,6 +99,7 @@ function ClientsPage() {
     { key: 'created_at', label: 'Created' },
   ];
 
+  // Normalize client rows for export and format fields for display parity
   const buildExportRows = (source) => source.map((client) => ({
     client_id: client.client_id,
     client_name: client.client_name || '',
@@ -106,6 +109,7 @@ function ClientsPage() {
     created_at: clientsHelpers.formatDate(client.created_at),
   }));
 
+  // CSV export: choose data based on scope, then serialize and download as a Blob
   const exportToCSV = async () => {
     const rows = exportScope === 'current'
       ? buildExportRows(clients)
@@ -134,6 +138,7 @@ function ClientsPage() {
     setShowExportMenu(false);
   };
 
+  // PDF export: choose data based on scope, render with jsPDF+autotable, download directly
   const exportToPDF = async () => {
     const rows = exportScope === 'current'
       ? buildExportRows(clients)
@@ -160,7 +165,7 @@ function ClientsPage() {
     setShowExportMenu(false);
   };
 
-  // Fetch all clients (ignoring pagination/search) for full export
+  // Fetch all clients (ignoring pagination/search) for full export when scope = "all"
   const fetchAllClientsForExport = async () => {
     try {
       const pageSize = 500;
