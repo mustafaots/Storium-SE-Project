@@ -414,3 +414,56 @@
     font-size: 3rem;
   }
 }
+/* No Results Matching Search */
+.noResults {
+  background: var(--discord-gray);
+  padding: 60px 40px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid var(--discord-gray-light);
+  margin-top: 20px;
+}
+
+.noResultsContent h2 {
+  color: var(--industrial-gold);
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.noResultsContent p {
+  color: var(--text-gray);
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.noResultsActions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 20px;
+}
+
+/* Buttons inside NoResults */
+.noResultsActions .primaryButton,
+.noResultsActions .secondaryButton {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .noResults {
+    padding: 40px 20px;
+  }
+
+  .noResultsActions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .noResultsActions button {
+    width: 100%;
+  }
+}

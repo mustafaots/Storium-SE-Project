@@ -16,6 +16,7 @@ export const useProducts = () => {
     totalCount: 0,
     totalPages: 0
   });
+const [noResults, setNoResults] = useState(false);
 
   const loadProducts = useCallback(async (page = 1, pageSize = 10, search = '') => {
     try {

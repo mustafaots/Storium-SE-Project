@@ -65,9 +65,15 @@ function ProductsPage() {
     onCancel: () => productsHandlers.handleCancel(
       setShowForm, setIsEditing, setCurrentProduct, setError
     ),
-   onDelete: (id, productName) => productsHandlers.handleDelete(id, deleteProduct, productName),
+    onDelete: (id, productName) => productsHandlers.handleDelete(id, deleteProduct, productName),
     onPageChange: handlePageChange,
-    onPageSizeChange: handlePageSizeChange
+    onPageSizeChange: handlePageSizeChange,
+    // NEW: when user clicks "Load all products" from NoResults
+    onLoadAllProducts: () => {
+      // clear search and reload first page with empty search
+      search.setSearchTerm('');
+      loadProducts(1, pagination.pageSize, '');
+    }
   };
 
   const productColumns = productsConfig.columns(styles, handlers);
@@ -106,7 +112,19 @@ function ProductsPage() {
               {loading && (!products || products.length === 0) ? (
                 <LoadingState message="Loading Products..." />
               ) : (!products || products.length === 0) ? (
-                <EmptyState onAddProduct={handlers.onNewProduct} />
+                // Distinguish between "no results from search" and "completely empty list"
+                search.debouncedSearch ? (
+                  <NoResults
+                    term={search.debouncedSearch}
+                    onClearSearch={() => {
+                      search.setSearchTerm('');
+                      loadProducts(1, pagination.pageSize, '');
+                    }}
+                    onAddProduct={() => handlers.onLoadAllProducts()}
+                  />
+                ) : (
+                  <EmptyState onAddProduct={handlers.onNewProduct} />
+                )
               ) : (
                 <>
                   <DataTable
@@ -189,6 +207,27 @@ const EmptyState = ({ onAddProduct }) => (
       <button onClick={onAddProduct} className={styles.primaryButton}>
         Add Your First Product
       </button>
+    </div>
+  </div>
+);
+
+const NoResults = ({ term, onClearSearch, onAddProduct }) => (
+  <div className={styles.noResults}>
+    <div className={styles.noResultsContent}>
+      <h2>No results</h2>
+      <p>
+        We couldn't find any products matching&nbsp;
+        <strong>{term}</strong>.
+      </p>
+      <div className={styles.noResultsActions}>
+        <button onClick={onClearSearch} className={styles.secondaryButton}>
+          Clear search
+        </button>
+        {/* This button now loads all products (clears the search & fetches full list) */}
+        <button onClick={onAddProduct} className={styles.primaryButton}>
+          Load all products
+        </button>
+      </div>
     </div>
   </div>
 );

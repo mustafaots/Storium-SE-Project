@@ -10,7 +10,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
     category: '',
     unit: '',
     supplier: '',
-    total_stock: '',
     min_stock_level: '',
     max_stock_level: '',
     description: '',
@@ -29,7 +28,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
         category: currentProduct.category || '',
         unit: currentProduct.unit || '',
         supplier: currentProduct.supplier || '',
-        total_stock: currentProduct.total_stock || currentProduct.total || '',
         min_stock_level: currentProduct.min_stock_level || '',
         max_stock_level: currentProduct.max_stock_level || '',
         description: currentProduct.description || '',
@@ -42,7 +40,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
         category: '',
         unit: '',
         supplier: '',
-        total_stock: '',
         min_stock_level: '',
         max_stock_level: '',
         description: '',
@@ -59,7 +56,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
     category: [validators.required],
     unit: [validators.required],
     supplier: [],
-    total_stock: [validators.numeric],
     min_stock_level: [validators.numeric],
     max_stock_level: [validators.numeric],
     description: [],
@@ -192,14 +188,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
             required 
           />
           
-          <FormField 
-            type="number" 
-            field="total_stock" 
-            placeholder="Total Stock (e.g., 100)" 
-            value={formData.total_stock} 
-            onChange={handleChange} 
-            error={formErrors.total_stock} 
-          />
           
           <FormField 
             type="number" 
