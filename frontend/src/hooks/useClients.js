@@ -14,14 +14,14 @@ export const useClients = () => {
   // NEW: Pagination state
   const [pagination, setPagination] = useState({
     currentPage: 1,
-    pageSize: 9,
+    pageSize: 5,
     totalCount: 0,
     totalPages: 0
   });
 
   // UPDATED: Load clients function with pagination and search
   // limit default changed to 9  [[[ THIS CONTROLS THE CURRENT]]]
-  const loadClients = useCallback((page = 1, limit = 9, search = '') => {
+  const loadClients = useCallback((page = 1, limit = 5, search = '') => {
     clientsController.loadClients(
       setClients, 
       setLoading, 

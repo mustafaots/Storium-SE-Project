@@ -10,7 +10,11 @@ const Pagination = ({
   onPageSizeChange,
   className = ''
 }) => {
-  const pageSizes = [5, 9, 20, 50];
+
+  // this is where the options of the drop menu for page sizes manifest
+  const pageSizes = [5, 10, 20, 30, 40, 50, 100];
+
+  const showPagination = totalItems >= 5;
   
   const handlePrevious = () => {
     if (currentPage > 1) {
@@ -29,7 +33,7 @@ const Pagination = ({
     onPageSizeChange(newSize);
   };
 
-  if (totalPages <= 1) return null;
+  if (!showPagination) return null;
 
   return (
     <div className={`${styles.pagination} ${className}`}>
@@ -43,13 +47,13 @@ const Pagination = ({
         </button>
         
         <span className={styles.pageInfo}>
-          Page {currentPage} of {totalPages}
+          Page {currentPage} of {Math.max(totalPages, 1)}
         </span>
         
         <button
           className={styles.paginationButton}
           onClick={handleNext}
-          disabled={currentPage === totalPages}
+          disabled={currentPage === totalPages || totalPages === 0}
         >
           Next
         </button>
