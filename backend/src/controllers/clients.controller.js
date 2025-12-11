@@ -4,14 +4,15 @@ import { formatPhone, formatDate } from '../utils/formatters.js';
 import { constants } from '../utils/constants.js';
 
 const clientsController = {
-  // FIXED: Get all clients with pagination
+  // List clients with pagination + search (server-side filtering)
   getAllClients: async (req, res) => {
     try {
       const page = parseInt(req.query.page) || constants.PAGINATION.DEFAULT_PAGE;
       const limit = parseInt(req.query.limit) || constants.PAGINATION.DEFAULT_LIMIT;
+      const search = (req.query.search || '').trim();
       
       // FIX: Call the paginated service method
-      const { clients, pagination } = await clientsService.getAllPaginated(page, limit);
+      const { clients, pagination } = await clientsService.getAllPaginated(page, limit, search);
       
       // Format data for response
       const formattedClients = clients.map(client => ({
@@ -27,7 +28,7 @@ const clientsController = {
     }
   },
 
-  // Keep existing methods unchanged
+  // Get a single client by id
   getClientById: async (req, res) => {
     try {
       const client = await clientsService.getById(req.params.id);
@@ -48,6 +49,7 @@ const clientsController = {
     }
   },
 
+  // Create client
   createClient: async (req, res) => {
     try {
       const clientData = req.body;
@@ -59,6 +61,7 @@ const clientsController = {
     }
   },
 
+  // Update client
   updateClient: async (req, res) => {
     try {
       const clientData = req.body;
@@ -74,6 +77,7 @@ const clientsController = {
     }
   },
 
+  // Delete client
   deleteClient: async (req, res) => {
     try {
       const result = await clientsService.delete(req.params.id);

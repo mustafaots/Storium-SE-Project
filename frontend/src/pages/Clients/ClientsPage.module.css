@@ -102,17 +102,55 @@
 
 /*for the collection of buttons*/
 
-.actionsContainer {
+/* Inline buttons for table controls */
+.buttonGroupInline {
   display: flex;
-  justify-content: flex-start;
-  margin-bottom: 1rem;
+  gap: 0.75rem;
+  align-items: center;
 }
 
-.buttonGroup {
+.exportScopeSelect {
+  background: var(--discord-gray-dark);
+  color: var(--text-light);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 6px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.exportWrapper {
+  position: relative;
+}
+
+.exportMenu {
+  position: absolute;
+  right: 0;
+  top: 110%;
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 6px;
+  padding: 0.5rem;
   display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 3rem;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  z-index: 20;
+}
+
+.exportMenu button {
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 4px;
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.exportMenu button:hover {
+  background: var(--discord-gray-light);
+  border-color: var(--industrial-gold);
 }
 
 /* Button Styles */
@@ -384,24 +422,6 @@
     flex-direction: column;
     gap: 4px;
   }
-}
-
-/**/
-
-/* UPDATED: Actions Container */
-.actionsContainer {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--discord-gray-light);
-}
-
-.buttonGroup {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 0; /* Remove the large bottom margin */
 }
 
 /* NEW: Pagination Info Container */
