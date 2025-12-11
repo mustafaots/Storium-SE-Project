@@ -65,22 +65,10 @@ export const sourcesHandlers = {
   /**
    * Handle delete source with custom modal
    */
-  handleDelete: async (id, deleteSource, sourceName = 'this source') => {
-    try {
-      // Create custom confirmation modal
-      const confirmed = window.confirm(
-        `⚠️ DELETE SOURCE\n\nAre you sure you want to delete "${sourceName}"?\n\nThis action cannot be undone.`
-      );
-      
-      if (!confirmed) return;
-
-      await deleteSource(id);
-      console.log('Source deleted successfully');
-    } catch (err) {
-      console.error('[sourcesHandlers] handleDelete error', err);
-      alert('❌ Failed to delete source: ' + err.message);
-    }
+   handleDelete: (id, deleteSource) => {
+    deleteSource(id);
   }
+
 };
 
 export default sourcesHandlers;
