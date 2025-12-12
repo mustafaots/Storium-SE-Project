@@ -93,7 +93,7 @@ router.get('/depots/:depotId/export', (req, res) => {
   connection.query(
     `SELECT d.*, l.name as location_name 
      FROM depots d 
-     JOIN locations l ON l.location_id = d.location_id 
+     JOIN locations l ON l.location_id = d.parent_location 
      WHERE d.depot_id = ?`,
     [depotId],
     (err, depotRows) => {
@@ -106,18 +106,18 @@ router.get('/depots/:depotId/export', (req, res) => {
         `SELECT 
            s.stock_id, s.quantity, s.batch_no, s.expiry_date, s.strategy, 
            s.product_type, s.is_consumable, s.sale_price, s.cost_price, s.slot_coordinates,
-           p.name as product_name, p.sku, p.category,
-           r.name as rack_name, r.rack_code,
+           p.name as product_name, p.category,
+           r.rack_code,
            a.name as aisle_name,
            rs.direction, rs.bay_no, rs.level_no, rs.bin_no
          FROM stocks s
          JOIN rack_slots rs ON rs.slot_id = s.slot_id
          JOIN racks r ON r.rack_id = rs.rack_id
-         JOIN aisles a ON a.aisle_id = r.aisle_id
-         JOIN depots d ON d.depot_id = a.depot_id
+         JOIN aisles a ON a.aisle_id = r.parent_aisle
+         JOIN depots d ON d.depot_id = a.parent_depot
          LEFT JOIN products p ON p.product_id = s.product_id
          WHERE d.depot_id = ? AND s.is_active = 1
-         ORDER BY a.name, r.name, rs.direction, rs.level_no DESC, rs.bay_no, rs.bin_no`,
+         ORDER BY a.name, r.rack_code, rs.direction, rs.level_no DESC, rs.bay_no, rs.bin_no`,
         [depotId],
         (err2, stockRows) => {
           if (err2) return res.status(500).json({ success: false, error: err2.message });
@@ -127,10 +127,7 @@ router.get('/depots/:depotId/export', (req, res) => {
             depot: {
               id: depot.depot_id,
               name: depot.name,
-              location: depot.location_name,
-              address: depot.address,
-              phone: depot.phone,
-              email: depot.email
+              location: depot.location_name
             },
             summary: {
               total_items: stockRows.length,
@@ -139,7 +136,6 @@ router.get('/depots/:depotId/export', (req, res) => {
             },
             inventory: stockRows.map(s => ({
               product: s.product_name || 'Unknown',
-              sku: s.sku || '',
               category: s.category || '',
               quantity: s.quantity,
               batch: s.batch_no || '',
@@ -151,7 +147,6 @@ router.get('/depots/:depotId/export', (req, res) => {
               cost_price: s.cost_price || 0,
               location: {
                 aisle: s.aisle_name,
-                rack: s.rack_name,
                 rack_code: s.rack_code,
                 coordinates: s.slot_coordinates,
                 direction: s.direction,
@@ -163,13 +158,12 @@ router.get('/depots/:depotId/export', (req, res) => {
           };
 
           if (format === 'csv') {
-            const headers = ['Product', 'SKU', 'Category', 'Quantity', 'Batch', 'Expiry', 'Strategy', 'Type', 'Consumable', 'Sale Price', 'Cost Price', 'Aisle', 'Rack', 'Coordinates'];
+            const headers = ['Product', 'Category', 'Quantity', 'Batch', 'Expiry', 'Strategy', 'Type', 'Consumable', 'Sale Price', 'Cost Price', 'Aisle', 'Rack Code', 'Coordinates'];
             const csvRows = [headers.join(',')];
 
             exportData.inventory.forEach(item => {
               const row = [
                 `"${item.product}"`,
-                `"${item.sku}"`,
                 `"${item.category}"`,
                 item.quantity,
                 `"${item.batch}"`,
@@ -180,7 +174,7 @@ router.get('/depots/:depotId/export', (req, res) => {
                 item.sale_price,
                 item.cost_price,
                 `"${item.location.aisle}"`,
-                `"${item.location.rack}"`,
+                `"${item.location.rack_code}"`,
                 `"${item.location.coordinates}"`
               ];
               csvRows.push(row.join(','));

@@ -1,6 +1,8 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { FaArrowLeft, FaStream } from 'react-icons/fa';
+import { FaArrowLeft, FaStream, FaDownload, FaFileCsv, FaFilePdf } from 'react-icons/fa';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 import NavBar from '../../../../components/UI/NavBar/NavBar';
 import Header from '../../../../components/UI/Header/Header';
@@ -16,6 +18,8 @@ import { aislesController } from '../../../../controllers/aislesController';
 
 import styles from './AislesPage.module.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+
 export const AislesPage = () => {
   const { locationId, depotId } = useParams();
   const { state } = useLocation();
@@ -24,6 +28,103 @@ export const AislesPage = () => {
 
   const locationName = state?.locationName || state?.location?.name;
   const depotName = state?.depotName || state?.depot?.name;
+
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const exportRef = useRef(null);
+
+  // Close export menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (exportRef.current && !exportRef.current.contains(e.target)) {
+        setShowExportMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleExport = async (format) => {
+    setExporting(true);
+    setShowExportMenu(false);
+    try {
+      if (format === 'csv') {
+        // CSV export from backend
+        const resp = await fetch(`${API_BASE_URL}/depots/${depotId}/export?format=csv`);
+        if (!resp.ok) throw new Error('Export failed');
+        const blob = await resp.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${depotName || 'depot'}_inventory_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else if (format === 'pdf') {
+        // PDF export using jsPDF + autotable
+        const resp = await fetch(`${API_BASE_URL}/depots/${depotId}/export?format=json`);
+        if (!resp.ok) throw new Error('Export failed');
+        const data = await resp.json();
+        const inventory = data.inventory || [];
+
+        const doc = new jsPDF();
+        
+        // Title
+        doc.setFontSize(18);
+        doc.setTextColor(40, 40, 40);
+        doc.text(`Inventory Report: ${data.depot?.name || depotName || 'Depot'}`, 14, 20);
+        
+        // Subtitle with date
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 28);
+        doc.text(`Total Items: ${data.summary?.total_items || 0} | Total Quantity: ${data.summary?.total_quantity || 0}`, 14, 34);
+        
+        // Table columns
+        const columns = [
+          { header: 'Product', dataKey: 'product' },
+          { header: 'Category', dataKey: 'category' },
+          { header: 'Quantity', dataKey: 'quantity' },
+          { header: 'Aisle', dataKey: 'aisle' },
+          { header: 'Rack', dataKey: 'rack' },
+          { header: 'Expiry', dataKey: 'expiry' }
+        ];
+
+        // Transform data for table
+        const rows = inventory.map(item => ({
+          product: item.product || '-',
+          category: item.category || '-',
+          quantity: item.quantity || 0,
+          aisle: item.location?.aisle || '-',
+          rack: item.location?.rack_code || '-',
+          expiry: item.expiry ? new Date(item.expiry).toLocaleDateString() : '-'
+        }));
+
+        // Generate table
+        doc.autoTable({
+          columns,
+          body: rows,
+          startY: 35,
+          theme: 'striped',
+          headStyles: { 
+            fillColor: [218, 165, 32],
+            textColor: [0, 0, 0],
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: { fillColor: [245, 245, 245] },
+          styles: { fontSize: 9 }
+        });
+
+        // Save PDF
+        doc.save(`${depotName || 'depot'}_inventory_${new Date().toISOString().split('T')[0]}.pdf`);
+      }
+    } catch (err) {
+      setError(err?.message || 'Failed to export inventory');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const {
     aisles,
@@ -201,9 +302,31 @@ export const AislesPage = () => {
                 onSearchChange={search.setSearchTerm}
                 searchTerm={search.searchTerm}
                 rightControls={(
-                  <Button variant="secondary" leadingIcon={<FaStream />} onClick={handlers.onNew}>
-                    Add
-                  </Button>
+                  <div className={styles.rightControlsGroup}>
+                    <div className={styles.exportWrapper} ref={exportRef}>
+                      <Button 
+                        variant="secondary" 
+                        leadingIcon={<FaDownload />} 
+                        onClick={() => setShowExportMenu(!showExportMenu)}
+                        disabled={exporting}
+                      >
+                        {exporting ? 'Exporting...' : 'Export'}
+                      </Button>
+                      {showExportMenu && (
+                        <div className={styles.exportDropdown}>
+                          <button className={styles.exportOption} onClick={() => handleExport('csv')}>
+                            <FaFileCsv /> Export as CSV
+                          </button>
+                          <button className={styles.exportOption} onClick={() => handleExport('pdf')}>
+                            <FaFilePdf /> Export as PDF
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <Button variant="secondary" leadingIcon={<FaStream />} onClick={handlers.onNew}>
+                      Add
+                    </Button>
+                  </div>
                 )}
               />
             </div>

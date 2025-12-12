@@ -190,7 +190,9 @@
 
 .actions {
 	display: flex;
-	gap: 8px;
+	gap: 6px;
+	flex-shrink: 0;
+	min-width: max-content;
 }
 
 .viewButton,

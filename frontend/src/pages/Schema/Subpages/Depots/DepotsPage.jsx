@@ -16,8 +16,6 @@ import { depotsController } from '../../../../controllers/depotsController';
 
 import styles from './DepotsPage.module.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
-
 function DepotsPage() {
 	const { locationId } = useParams();
 	const { state } = useLocation();
@@ -74,28 +72,6 @@ function DepotsPage() {
 				depotName: depot.name
 			}
 		}),
-		onExport: async (depot) => {
-			try {
-				const format = window.confirm('Click OK to export as CSV, Cancel for JSON') ? 'csv' : 'json';
-				const resp = await fetch(`${API_BASE_URL}/depots/${depot.depot_id}/export?format=${format}`);
-				
-				if (!resp.ok) {
-					throw new Error('Export failed');
-				}
-
-				const blob = await resp.blob();
-				const url = window.URL.createObjectURL(blob);
-				const a = document.createElement('a');
-				a.href = url;
-				a.download = `${depot.name}_inventory_${new Date().toISOString().split('T')[0]}.${format}`;
-				document.body.appendChild(a);
-				a.click();
-				document.body.removeChild(a);
-				window.URL.revokeObjectURL(url);
-			} catch (err) {
-				setError(err?.message || 'Failed to export inventory');
-			}
-		},
 		onEdit: (depot) => depotsHandlers.onEdit(
 			depot,
 			setCurrentDepot,
