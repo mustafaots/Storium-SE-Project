@@ -1,0 +1,100 @@
+import { useState } from 'react';
+import { aislesHelpers } from '../../../utils/aislesHelpers';
+import { aislesConfig } from '../../../config/aislesConfig';
+import styles from '../../../pages/Schema/Subpages/Aisles/AislesPage.module.css';
+
+const AisleForm = ({ isEditing, currentAisle, loading, error, onSubmit, onCancel, onError }) => {
+  const [formData, setFormData] = useState({
+    name: currentAisle?.name || ''
+  });
+
+  const [formErrors, setFormErrors] = useState({});
+
+  const validateForm = () => {
+    const errors = aislesHelpers.validateAisle(formData, aislesConfig.validationSchema);
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    try {
+      await onSubmit(formData);
+    } catch (err) {
+      onError(err.message || 'Failed to save aisle');
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors((prev) => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  return (
+    <div className={styles.formContainer}>
+      <div className={styles.formContent}>
+        <h1 className={styles.title}>
+          {isEditing ? 'EDIT AISLE' : 'CREATE AISLE'}
+        </h1>
+        <p className={styles.subtitle}>
+          {isEditing ? 'Update aisle details' : 'Add a new aisle'}
+        </p>
+
+        {error && (
+          <div className={styles.errorAlert}>
+            <div className={styles.errorContent}>
+              <span className={styles.errorMessage}>{error}</span>
+              <button onClick={() => onError('')} className={styles.closeBtn}>×</button>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className={styles.aisleForm}>
+          <FormField
+            type="text"
+            field="name"
+            label="Name"
+            placeholder="Aisle name *"
+            value={formData.name}
+            onChange={handleChange}
+            error={formErrors.name}
+            required
+          />
+
+          <div className={styles.formActions}>
+            <button type="submit" disabled={loading} className={styles.primaryButton}>
+              {loading ? 'Saving...' : isEditing ? 'Update Aisle' : 'Create Aisle'}
+            </button>
+            <button type="button" onClick={onCancel} disabled={loading} className={styles.secondaryButton}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const FormField = ({ type, field, label, placeholder, value, onChange, error, required }) => (
+  <div className={styles.formGroup}>
+    <label className={styles.formLabel}>
+      {label}
+      {required && <span className={styles.required}> *</span>}
+    </label>
+    <input
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(field, e.target.value)}
+      required={required}
+      className={`${styles.formInput} ${error ? styles.inputError : ''}`}
+    />
+    {error && <span className={styles.errorText}>{error}</span>}
+  </div>
+);
+
+export default AisleForm;
