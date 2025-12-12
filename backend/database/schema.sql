@@ -102,7 +102,8 @@ CREATE TABLE sources (
     contact_phone VARCHAR(50),
     address TEXT,
     coordinates VARCHAR(255),
-    rating FLOAT COMMENT 'Supplier rating or reliability score',
+    rate FLOAT,
+    rate_unit VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT TRUE
 );
