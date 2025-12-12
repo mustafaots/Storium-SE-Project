@@ -15,44 +15,21 @@
   width: 100%;
 }
 
-/* Modal Form Overlay - CENTERED & SCROLLABLE */
+/* Form Container */
 .formContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  overflow-y: auto;
-  padding: 20px;
+  min-height: 60vh;
 }
 
 .formContent {
   background: var(--discord-gray);
   padding: 40px;
   border-radius: 8px;
-  width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
-  overflow-y: auto;
   text-align: center;
-  position: relative;
-  margin: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-}
-
-/* Smooth scrollbar for form content */
-.formContent::-webkit-scrollbar {
-  width: 8px;
-}
-
-.formContent::-webkit-scrollbar-thumb {
-  background: var(--discord-gray-light);
-  border-radius: 4px;
+  width: 100%;
+  max-width: 500px;
 }
 
 /* List Container */
@@ -60,7 +37,14 @@
   width: 100%;
 }
 
-/* Header */
+.headerContent {
+  background: var(--discord-gray);
+  padding: 40px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
 .title {
   font-size: 3rem;
   color: var(--industrial-gold);
@@ -115,22 +99,60 @@
   margin-top: 30px;
 }
 
-/* Actions Container */
-.actionsContainer {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--discord-gray-light);
-}
+/*for the collection of buttons*/
 
-.buttonGroup {
+/* Inline buttons for table controls */
+.buttonGroupInline {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: center;
 }
 
-/* Buttons */
+.exportScopeSelect {
+  background: var(--discord-gray-dark);
+  color: var(--text-light);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 6px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.exportWrapper {
+  position: relative;
+}
+
+.exportMenu {
+  position: absolute;
+  right: 0;
+  top: 110%;
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 6px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  z-index: 20;
+}
+
+.exportMenu button {
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 4px;
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.exportMenu button:hover {
+  background: var(--discord-gray-light);
+  border-color: var(--industrial-gold);
+}
+
+/* Button Styles */
 .primaryButton {
   background: var(--industrial-gold);
   color: var(--discord-gray-dark);
@@ -140,12 +162,11 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .primaryButton:hover:not(:disabled) {
   background: var(--industrial-gold-dark);
-  transform: translateY(-1px);
 }
 
 .primaryButton:disabled {
@@ -170,58 +191,104 @@
   color: var(--text-light);
 }
 
-/* Action Buttons in Table */
-.actionButtons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+/* Table Styles */
+.tableContainer {
+  background: var(--discord-gray);
+  padding: 30px;
+  border-radius: 8px;
 }
 
-.editBtn, .deleteBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
+.tableHeader {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.tableHeader h2 {
+  color: var(--text-light);
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.clientsTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--discord-gray-dark);
   border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+  overflow: hidden;
 }
 
-.editBtn {
-  color: var(--industrial-gold);
+.clientsTable th {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.editBtn:hover {
-  background: rgba(212, 175, 55, 0.1);
-  transform: scale(1.1);
-}
-
-.deleteBtn {
-  color: #e74c3c;
-}
-
-.deleteBtn:hover {
-  background: rgba(231, 76, 60, 0.1);
-  transform: scale(1.1);
-}
-
-/* Checkbox */
-.checkboxLabel {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
+.clientsTable td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--discord-gray-light);
   color: var(--text-light);
   font-size: 14px;
 }
 
-.checkbox {
-  width: 18px;
-  height: 18px;
+.clientsTable tr:last-child td {
+  border-bottom: none;
+}
+
+.clientName {
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.clientAddress, .clientCreated {
+  color: var(--text-gray);
+}
+
+.actionButtons {
+  display: flex;
+  gap: 5px;
+}
+
+.editBtn {
+ /* green */
+  background-color:#ffbb00;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 4px;
   cursor: pointer;
-  accent-color: var(--industrial-gold);
+}
+
+.deleteBtn {
+  background-color: #F44336; /* red */
+  color: white;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* States */
+.loadingState, .emptyState {
+  background: var(--discord-gray);
+  padding: 60px 40px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.loadingContent h2, .emptyContent h2 {
+  color: var(--industrial-gold);
+  margin-bottom: 10px;
+}
+
+.loadingContent p, .emptyContent p {
+  color: var(--text-gray);
+  margin-bottom: 20px;
 }
 
 /* Error Alert */
@@ -262,27 +329,85 @@
   opacity: 0.8;
 }
 
-/* Loading / Empty States */
-.loadingState, .emptyState {
-  background: var(--discord-gray);
-  padding: 60px 40px;
-  border-radius: 8px;
-  text-align: center;
+/* Button Container */
+.buttonContainer {
+  display: flex;
+  justify-content: center;
 }
 
-.loadingContent h2, .emptyContent h2 {
-  color: var(--industrial-gold);
-  margin-bottom: 10px;
-  font-size: 1.5rem;
+.primaryButton {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.loadingContent p, .emptyContent p {
-  color: var(--text-gray);
-  margin-bottom: 20px;
-  font-size: 1rem;
+.primaryButton:hover:not(:disabled) {
+  background: var(--industrial-gold-dark);
+  transform: translateY(-1px);
 }
 
-/* Pagination Info */
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.inputError {
+  border-color: #e74c3c !important;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.3) !important;
+}
+
+.errorText {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 6px;
+  display: block;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 10px;
+  }
+  
+  .title {
+    font-size: 2rem;
+  }
+  
+  .formContent, .headerContent, .tableContainer {
+    padding: 20px;
+  }
+  
+  .formActions {
+    flex-direction: column;
+  }
+  
+  .clientsTable {
+    font-size: 12px;
+  }
+  
+  .clientsTable th,
+  .clientsTable td {
+    padding: 10px 8px;
+  }
+  
+  .actions {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+/* NEW: Pagination Info Container */
 .paginationInfoContainer {
   display: flex;
   justify-content: center;
@@ -324,49 +449,8 @@
   font-style: normal;
 }
 
-/* Form Input Errors */
-.inputError {
-  border-color: #e74c3c !important;
-  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.3) !important;
-}
-
-.errorText {
-  color: #e74c3c;
-  font-size: 12px;
-  margin-top: 6px;
-  display: block;
-  font-weight: 500;
-}
-
-/* Responsive */
+/* Responsive for pagination info */
 @media (max-width: 768px) {
-  .mainContent {
-    padding: 10px;
-  }
-  
-  .title {
-    font-size: 2rem;
-  }
-  
-  .formContent {
-    padding: 20px;
-    max-width: 90%;
-  }
-  
-  .formActions {
-    flex-direction: column;
-  }
-  
-  .actionsContainer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .buttonGroup {
-    flex-direction: column;
-    width: 100%;
-  }
-  
   .paginationInfo {
     flex-direction: column;
     gap: 0.25rem;

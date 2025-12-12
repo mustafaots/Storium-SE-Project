@@ -37,14 +37,16 @@ export const sourcesConfig = {
       ),
     },
     {
-      key: 'rating',
-      header: 'Rating',
-      width: 'minmax(80px, 100px)',
-      render: (row) => (
-        <span style={{ color: row.rating >= 4.5 ? '#4CAF50' : row.rating >= 4.0 ? '#FFC107' : '#FF5722' }}>
-          {row.rating ? ` ${row.rating}` : '-'}
-        </span>
-      ),
+      key: 'rate',
+      header: 'Rate',
+      width: 'minmax(80px, 120px)',
+      render: (row) => <span>{row.rate !== undefined && row.rate !== null ? row.rate : '-'}</span>,
+    },
+    {
+      key: 'rate_unit',
+      header: 'rate-Unit',
+      width: 'minmax(80px, 120px)',
+      render: (row) => <span>{row.rate_unit || '-'}</span>,
     },
     {
       key: 'is_active',
