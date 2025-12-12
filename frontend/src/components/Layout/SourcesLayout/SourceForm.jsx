@@ -10,7 +10,7 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
     contact_phone: '',
     address: '',
     coordinates: '',
-    rating: '',
+    
     is_active: false
   });
 
@@ -26,7 +26,7 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
         contact_phone: currentSource.contact_phone || '',
         address: currentSource.address || '',
         coordinates: currentSource.coordinates || '',
-        rating: currentSource.rating ?? '', // use empty string if null/undefined
+       // use empty string if null/undefined
         is_active: !!currentSource.is_active
       });
     } else {
@@ -36,7 +36,7 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
         contact_phone: '',
         address: '',
         coordinates: '',
-        rating: '',
+        
         is_active: false
       });
     }
@@ -58,13 +58,7 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
     const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
     return phoneRegex.test(v) ? '' : 'Invalid phone';
   };
-  const ratingValidator = (v) => {
-    if (v === '' || v === null || v === undefined) return '';
-    const num = Number(v);
-    if (isNaN(num)) return 'Rating must be a number';
-    if (num < 0 || num > 5) return 'Rating must be between 0 and 5';
-    return '';
-  };
+  
 
   // Validation schema
   const sourceValidationSchema = {
@@ -73,7 +67,7 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
     contact_phone: [optionalPhone],
     address: [],
     coordinates: [],
-    rating: [ratingValidator],
+    
     is_active: []
   };
 
@@ -192,14 +186,7 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
             error={formErrors.coordinates}
           />
 
-          <FormField
-            type="number"
-            field="rating"
-            placeholder="Rating (0-5)"
-            value={formData.rating}
-            onChange={handleChange}
-            error={formErrors.rating}
-          />
+          
 
           <div className={styles.formGroup}>
             <label>
