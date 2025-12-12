@@ -31,3 +31,9 @@
   font-size: 1.2rem;
   color: var(--text-gray);
 }
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
