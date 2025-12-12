@@ -8,7 +8,8 @@ import DataTable from '../../components/UI/DataTable/DataTable';
 import ProductForm from '../../components/Layout/ProductLayout/ProductForm';
 import { FaBox, FaFile, FaPlus } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
+
 
 import { useProducts } from '../../hooks/useProducts';
 import { productsHandlers } from '../../handlers/productsHandlers';
@@ -142,7 +143,7 @@ function ProductsPage() {
     setShowExportMenu(false);
   };
 
-  const exportToPDF = async () => {
+   const exportToPDF = async () => {
     const rows = exportScope === 'current' ? buildExportRows(products) : await fetchAllProductsForExport();
     if (!rows.length) return;
 
@@ -150,13 +151,23 @@ function ProductsPage() {
     doc.setFontSize(14);
     doc.text('Products', 40, 40);
 
-    const head = [exportHeaders.map(h => h.label)];
+    const head = [exportHeaders.map(h => h.label)]; // an array-of-array (single header row)
     const body = rows.map(row => exportHeaders.map(h => row[h.key] ?? ''));
 
-    doc.autoTable({ head, body, startY: 60, styles: { fontSize: 10, cellPadding: 6 }, headStyles: { fillColor: [54, 57, 63] }, alternateRowStyles: { fillColor: [245, 245, 245] } });
+    // call the plugin function directly and pass doc as first arg
+    autoTable(doc, {
+      head,
+      body,
+      startY: 60,
+      styles: { fontSize: 10, cellPadding: 6 },
+      headStyles: { fillColor: [54, 57, 63] },
+      alternateRowStyles: { fillColor: [245, 245, 245] }
+    });
+
     doc.save('products.pdf');
     setShowExportMenu(false);
   };
+
 
   return (
     <div className={styles.pageWrapper}>

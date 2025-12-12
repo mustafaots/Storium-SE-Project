@@ -1,4 +1,4 @@
-// src/controllers/productsController.js
+// backend/src/controllers/products.controller.js
 import productsService from '../services/products.service.js';
 import apiResponse from '../utils/apiResponse.js';
 import { constants } from '../utils/constants.js';
@@ -13,6 +13,8 @@ const productsController = {
 
       // Call paginated service method
       const { products, pagination } = await productsService.getAllPaginated(page, limit, search);
+
+    
 
       // If service returns nothing, respond with empty paginated shape
       if (!products || products.length === 0) {
@@ -32,6 +34,7 @@ const productsController = {
         pages: pagination.pages
       }));
     } catch (error) {
+      console.error('❌ Controller getAllProducts error:', error);
       return res.status(500).json(apiResponse.errorResponse(error.message || 'Failed to load products'));
     }
   },
@@ -45,8 +48,11 @@ const productsController = {
         return res.status(404).json(apiResponse.errorResponse('Product not found'));
       }
 
+      
+
       return res.json(apiResponse.successResponse(product, 'Product retrieved successfully'));
     } catch (error) {
+      console.error('❌ Controller getProductById error:', error);
       return res.status(500).json(apiResponse.errorResponse(error.message || 'Failed to retrieve product'));
     }
   },
@@ -55,10 +61,14 @@ const productsController = {
   createProduct: async (req, res) => {
     try {
       const productData = req.body;
+    
+
       const newProduct = await productsService.create(productData);
+      
 
       return res.status(201).json(apiResponse.successResponse(newProduct, 'Product created successfully'));
     } catch (error) {
+      console.error('❌ Controller createProduct error:', error);
       return res.status(400).json(apiResponse.errorResponse(error.message || 'Failed to create product'));
     }
   },
@@ -67,14 +77,19 @@ const productsController = {
   updateProduct: async (req, res) => {
     try {
       const productData = req.body;
+      
+
       const result = await productsService.update(req.params.id, productData);
 
       if (!result || result.affectedRows === 0) {
         return res.status(404).json(apiResponse.errorResponse('Product not found'));
       }
 
+      
+
       return res.json(apiResponse.successResponse(null, 'Product updated successfully'));
     } catch (error) {
+      console.error('❌ Controller updateProduct error:', error);
       return res.status(400).json(apiResponse.errorResponse(error.message || 'Failed to update product'));
     }
   },
@@ -90,6 +105,7 @@ const productsController = {
 
       return res.json(apiResponse.successResponse(null, 'Product deleted successfully'));
     } catch (error) {
+      console.error('❌ Controller deleteProduct error:', error);
       return res.status(500).json(apiResponse.errorResponse(error.message || 'Failed to delete product'));
     }
   }
