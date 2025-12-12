@@ -75,6 +75,7 @@ CREATE TABLE stocks (
     stock_id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT,
     slot_id INT,
+    slot_coordinates VARCHAR(50),
     quantity INT NOT NULL,
     batch_no VARCHAR(100),
     expiry_date DATE,

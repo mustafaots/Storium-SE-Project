@@ -1,5 +1,5 @@
 import { depotsHelpers } from '../utils/depotsHelpers';
-import { FaEdit, FaTrashAlt, FaStream } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaStream, FaDownload } from 'react-icons/fa';
 
 export const depotsConfig = {
   columns: (styles, handlers) => [
@@ -29,8 +29,21 @@ export const depotsConfig = {
                 handlers.onViewAisles(depot);
               }}
               className={styles.viewButton}
+              title="View Aisles"
             >
               <FaStream />
+            </button>
+          )}
+          {handlers.onExport && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handlers.onExport(depot);
+              }}
+              className={styles.exportButton}
+              title="Export Inventory"
+            >
+              <FaDownload />
             </button>
           )}
           <button
@@ -39,6 +52,7 @@ export const depotsConfig = {
               handlers.onEdit(depot);
             }}
             className={styles.editButton}
+            title="Edit Depot"
           >
             <FaEdit />
           </button>
@@ -48,6 +62,7 @@ export const depotsConfig = {
               handlers.onDelete(depot.depot_id);
             }}
             className={styles.deleteButton}
+            title="Delete Depot"
           >
             <FaTrashAlt />
           </button>

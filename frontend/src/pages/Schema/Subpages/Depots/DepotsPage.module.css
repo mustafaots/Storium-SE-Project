@@ -195,7 +195,8 @@
 
 .viewButton,
 .editButton,
-.deleteButton {
+.deleteButton,
+.exportButton {
 	padding: 6px 10px;
 	border: none;
 	border-radius: 4px;
@@ -211,6 +212,15 @@
 
 .viewButton:hover {
 	background: #3498db;
+}
+
+.exportButton {
+	background: #27ae60;
+	color: white;
+}
+
+.exportButton:hover {
+	background: #1e8449;
 }
 
 .editButton {
