@@ -15,6 +15,7 @@ import LocationsPage from './pages/Schema/Subpages/Locations/LocationsPage.jsx';
 import DepotsPage from './pages/Schema/Subpages/Depots/DepotsPage.jsx';
 import AislesPage from './pages/Schema/Subpages/Aisles/AislesPage.jsx';
 import RacksPage from './pages/Schema/Subpages/Racks/RacksPage.jsx';
+import RackDetailPage from './pages/Schema/Subpages/Racks/RackDetailPage.jsx';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Route path="/locations/:locationId/depots" element={<DepotsPage />} />
         <Route path="/locations/:locationId/depots/:depotId/aisles" element={<AislesPage />} />
         <Route path="/locations/:locationId/depots/:depotId/aisles/:aisleId/racks" element={<RacksPage />} />
+        <Route path="/locations/:locationId/depots/:depotId/aisles/:aisleId/racks/:rackId" element={<RackDetailPage />} />
       </Routes>
     </Router>
   );
