@@ -50,11 +50,32 @@ const sourcesController = {
   // Create source
   createSource: async (req, res) => {
     try {
-      const { source_name, contact_email, contact_phone, address, coordinates, rate, rate_unit, is_active } = req.body;
+      // Normalize incoming fields
+      const {
+        source_name,
+        contact_email,
+        contact_phone,
+        address,
+        coordinates,
+        rate: rawRate,
+        rate_unit: rawRateUnit,
+        is_active: rawIsActive
+      } = req.body;
 
-      // Validation
-      if (rate < 0) return res.status(400).json(apiResponse.errorResponse('Rate must be a positive number'));
-      if (!rate_unit || !rate_unit.includes('/')) {
+      // Coerce values
+      const rate = rawRate === '' || rawRate === null || rawRate === undefined ? null : Number(rawRate);
+      const rate_unit = (rawRateUnit === '' || rawRateUnit === null || rawRateUnit === undefined) ? null : String(rawRateUnit).trim();
+      const is_active = !!rawIsActive;
+
+      // Validate only when provided
+      if (rate !== null && Number.isNaN(rate)) {
+        return res.status(400).json(apiResponse.errorResponse('Rate must be a valid number'));
+      }
+      if (rate !== null && rate < 0) {
+        return res.status(400).json(apiResponse.errorResponse('Rate must be a positive number'));
+      }
+
+      if (rate_unit !== null && !rate_unit.includes('/')) {
         return res.status(400).json(apiResponse.errorResponse('Rate unit must be in the format "product / time unit"'));
       }
 
@@ -78,11 +99,31 @@ const sourcesController = {
   // Update source
   updateSource: async (req, res) => {
     try {
-      const { source_name, contact_email, contact_phone, address, coordinates, rate, rate_unit, is_active } = req.body;
+      const {
+        source_name,
+        contact_email,
+        contact_phone,
+        address,
+        coordinates,
+        rate: rawRate,
+        rate_unit: rawRateUnit,
+        is_active: rawIsActive
+      } = req.body;
 
-      // Validation
-      if (rate < 0) return res.status(400).json(apiResponse.errorResponse('Rate must be a positive number'));
-      if (!rate_unit || !rate_unit.includes('/')) {
+      // Coerce
+      const rate = rawRate === '' || rawRate === null || rawRate === undefined ? null : Number(rawRate);
+      const rate_unit = (rawRateUnit === '' || rawRateUnit === null || rawRateUnit === undefined) ? null : String(rawRateUnit).trim();
+      const is_active = !!rawIsActive;
+
+      // Validate only when provided
+      if (rate !== null && Number.isNaN(rate)) {
+        return res.status(400).json(apiResponse.errorResponse('Rate must be a valid number'));
+      }
+      if (rate !== null && rate < 0) {
+        return res.status(400).json(apiResponse.errorResponse('Rate must be a positive number'));
+      }
+
+      if (rate_unit !== null && !rate_unit.includes('/')) {
         return res.status(400).json(apiResponse.errorResponse('Rate unit must be in the format "product / time unit"'));
       }
 
