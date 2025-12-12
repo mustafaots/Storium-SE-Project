@@ -30,10 +30,10 @@ app.use(requestLogger);
 
 // Import routes
 import clientsRoutes from './src/routes/clients.routes.js';
-import productsRoutes from './src/routes/products.routes.js';
+
 // API Routes
 app.use('/api/clients', clientsRoutes);
-app.use('/api/products',productsRoutes);
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Storium IMS API is running' });

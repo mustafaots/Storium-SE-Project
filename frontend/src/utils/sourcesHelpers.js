@@ -37,13 +37,21 @@ export const sourcesHelpers = {
       return new Date(isoString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     } catch (e) { return isoString; }
   },
+  
 
   // Short initials for source (for avatar circles)
   initials: (name) => {
     if (!name) return 'SO';
     return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   },
-
+//format phone 
+formatPhone: (phone) => {
+    if (!phone) return '-';
+    const cleaned = ('' + phone).replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) return `(${match[1]}) ${match[2]}-${match[3]}`;
+    return phone;
+  },
   // Format status
   formatStatus: (isActive) => {
     return isActive ? 'Active' : 'Inactive';
