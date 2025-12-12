@@ -45,4 +45,32 @@ export const racksAPI = {
     if (!response.ok) throw new Error('Failed to delete rack');
     return await response.json();
   },
+
+  getLayout: async (locationId, depotId, aisleId, rackId) => {
+    const response = await fetch(`${API_BASE_URL}/locations/${locationId}/depots/${depotId}/aisles/${aisleId}/racks/${rackId}/layout`);
+    if (!response.ok) throw new Error('Failed to fetch rack layout');
+    return await response.json();
+  },
+
+  createStock: async (locationId, depotId, aisleId, rackId, slotId, payload) => {
+    const response = await fetch(`${API_BASE_URL}/locations/${locationId}/depots/${depotId}/aisles/${aisleId}/racks/${rackId}/slots/${slotId}/stocks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json().catch(() => ({ success: false, error: 'Failed to create stock' }));
+    if (!response.ok) return data;
+    return data;
+  },
+
+  moveStock: async (locationId, depotId, aisleId, rackId, stockId, targetSlotId) => {
+    const response = await fetch(`${API_BASE_URL}/locations/${locationId}/depots/${depotId}/aisles/${aisleId}/racks/${rackId}/stocks/move`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stockId, targetSlotId }),
+    });
+    const data = await response.json().catch(() => ({ success: false, error: 'Failed to move stock' }));
+    if (!response.ok) return data;
+    return data;
+  },
 };

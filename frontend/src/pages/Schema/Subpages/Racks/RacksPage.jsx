@@ -128,6 +128,17 @@ const RacksPage = () => {
     return handlers.onCreate(formData);
   };
 
+  const handleRowClick = (rack) => {
+    navigate(`/locations/${locationId}/depots/${depotId}/aisles/${aisleId}/racks/${rack.rack_id}`, {
+      state: {
+        locationName,
+        depotName,
+        aisleName,
+        rackCode: rack.rack_code
+      }
+    });
+  };
+
   const handleBack = () => {
     navigate(`/locations/${locationId}/depots/${depotId}/aisles`, {
       state: {
@@ -204,6 +215,7 @@ const RacksPage = () => {
                 searchPlaceholder="Search racks..."
                 onSearchChange={search.setSearchTerm}
                 searchTerm={search.searchTerm}
+                onRowClick={handleRowClick}
                 rightControls={(
                   <Button variant="secondary" leadingIcon={<FaBoxes />} onClick={handlers.onNew}>
                     Add

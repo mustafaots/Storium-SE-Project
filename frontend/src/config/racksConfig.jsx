@@ -46,9 +46,6 @@ export const racksConfig = {
   ],
 
   validationSchema: {
-    rack_code: [
-      (value) => !value?.trim() ? 'Code is required' : null,
-      (value) => value?.length < 2 ? 'Code must be at least 2 characters' : null
-    ]
+    // validation handled in form helper
   }
 };

@@ -172,6 +172,12 @@
   font-size: 0.85rem;
 }
 
+.codePreview {
+  color: var(--text-light);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
 .racksTable {
   margin-top: 12px;
 }

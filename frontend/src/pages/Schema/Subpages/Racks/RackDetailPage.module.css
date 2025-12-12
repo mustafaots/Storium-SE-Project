@@ -1,0 +1,567 @@
+.pageWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.content {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.backLink {
+  color: var(--industrial-gold);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.headerActions {
+  display: flex;
+  gap: 10px;
+}
+
+.errorAlert {
+  background: #e74c3c;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+
+.errorContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.errorMessage {
+  font-weight: 600;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
+.infoCard {
+  background: var(--discord-gray);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+.infoLabel {
+  color: var(--text-gray);
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+
+.infoValue {
+  color: var(--text-light);
+  font-weight: 700;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+}
+
+.layoutSection {
+  background: var(--discord-gray);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+}
+
+.gridScroll {
+  max-height: 70vh;
+  overflow: auto;
+  padding: 4px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--text-light);
+  font-weight: 700;
+}
+
+.directionToggle {
+  display: flex;
+  gap: 8px;
+}
+
+.directionButton {
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  color: var(--text-light);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, border 0.15s ease;
+}
+
+.directionButton:hover:not(:disabled) {
+  border-color: var(--industrial-gold);
+}
+
+.directionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.activeDirection {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+  border-color: var(--industrial-gold);
+}
+
+.loadingState {
+  text-align: center;
+  color: var(--text-gray);
+  padding: 16px;
+}
+
+.levelRow {
+  margin-bottom: 18px;
+}
+
+.levelLabel {
+  color: var(--text-gray);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.slotGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.slotCell {
+  background: var(--discord-gray-dark);
+  border: 1px dashed var(--discord-gray-light);
+  border-radius: 10px;
+  padding: 10px;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.baySeparator {
+  border-right: 4px solid var(--industrial-gold) !important;
+  margin-right: 8px;
+}
+
+.slotCell.empty:hover {
+  border-color: var(--industrial-gold);
+}
+
+.filled {
+  border-style: solid;
+}
+
+.dropping {
+  border-color: var(--industrial-gold);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+}
+
+.slotMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.slotLabel {
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.slotCoord {
+  color: var(--text-gray);
+  font-size: 0.85rem;
+}
+
+.stockCard {
+  background: var(--discord-gray);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 12px 16px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dragging {
+  transform: rotate(-1deg) scale(1.02);
+  box-shadow: 0 16px 26px rgba(0, 0, 0, 0.3);
+}
+
+.stockHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.stockProduct {
+  color: var(--text-light);
+  font-weight: 700;
+}
+
+.stockBadge {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.stockDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 12px;
+}
+
+.stockFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--discord-gray-light);
+}
+
+.footerRow {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-light);
+  font-size: 0.85rem;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-light);
+}
+
+.detailLabel {
+  color: var(--text-gray);
+  font-size: 0.9rem;
+}
+
+.detailValue {
+  font-weight: 700;
+}
+
+.addStockBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: transparent;
+  border: 1px dashed var(--discord-gray-light);
+  color: var(--text-light);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border 0.15s ease, color 0.15s ease;
+}
+
+.addStockBtn:hover:not(:disabled) {
+  border-color: var(--industrial-gold);
+  color: var(--industrial-gold);
+}
+
+.addStockBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 30;
+}
+
+.modal {
+  background: var(--discord-gray);
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  max-width: 720px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.modalTitle {
+  color: var(--text-light);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.modalSubtitle {
+  color: var(--text-gray);
+  font-size: 0.95rem;
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formRowSplit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.formLabel {
+  color: var(--text-gray);
+  font-weight: 600;
+}
+
+.formInput {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 8px;
+  color: var(--text-light);
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--industrial-gold);
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.15);
+}
+
+.checkboxRow {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+}
+
+.secondaryButton {
+  background: transparent;
+  border: 1px solid var(--discord-gray-light);
+  color: var(--text-light);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .slotGrid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+  }
+
+  .slotMeta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .mainContent {
+    padding: 12px;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .directionToggle {
+    width: 100%;
+  }
+
+  .directionButton {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* Stock Options Modal */
+.modalContent {
+  background: var(--discord-gray);
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35);
+}
+
+.modalContent h3 {
+  color: var(--text-light);
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.modalClose {
+  background: transparent;
+  border: none;
+  color: var(--text-gray);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+
+.modalClose:hover {
+  color: var(--text-light);
+}
+
+.stockOptionsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.stockOptionBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 16px;
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.stockOptionBtn:hover:not(:disabled) {
+  border-color: var(--industrial-gold);
+  transform: translateY(-2px);
+}
+
+.stockOptionBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.optionIcon {
+  font-size: 1.5rem;
+  color: var(--industrial-gold);
+}
+
+.optionLabel {
+  color: var(--text-light);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.optionDesc {
+  color: var(--text-gray);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.migrateHint {
+  color: var(--text-gray);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 500px) {
+  .stockOptionsGrid {
+    grid-template-columns: 1fr;
+  }
+}
