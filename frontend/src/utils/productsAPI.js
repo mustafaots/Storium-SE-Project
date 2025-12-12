@@ -1,30 +1,65 @@
-import axios from 'axios';
+const API_BASE_URL = 'http://localhost:3001/api';
 
-const API_URL = 'http://localhost:3001/api/products';
-
+// Thin fetch wrapper for products endpoints; keeps pages/hooks UI-only
 export const productsAPI = {
+  // Get all products with pagination
   getAll: async (page = 1, limit = 10, search = '') => {
-    const res = await axios.get(API_URL, { params: { page, limit, search } });
-    return res.data;
+    const url = new URL(`${API_BASE_URL}/products`);
+    url.searchParams.append('page', page);
+    url.searchParams.append('limit', limit);
+    if (search) url.searchParams.append('search', search);
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch products');
+    return await response.json();
   },
 
+  // Get product by ID
   getById: async (id) => {
-    const res = await axios.get(`${API_URL}/${id}`);
-    return res.data;
+    const response = await fetch(`${API_BASE_URL}/products/${id}`);
+    if (!response.ok) throw new Error('Failed to fetch product');
+    return await response.json();
   },
 
-  create: async (data) => {
-    const res = await axios.post(API_URL, data);
-    return res.data;
+  // Create new product
+  create: async (productData) => {
+    const response = await fetch(`${API_BASE_URL}/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(productData),
+    });
+    if (!response.ok) throw new Error('Failed to create product');
+    return await response.json();
   },
 
-  update: async (id, data) => {
-    const res = await axios.put(`${API_URL}/${id}`, data);
-    return res.data;
+  // Update product
+  update: async (id, productData) => {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(productData),
+    });
+    if (!response.ok) throw new Error('Failed to update product');
+    return await response.json();
   },
 
+  // Delete product
   delete: async (id) => {
-    const res = await axios.delete(`${API_URL}/${id}`);
-    return res.data;
+    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete product');
+    return await response.json();
+  },
+
+  // Get all suppliers (sources)
+  getAllSuppliers: async () => {
+    const response = await fetch(`${API_BASE_URL}/sources`);
+    if (!response.ok) throw new Error('Failed to fetch suppliers');
+    return await response.json();
   }
 };

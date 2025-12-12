@@ -1,80 +1,95 @@
+// src/controllers/productsController.js
 import { productsAPI } from '../utils/productsAPI.js';
 
 export const productsController = {
+  // Load products with pagination + search; updates rows and pagination state
   loadProducts: async (
-    setData,
+    setProducts,
     setLoading,
     setError,
     setPagination,
-    page,
-    pageSize,
-    search
+    page = 1,
+    limit = 10,
+    search = ''
   ) => {
-    setLoading(true);
-    setError('');
-
     try {
-      const response = await productsAPI.getAll(page, pageSize, search);
+      setLoading(true);
+      setError('');
+
+      const response = await productsAPI.getAll(page, limit, search);
 
       if (response.success) {
-        const products = response.data || [];
+        setProducts(response.data || []);
 
-        // ✔ No results while searching
-        if (products.length === 0 && search && search.trim() !== '') {
-          setError('No matching products found.');
-          setData([]);
-          setPagination({ page: 1, limit: pageSize, total: 0, pages: 0 });
-        } else {
-          // ✔ Normal data
-          setData(products);
-          setPagination(response.pagination || {});
+        // Map pagination to consistent shape expected by UI
+        if (response.pagination && setPagination) {
+          setPagination({
+            currentPage: response.pagination.page,
+            pageSize: response.pagination.limit,
+            totalCount: response.pagination.total,
+            totalPages: response.pagination.pages
+          });
         }
       } else {
-        setError(response.error || 'Failed to load products.');
+        setError(response.error || 'Failed to load products');
       }
-    } catch (err) {
-      setError(err.message || 'Failed to load products.');
+    } catch (error) {
+      setError(error.message || 'Failed to load products');
     } finally {
       setLoading(false);
     }
   },
 
-  deleteProduct: async (id, onSuccess, onError) => {
+  // Delete product then let caller decide how to refresh
+  deleteProduct: async (id, setProducts, setLoading, setError, onSuccess) => {
     try {
+      setLoading(true);
       const response = await productsAPI.delete(id);
+
       if (response.success) {
         onSuccess && onSuccess();
       } else {
-        onError && onError(response.error);
+        setError(response.error || 'Failed to delete product');
       }
-    } catch (err) {
-      onError && onError(err.message);
+    } catch (error) {
+      setError(error.message || 'Failed to delete product');
+    } finally {
+      setLoading(false);
     }
   },
 
-  createProduct: async (data, onSuccess, onError) => {
+  // Create product and invoke caller callbacks (UI success + refresh)
+  createProduct: async (formData, onSuccess, onError, onFormSuccess) => {
     try {
-      const response = await productsAPI.create(data);
+      const response = await productsAPI.create(formData);
+
       if (response.success) {
+        // close form first, then run success refresh callback
+        onFormSuccess && onFormSuccess();
         onSuccess && onSuccess(response.data);
       } else {
-        onError && onError(response.error);
+        onError && onError(response.error || 'Failed to create product');
       }
-    } catch (err) {
-      onError && onError(err.message);
+    } catch (error) {
+      onError && onError(error.message || 'Failed to create product');
     }
   },
 
-  updateProduct: async (id, data, onSuccess, onError) => {
+  // Update product and invoke caller callbacks (UI success + refresh)
+  updateProduct: async (id, formData, onSuccess, onError, onFormSuccess) => {
     try {
-      const response = await productsAPI.update(id, data);
+      const response = await productsAPI.update(id, formData);
+
       if (response.success) {
+        onFormSuccess && onFormSuccess();
         onSuccess && onSuccess();
       } else {
-        onError && onError(response.error);
+        onError && onError(response.error || 'Failed to update product');
       }
-    } catch (err) {
-      onError && onError(err.message);
+    } catch (error) {
+      onError && onError(error.message || 'Failed to update product');
     }
   }
 };
+
+export default productsController;

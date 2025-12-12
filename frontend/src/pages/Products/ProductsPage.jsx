@@ -1,19 +1,26 @@
-import { useEffect, useRef } from 'react';
-import { useActiveNavItem } from '../../hooks/useActiveNavItem';
+// src/pages/ProductsPage.jsx
+import { useEffect, useState, useRef } from 'react';
 import NavBar from '../../components/UI/NavBar/NavBar';
+import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import Header from '../../components/UI/Header/Header';
 import Button from '../../components/UI/Button/Button';
 import DataTable from '../../components/UI/DataTable/DataTable';
 import ProductForm from '../../components/Layout/ProductLayout/ProductForm';
 import { FaBox, FaFile, FaPlus } from 'react-icons/fa';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 import { useProducts } from '../../hooks/useProducts';
 import { productsHandlers } from '../../handlers/productsHandlers';
 import { productsConfig } from '../../config/productsConfig';
 import useTableSearch from '../../hooks/useTableSearch';
+import { productsAPI } from '../../utils/productsAPI';
+import { productsHelpers } from '../../utils/productsHelpers';
 import styles from './ProductsPage.module.css';
 
 function ProductsPage() {
+  const activeItem = useActiveNavItem();
+
   const {
     products,
     loading,
@@ -32,56 +39,124 @@ function ProductsPage() {
     handlePageSizeChange
   } = useProducts();
 
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exportScope, setExportScope] = useState('current');
   const search = useTableSearch('');
-  const activeItem = useActiveNavItem();
   const hasInitialLoaded = useRef(false);
 
-  // Initial load ONLY
+  // Initial load
   useEffect(() => {
     if (!hasInitialLoaded.current) {
       hasInitialLoaded.current = true;
-      loadProducts(1, 10, '');
-    }
-  }, []);
-
-  // Search changes (skip first render)
-  useEffect(() => {
-    if (hasInitialLoaded.current) {
-      loadProducts(1, pagination.pageSize, search.debouncedSearch);
-    }
-  }, [search.debouncedSearch]);
-
-  const handlers = {
-    onEdit: (product) => productsHandlers.handleEdit(
-      product, setCurrentProduct, setIsEditing, setShowForm, setError
-    ),
-    onNewProduct: () => productsHandlers.handleNew(
-      setCurrentProduct, setIsEditing, setShowForm, setError
-    ),
-    onFormSuccess: () => productsHandlers.handleFormSuccess(
-      setShowForm, setIsEditing, setCurrentProduct,
-      () => loadProducts(pagination.currentPage, pagination.pageSize, search.debouncedSearch)
-    ),
-    onCancel: () => productsHandlers.handleCancel(
-      setShowForm, setIsEditing, setCurrentProduct, setError
-    ),
-    onDelete: (id, productName) => productsHandlers.handleDelete(id, deleteProduct, productName),
-    onPageChange: handlePageChange,
-    onPageSizeChange: handlePageSizeChange,
-    // NEW: when user clicks "Load all products" from NoResults
-    onLoadAllProducts: () => {
-      // clear search and reload first page with empty search
-      search.setSearchTerm('');
       loadProducts(1, pagination.pageSize, '');
     }
+  }, [loadProducts, pagination.pageSize]);
+
+  // Reload when search changes
+  useEffect(() => {
+    loadProducts(1, pagination.pageSize, search.debouncedSearch);
+  }, [search.debouncedSearch, loadProducts, pagination.pageSize]);
+
+  // Handlers
+  const handlers = {
+    onEdit: (product) => productsHandlers.handleEdit(product, setCurrentProduct, setIsEditing, setShowForm, setError),
+    onNewProduct: () => productsHandlers.handleNew(setCurrentProduct, setIsEditing, setShowForm, setError),
+    onFormSuccess: () => productsHandlers.handleFormSuccess(
+      setShowForm,
+      setIsEditing,
+      setCurrentProduct,
+      () => loadProducts(pagination.currentPage, pagination.pageSize, search.debouncedSearch)
+    ),
+    onCancel: () => productsHandlers.handleCancel(setShowForm, setIsEditing, setCurrentProduct, setError),
+    onDelete: (id) => productsHandlers.handleDelete(
+      id,
+      () => deleteProduct(id, search.debouncedSearch)
+    ),
+    onPageChange: (page) => handlePageChange(page, search.debouncedSearch),
+    onPageSizeChange: (size) => handlePageSizeChange(size, search.debouncedSearch),
   };
 
   const productColumns = productsConfig.columns(styles, handlers);
 
-  // DEBUG: watch important state to help reproduce 'disappearing' UI issues
-  useEffect(() => {
-    console.debug('[ProductsPage] state', { loading, error, showForm, productsLength: products?.length ?? 0, pagination });
-  }, [loading, error, showForm, products, pagination]);
+  const exportHeaders = [
+    { key: 'product_id', label: 'ID' },
+    { key: 'name', label: 'Name' },
+    { key: 'category', label: 'Category' },
+    { key: 'unit', label: 'Unit' },
+    { key: 'min_stock_level', label: 'Min Stock' },
+    { key: 'max_stock_level', label: 'Max Stock' },
+    { key: 'created_at', label: 'Created' },
+  ];
+
+  const buildExportRows = (rows) => (rows || []).map(p => ({
+    product_id: p.product_id,
+    name: p.name || '',
+    category: p.category || '',
+    unit: p.unit || '',
+    min_stock_level: p.min_stock_level ?? '',
+    max_stock_level: p.max_stock_level ?? '',
+    created_at: productsHelpers.formatDate?.(p.created_at) ?? p.created_at ?? ''
+  }));
+
+  const fetchAllProductsForExport = async () => {
+    try {
+      const pageSize = 500;
+      let page = 1;
+      let all = [];
+      let total = Infinity;
+
+      while (all.length < total) {
+        const response = await productsAPI.getAll(page, pageSize, '');
+        if (!response.success) throw new Error(response.error || 'Failed to fetch products');
+        all = all.concat(response.data || []);
+        total = response.pagination?.total ?? all.length;
+        if (!response.data || response.data.length === 0) break;
+        page += 1;
+      }
+
+      return buildExportRows(all);
+    } catch (err) {
+      setError(err.message || 'Failed to export products');
+      return [];
+    }
+  };
+
+  const exportToCSV = async () => {
+    const rows = exportScope === 'current' ? buildExportRows(products) : await fetchAllProductsForExport();
+    if (!rows.length) return;
+
+    const escape = (value) => {
+      const str = String(value ?? '');
+      return str.includes('"') || str.includes(',') || str.includes('\n') ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+
+    const csv = [exportHeaders.map(h => escape(h.label)).join(','), ...rows.map(row => exportHeaders.map(h => escape(row[h.key])).join(','))].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'products.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+    setShowExportMenu(false);
+  };
+
+  const exportToPDF = async () => {
+    const rows = exportScope === 'current' ? buildExportRows(products) : await fetchAllProductsForExport();
+    if (!rows.length) return;
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+    doc.setFontSize(14);
+    doc.text('Products', 40, 40);
+
+    const head = [exportHeaders.map(h => h.label)];
+    const body = rows.map(row => exportHeaders.map(h => row[h.key] ?? ''));
+
+    doc.autoTable({ head, body, startY: 60, styles: { fontSize: 10, cellPadding: 6 }, headStyles: { fillColor: [54, 57, 63] }, alternateRowStyles: { fillColor: [245, 245, 245] } });
+    doc.save('products.pdf');
+    setShowExportMenu(false);
+  };
 
   return (
     <div className={styles.pageWrapper}>
@@ -107,68 +182,44 @@ function ProductsPage() {
                 icon={<FaBox size={30} />}
               />
 
-              <ErrorAlert error={error} onClose={() => setError('')} />
+              {error && <ErrorAlert error={error} onClose={() => setError('')} />}
 
-              {loading && (!products || products.length === 0) ? (
+              {loading && products.length === 0 ? (
                 <LoadingState message="Loading Products..." />
-              ) : (!products || products.length === 0) ? (
-                // Distinguish between "no results from search" and "completely empty list"
-                search.debouncedSearch ? (
-                  <NoResults
-                    term={search.debouncedSearch}
-                    onClearSearch={() => {
-                      search.setSearchTerm('');
-                      loadProducts(1, pagination.pageSize, '');
-                    }}
-                    onAddProduct={() => handlers.onLoadAllProducts()}
-                  />
-                ) : (
-                  <EmptyState onAddProduct={handlers.onNewProduct} />
-                )
               ) : (
-                <>
-                  <DataTable
-                    data={products || []}
-                    columns={productColumns}
-                    keyField="product_id"
-                    loading={loading}
-                    emptyMessage="No products found"
-                    pagination={pagination}
-                    onPageChange={handlePageChange}
-                    onPageSizeChange={handlePageSizeChange}
-                    showPagination
-                    showSearch
-                    searchPlaceholder="Search products..."
-                    onSearchChange={search.setSearchTerm}
-                    searchTerm={search.searchTerm}
-                  />
-
-                  {pagination.totalCount > 0 && (
-                    <div className={styles.paginationInfoContainer}>
-                      <div className={styles.paginationInfo}>
-                        <span className={styles.resultsText}>
-                          Showing <strong>{(pagination.currentPage - 1) * pagination.pageSize + 1}</strong> to <strong>{Math.min(pagination.currentPage * pagination.pageSize, pagination.totalCount)}</strong> of <strong>{pagination.totalCount}</strong> products
-                        </span>
-                        {search.debouncedSearch && (
-                          <span className={styles.searchInfo}>
-                            matching "<strong>{search.debouncedSearch}</strong>"
-                          </span>
+                <DataTable
+                  data={products}
+                  columns={productColumns}
+                  keyField="product_id"
+                  loading={loading}
+                  emptyMessage={search.debouncedSearch ? `No products found for "${search.debouncedSearch}"` : 'No products found'}
+                  pagination={pagination}
+                  onPageChange={(page) => handlePageChange(page, search.debouncedSearch)}
+                  onPageSizeChange={(size) => handlePageSizeChange(size, search.debouncedSearch)}
+                  showPagination
+                  showSearch
+                  searchPlaceholder="Search products..."
+                  onSearchChange={search.setSearchTerm}
+                  searchTerm={search.searchTerm}
+                  rightControls={
+                    <div className={styles.buttonGroupInline}>
+                      <Button variant='secondary' leadingIcon={<FaPlus />} onClick={handlers.onNewProduct}>Add</Button>
+                      <select className={styles.exportScopeSelect} value={exportScope} onChange={(e) => setExportScope(e.target.value)}>
+                        <option value="current">Current view</option>
+                        <option value="all">All products</option>
+                      </select>
+                      <div className={styles.exportWrapper}>
+                        <Button onClick={() => setShowExportMenu((prev) => !prev)} variant="primary" leadingIcon={<FaFile />}>Export</Button>
+                        {showExportMenu && (
+                          <div className={styles.exportMenu}>
+                            <button onClick={exportToCSV}>Export CSV</button>
+                            <button onClick={exportToPDF}>Export PDF</button>
+                          </div>
                         )}
                       </div>
                     </div>
-                  )}
-
-                  <div className={styles.actionsContainer}>
-                    <div className={styles.buttonGroup}>
-                      <Button variant="secondary" leadingIcon={<FaPlus />} onClick={handlers.onNewProduct}>
-                        Add
-                      </Button>
-                      <Button variant="primary" leadingIcon={<FaFile />} onClick={() => {}}>
-                        Export
-                      </Button>
-                    </div>
-                  </div>
-                </>
+                  }
+                />
               )}
             </div>
           )}
@@ -179,55 +230,21 @@ function ProductsPage() {
   );
 }
 
-const ErrorAlert = ({ error, onClose }) => (
-  error && (
-    <div className={styles.errorAlert}>
-      <div className={styles.errorContent}>
-        <span className={styles.errorMessage}>{error}</span>
-        <button onClick={onClose} className={styles.closeBtn}>×</button>
-      </div>
+// Sub-components
+const ErrorAlert = ({ error, onClose }) => error && (
+  <div className={styles.errorAlert}>
+    <div className={styles.errorContent}>
+      <span className={styles.errorMessage}>{error}</span>
+      <button onClick={onClose} className={styles.closeBtn}>×</button>
     </div>
-  )
+  </div>
 );
 
-const LoadingState = ({ message }) => (
+const LoadingState = ({ message = 'Loading...' }) => (
   <div className={styles.loadingState}>
     <div className={styles.loadingContent}>
       <h2>{message}</h2>
       <p>Please wait while we fetch your product data</p>
-    </div>
-  </div>
-);
-
-const EmptyState = ({ onAddProduct }) => (
-  <div className={styles.emptyState}>
-    <div className={styles.emptyContent}>
-      <h2>No Products Found</h2>
-      <p>Create your first product to get started</p>
-      <button onClick={onAddProduct} className={styles.primaryButton}>
-        Add Your First Product
-      </button>
-    </div>
-  </div>
-);
-
-const NoResults = ({ term, onClearSearch, onAddProduct }) => (
-  <div className={styles.noResults}>
-    <div className={styles.noResultsContent}>
-      <h2>No results</h2>
-      <p>
-        We couldn't find any products matching&nbsp;
-        <strong>{term}</strong>.
-      </p>
-      <div className={styles.noResultsActions}>
-        <button onClick={onClearSearch} className={styles.secondaryButton}>
-          Clear search
-        </button>
-        {/* This button now loads all products (clears the search & fetches full list) */}
-        <button onClick={onAddProduct} className={styles.primaryButton}>
-          Load all products
-        </button>
-      </div>
     </div>
   </div>
 );
