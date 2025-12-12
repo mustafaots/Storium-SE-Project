@@ -10,7 +10,8 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
     contact_phone: '',
     address: '',
     coordinates: '',
-    
+    rate: '',
+    rate_unit: '',
     is_active: false
   });
 
@@ -26,7 +27,8 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
         contact_phone: currentSource.contact_phone || '',
         address: currentSource.address || '',
         coordinates: currentSource.coordinates || '',
-       // use empty string if null/undefined
+        rate: currentSource.rate || '',
+        rate_unit: currentSource.rate_unit || '',
         is_active: !!currentSource.is_active
       });
     } else {
@@ -36,7 +38,8 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
         contact_phone: '',
         address: '',
         coordinates: '',
-        
+        rate: '',
+        rate_unit: '',
         is_active: false
       });
     }
@@ -44,7 +47,7 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
   }, [currentSource, isEditing]);
 
   // ----------------------------
-  // Inline validators
+  // Validators
   // ----------------------------
   const required = (v) => (v ? '' : 'This field is required');
   const minLength = (v, len, field) => (v && v.length >= len ? '' : `${field} must be at least ${len} characters`);
@@ -58,7 +61,14 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
     const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
     return phoneRegex.test(v) ? '' : 'Invalid phone';
   };
-  
+  const positiveNumber = (v) => {
+    if (v === '' || v === null || v === undefined) return 'Rate is required';
+    return Number(v) > 0 ? '' : 'Rate must be a positive number';
+  };
+  const rateUnitFormat = (v) => {
+    if (!v) return '';
+    return /.+\s*\/\s*.+/.test(v) ? '' : 'Unit must be in format "product / time unit"';
+  };
 
   // Validation schema
   const sourceValidationSchema = {
@@ -67,7 +77,8 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
     contact_phone: [optionalPhone],
     address: [],
     coordinates: [],
-    
+    rate: [positiveNumber],
+    rate_unit: [rateUnitFormat],
     is_active: []
   };
 
@@ -186,7 +197,25 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
             error={formErrors.coordinates}
           />
 
-          
+          {/* Rate fields */}
+          <FormField
+            type="number"
+            field="rate"
+            placeholder="Rate (positive number)"
+            value={formData.rate}
+            onChange={handleChange}
+            error={formErrors.rate}
+            required
+          />
+
+          <FormField
+            type="text"
+            field="rate_unit"
+            placeholder='Rate Unit e.g. "product / day"'
+            value={formData.rate_unit}
+            onChange={handleChange}
+            error={formErrors.rate_unit}
+          />
 
           <div className={styles.formGroup}>
             <label>

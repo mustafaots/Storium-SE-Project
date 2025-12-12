@@ -36,7 +36,18 @@ export const sourcesConfig = {
         </span>
       ),
     },
-   
+    {
+      key: 'rate',
+      header: 'Rate',
+      width: 'minmax(80px, 120px)',
+      render: (row) => <span>{row.rate !== undefined && row.rate !== null ? row.rate : '-'}</span>,
+    },
+    {
+      key: 'rate_unit',
+      header: 'rate-Unit',
+      width: 'minmax(80px, 120px)',
+      render: (row) => <span>{row.rate_unit || '-'}</span>,
+    },
     {
       key: 'is_active',
       header: 'Status',

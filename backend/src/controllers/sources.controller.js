@@ -14,7 +14,6 @@ const sourcesController = {
 
       const { sources, pagination } = await sourcesService.getAllPaginated(page, limit, search);
 
-      // Format data for response
       const formattedSources = sources.map(source => ({
         ...source,
         contact_phone: formatPhone(source.contact_phone),
@@ -51,8 +50,24 @@ const sourcesController = {
   // Create source
   createSource: async (req, res) => {
     try {
-      const sourceData = req.body;
-      const newSource = await sourcesService.create(sourceData);
+      const { source_name, contact_email, contact_phone, address, coordinates, rate, rate_unit, is_active } = req.body;
+
+      // Validation
+      if (rate < 0) return res.status(400).json(apiResponse.errorResponse('Rate must be a positive number'));
+      if (!rate_unit || !rate_unit.includes('/')) {
+        return res.status(400).json(apiResponse.errorResponse('Rate unit must be in the format "product / time unit"'));
+      }
+
+      const newSource = await sourcesService.create({
+        source_name,
+        contact_email,
+        contact_phone,
+        address,
+        coordinates,
+        rate,
+        rate_unit,
+        is_active
+      });
 
       res.status(201).json(apiResponse.successResponse(newSource, 'Source created successfully'));
     } catch (error) {
@@ -63,8 +78,24 @@ const sourcesController = {
   // Update source
   updateSource: async (req, res) => {
     try {
-      const sourceData = req.body;
-      const result = await sourcesService.update(req.params.id, sourceData);
+      const { source_name, contact_email, contact_phone, address, coordinates, rate, rate_unit, is_active } = req.body;
+
+      // Validation
+      if (rate < 0) return res.status(400).json(apiResponse.errorResponse('Rate must be a positive number'));
+      if (!rate_unit || !rate_unit.includes('/')) {
+        return res.status(400).json(apiResponse.errorResponse('Rate unit must be in the format "product / time unit"'));
+      }
+
+      const result = await sourcesService.update(req.params.id, {
+        source_name,
+        contact_email,
+        contact_phone,
+        address,
+        coordinates,
+        rate,
+        rate_unit,
+        is_active
+      });
 
       if (result.affectedRows === 0) {
         return res.status(404).json(apiResponse.errorResponse('Source not found'));
