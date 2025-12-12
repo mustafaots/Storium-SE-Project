@@ -30,9 +30,11 @@ app.use(requestLogger);
 
 // Import routes
 import clientsRoutes from './src/routes/clients.routes.js';
+import locationsRoutes from './src/routes/locations.routes.js';
 
 // API Routes
 app.use('/api/clients', clientsRoutes);
+app.use('/api/locations', locationsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -53,5 +55,9 @@ app.listen(PORT, () => {
   console.log(`SERVER RUNNING ON PORT ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
   console.log(`Clients API: http://localhost:${PORT}/api/clients`);
+  console.log(`Locations API: http://localhost:${PORT}/api/locations`);
+  console.log(`Depots API: http://localhost:${PORT}/api/locations/{locationId}/depots`);
+  console.log(`Aisles API: http://localhost:${PORT}/api/locations/{locationId}/depots/{depotId}/aisles`);
+  console.log(`Racks API: http://localhost:${PORT}/api/locations/{locationId}/depots/{depotId}/aisles/{aisleId}/racks`);
   console.log('Middleware loaded: CORS, JSON parsing, Request logging, 404 handler, Error handler');
 });
