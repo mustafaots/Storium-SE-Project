@@ -1,5 +1,5 @@
-// Necessary imports
-import { useEffect } from 'react'; // ← ADD useEffect back
+// Clients page: wires search, pagination, and CRUD handlers into the shared DataTable
+import { useEffect, useState } from 'react';
 import NavBar from '../../components/UI/NavBar/NavBar';
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import Header from '../../components/UI/Header/Header';
@@ -7,12 +7,17 @@ import Button from '../../components/UI/Button/Button';
 import DataTable from '../../components/UI/DataTable/DataTable';
 import ClientForm from '../../components/Layout/ClientsLayout/ClientForm';
 import { FaUsers, FaFile, FaUserPlus } from 'react-icons/fa';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 // Local imports
 import { useClients } from '../../hooks/useClients';
 import { clientsHandlers } from '../../handlers/clientsHandlers';
 import { clientsConfig } from '../../config/clientsConfig';
-import useTableSearch from '../../hooks/useTableSearch'; // ← ADD this import
+import { clientsController } from '../../controllers/clientsController';
+import useTableSearch from '../../hooks/useTableSearch';
+import { clientsHelpers } from '../../utils/clientsHelpers';
+import { clientsAPI } from '../../utils/clientsAPI';
 import styles from './ClientsPage.module.css';
 
 function ClientsPage() {
@@ -36,15 +41,19 @@ function ClientsPage() {
     handlePageSizeChange
   } = useClients();
 
-  // NEW: Add search hook
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  // Export scope separates "what" to export from "how" (CSV/PDF): current view vs full dataset
+  const [exportScope, setExportScope] = useState('current'); // 'current' | 'all'
+
+  // Track search term with debounce so we don't spam requests
   const search = useTableSearch('');
 
-  // NEW: Handle search changes - triggers API call
+  // When debounced search changes, reload from page 1 with current page size
   useEffect(() => {
     loadClients(1, pagination.pageSize, search.debouncedSearch);
   }, [search.debouncedSearch, loadClients, pagination.pageSize]);
 
-  // Handler functions
+  // Centralized handlers so child components stay dumb
   const handlers = {
     onEdit: (client) => clientsHandlers.handleEdit(
       client, setCurrentClient, setIsEditing, setShowForm, setError
@@ -75,8 +84,111 @@ function ClientsPage() {
       currentClient.client_id, formData, () => {}, setError, handlers.onFormSuccess
     ),
 
-    onPageChange: handlePageChange,
-    onPageSizeChange: handlePageSizeChange
+    onPageChange: (page) => handlePageChange(page, search.debouncedSearch),
+    onPageSizeChange: (size) => handlePageSizeChange(size, search.debouncedSearch)
+  };
+
+  // Export helpers
+  // Column definitions reused by CSV/PDF so both formats stay in sync
+  const exportHeaders = [
+    { key: 'client_id', label: 'ID' },
+    { key: 'client_name', label: 'Name' },
+    { key: 'contact_email', label: 'Email' },
+    { key: 'contact_phone', label: 'Phone' },
+    { key: 'address', label: 'Address' },
+    { key: 'created_at', label: 'Created' },
+  ];
+
+  // Normalize client rows for export and format fields for display parity
+  const buildExportRows = (source) => source.map((client) => ({
+    client_id: client.client_id,
+    client_name: client.client_name || '',
+    contact_email: client.contact_email || '',
+    contact_phone: clientsHelpers.formatPhone(client.contact_phone),
+    address: client.address || '',
+    created_at: clientsHelpers.formatDate(client.created_at),
+  }));
+
+  // CSV export: choose data based on scope, then serialize and download as a Blob
+  const exportToCSV = async () => {
+    const rows = exportScope === 'current'
+      ? buildExportRows(clients)
+      : await fetchAllClientsForExport();
+    if (!rows.length) return;
+
+    const escape = (value) => {
+      const str = String(value ?? '');
+      if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    };
+
+    const headerLine = exportHeaders.map((h) => escape(h.label)).join(',');
+    const lines = rows.map((row) => exportHeaders.map((h) => escape(row[h.key])).join(','));
+    const csv = [headerLine, ...lines].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'clients.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+    setShowExportMenu(false);
+  };
+
+  // PDF export: choose data based on scope, render with jsPDF+autotable, download directly
+  const exportToPDF = async () => {
+    const rows = exportScope === 'current'
+      ? buildExportRows(clients)
+      : await fetchAllClientsForExport();
+    if (!rows.length) return;
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+    doc.setFontSize(14);
+    doc.text('Clients', 40, 40);
+
+    const head = [exportHeaders.map((h) => h.label)];
+    const body = rows.map((row) => exportHeaders.map((h) => row[h.key] ?? ''));
+
+    doc.autoTable({
+      head,
+      body,
+      startY: 60,
+      styles: { fontSize: 10, cellPadding: 6 },
+      headStyles: { fillColor: [54, 57, 63] },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+    });
+
+    doc.save('clients.pdf');
+    setShowExportMenu(false);
+  };
+
+  // Fetch all clients (ignoring pagination/search) for full export when scope = "all"
+  const fetchAllClientsForExport = async () => {
+    try {
+      const pageSize = 500;
+      let page = 1;
+      let all = [];
+      let total = Infinity;
+
+      while (all.length < total) {
+        const response = await clientsAPI.getAll(page, pageSize, '');
+        if (!response.success) {
+          throw new Error(response.error || 'Failed to fetch clients');
+        }
+        all = all.concat(response.data || []);
+        total = response.pagination?.total ?? all.length;
+        if (!response.data || response.data.length === 0) break;
+        page += 1;
+      }
+
+      return buildExportRows(all);
+    } catch (err) {
+      setError(err.message || 'Failed to export clients');
+      return [];
+    }
   };
 
   // Get table columns configuration
@@ -111,8 +223,6 @@ function ClientsPage() {
 
               {loading && clients.length === 0 ? (
                 <LoadingState />
-              ) : clients.length === 0 ? (
-                <EmptyState onAddClient={handlers.onNewClient} />
               ) : (
                 <>
                   <DataTable
@@ -120,18 +230,48 @@ function ClientsPage() {
                     columns={clientColumns}
                     keyField="client_id"
                     loading={loading}
-                    emptyMessage="No clients found"
+                    emptyMessage={search.debouncedSearch ? 'No clients found for this search' : 'No clients found'}
                     className={styles.clientsTable}
                     // Pagination props
                     pagination={pagination}
-                    onPageChange={handlePageChange}
-                    onPageSizeChange={handlePageSizeChange}
+                    onPageChange={(page) => handlePageChange(page, search.debouncedSearch)}
+                    onPageSizeChange={(size) => handlePageSizeChange(size, search.debouncedSearch)}
                     showPagination={true}
                     // Search props
                     showSearch={true}
                     searchPlaceholder="Search clients..."
                     onSearchChange={search.setSearchTerm}
                     searchTerm={search.searchTerm}
+                    rightControls={(
+                      <div className={styles.buttonGroupInline}>
+                        <Button variant='secondary' leadingIcon={<FaUserPlus />} onClick={handlers.onNewClient}>
+                          Add
+                        </Button>
+                        <select
+                          className={styles.exportScopeSelect}
+                          value={exportScope}
+                          onChange={(e) => setExportScope(e.target.value)}
+                        >
+                          <option value="current">Current view</option>
+                          <option value="all">All clients</option>
+                        </select>
+                        <div className={styles.exportWrapper}>
+                          <Button 
+                            onClick={() => setShowExportMenu((prev) => !prev)}
+                            variant="primary"
+                            leadingIcon={<FaFile />}
+                          >
+                            Export
+                          </Button>
+                          {showExportMenu && (
+                            <div className={styles.exportMenu}>
+                              <button onClick={exportToCSV}>Export CSV</button>
+                              <button onClick={exportToPDF}>Export PDF</button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   />
 
                   {/* NEW: Separate container for pagination info */}
@@ -150,21 +290,7 @@ function ClientsPage() {
                     </div>
                   )}
 
-                  {/* UPDATED: Separate containers for buttons and pagination info */}
-                  <div className={styles.actionsContainer}>
-                    <div className={styles.buttonGroup}>
-                      <Button variant='secondary' leadingIcon={<FaUserPlus />} onClick={handlers.onNewClient}>
-                        Add
-                      </Button>
-                      <Button 
-                        onClick={()=>{}}
-                        variant="primary"
-                        leadingIcon={<FaFile />}
-                      >
-                        Export
-                      </Button>
-                    </div>
-                  </div>
+                  {/* Buttons now live inline with the search bar via rightControls */}
                 </>
               )}
             </div>
@@ -194,18 +320,6 @@ const LoadingState = () => (
     <div className={styles.loadingContent}>
       <h2>Loading Clients...</h2>
       <p>Please wait while we fetch your client data</p>
-    </div>
-  </div>
-);
-
-const EmptyState = ({ onAddClient }) => (
-  <div className={styles.emptyState}>
-    <div className={styles.emptyContent}>
-      <h2>No Clients Found</h2>
-      <p>Create your first client to get started</p>
-      <button onClick={onAddClient} className={styles.primaryButton}>
-        Add Your First Client
-      </button>
     </div>
   </div>
 );

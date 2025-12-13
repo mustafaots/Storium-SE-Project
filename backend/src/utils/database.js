@@ -3,7 +3,7 @@
  * This prevents code duplication and makes models cleaner
  */
 
-// Build WHERE clause for search queries
+// Build WHERE clause for search queries (returns SQL snippet + params)
 const buildSearchConditions = (searchFields, searchTerm) => {
   if (!searchTerm) return { conditions: '', params: [] };
 

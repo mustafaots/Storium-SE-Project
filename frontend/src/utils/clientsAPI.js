@@ -1,6 +1,6 @@
 const API_BASE_URL = 'http://localhost:3001/api';
 
-// Basic API service - replace your missing hooks with this
+// Thin fetch wrapper for clients endpoints; keeps pages/hooks UI-only
 export const clientsAPI = {
   // Get all clients with pagination
   getAll: async (page = 1, limit = 10, search = '') => {
