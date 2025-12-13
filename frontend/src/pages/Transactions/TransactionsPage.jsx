@@ -587,13 +587,13 @@ function TransactionsPage() {
                   onPageSizeChange={handlePageSizeChange}
                   className={styles.inlinePagination}
                 />
-              {/* <button
+              <button
                 className={styles.exportBtn}
                 onClick={() => setShowExportModal(true)}
               >
                 <FaFileExport className={styles.exportIcon} />
                 Export Table
-              </button> */}
+              </button>
 
               <ExportModal
                 isOpen={showExportModal}
@@ -647,16 +647,16 @@ function TransactionsPage() {
                     )}
 
 
-                  {/* UPDATED: Separate containers for buttons and pagination info */}
+                 
                   <div className={styles.actionsContainer}>
                     <div className={styles.buttonGroup}>
-                      <button
+                      {/* <button
                         className={styles.exportBtn}
                         onClick={() => setShowExportModal(true)}
                       >
                         <FaFileExport className={styles.exportIcon} />
                         Export Table
-                      </button>
+                      </button> */}
                     </div>
                   </div>
               </>
