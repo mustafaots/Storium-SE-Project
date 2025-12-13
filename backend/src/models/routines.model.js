@@ -82,6 +82,27 @@ export const RoutineModel = {
         resolve(results[0]);
       });
     });
+  } , 
+
+  // 7. Get Product List (ADD THIS)
+  getAllProducts: () => {
+    return new Promise((resolve, reject) => {
+      const sql = 'SELECT product_id, name FROM products ORDER BY name ASC';
+      db.query(sql, (err, results) => {
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  } , 
+  // 8. Log History (NEW)
+  logHistory: (routineId, actionText) => {
+    return new Promise((resolve, reject) => {
+      const sql = 'INSERT INTO action_history (routine_id, action, is_automated) VALUES (?, ?, 1)';
+      db.query(sql, [routineId, actionText], (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      });
+    });
   }
 
 // ... existing code (deleteById) ...

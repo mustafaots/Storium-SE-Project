@@ -4,13 +4,14 @@ import NavBar from '../../components/UI/NavBar/NavBar';
 import Header from '../../components/UI/Header/Header.jsx'; 
 import Table from "../../components/Layout/Table/table.jsx"; 
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Icons
 import { 
     FaChartLine, FaExclamationTriangle, FaClock, FaSearch, FaFilter, 
-    FaPlus, FaBolt, FaTimes, FaPlay, FaPen, FaTrash 
+    FaPlus, FaBolt, FaTimes, FaPlay, FaPen, FaTrash, FaRegClock 
 } from 'react-icons/fa';
-import { FaRegClock } from 'react-icons/fa';
 
 // API BASE URL
 const API_URL = "http://localhost:3001/api/routines";
@@ -18,9 +19,10 @@ const API_URL = "http://localhost:3001/api/routines";
 function RoutinesPage() {
     const activeItem = useActiveNavItem();
 
-    // --- 1. DATA STATE (Now starts empty) ---
+    // --- 1. DATA STATE ---
     const [routines, setRoutines] = useState([]);
     const [stats, setStats] = useState({ active_routines: 0, critical_errors: 0, executions_24h: 0 });
+    const [productList, setProductList] = useState([]); // List of products for the dropdown
 
     // --- 2. FILTER STATE ---
     const [searchText, setSearchText] = useState("");
@@ -28,9 +30,25 @@ function RoutinesPage() {
 
     // --- 3. MODAL STATE ---
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // Form Data with separate Logic Fields
     const [formData, setFormData] = useState({
-        name: "", frequency: "daily", trigger: "", actionType: "Create Alert", actionDetails: ""
+        name: "", 
+        frequency: "daily", 
+        trigger: "", // This is the final string sent to DB
+        
+        // Logic Builder Fields (For UI only)
+        logicTarget: "",   
+        logicOperator: "<", 
+        logicValue: "",     
+        
+        actionType: "Create Alert", 
+        actionDetails: ""
     });
+
+    // --- 4. EXECUTION TRACKING STATE ---
+    // Track previous executions count to detect changes for notifications
+    const [prevExecCount, setPrevExecCount] = useState(0);
 
     // =============================================
     // API INTEGRATION: FETCH DATA ON LOAD
@@ -45,7 +63,27 @@ function RoutinesPage() {
             // 2. Get Stats
             const statsRes = await fetch(`${API_URL}/stats`);
             const statsData = await statsRes.json();
+            
+            // CHECK FOR NEW EXECUTIONS (For Notification)
+            if (prevExecCount > 0 && statsData.executions_24h > prevExecCount) {
+                toast.success(`🚀 Routine Executed Automatically!`, {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    theme: "dark",
+                });
+            }
+            
             setStats(statsData);
+            setPrevExecCount(statsData.executions_24h); // Update tracker
+
+            // 3. Get Products (For Dropdown)
+            const prodRes = await fetch(`${API_URL}/products`);
+            const prodData = await prodRes.json();
+            setProductList(prodData);
 
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -54,21 +92,42 @@ function RoutinesPage() {
 
     useEffect(() => {
         fetchAllData();
-        // Optional: Auto-refresh every 30 seconds to update stats/status
-        const interval = setInterval(fetchAllData, 30000);
+        // Check every 5 seconds for updates (Polling)
+        const interval = setInterval(fetchAllData, 5000); 
         return () => clearInterval(interval);
-    }, []);
-
+    }, [prevExecCount]); // Re-run effect dependencies
 
     // =============================================
-    // ACTIONS (Connected to Backend)
+    // LOGIC BUILDER HELPER
+    // =============================================
+    const updateLogic = (field, value) => {
+        // 1. Update the specific field (Target, Operator, or Value)
+        const newData = { ...formData, [field]: value };
+        
+        // 2. Build the sentence automatically
+        // Example: "Hydraulic Oil" + "<" + "10"
+        const target = newData.logicTarget || "";
+        const operator = newData.logicOperator;
+        const val = newData.logicValue;
+
+        const sentence = target ? `${target} ${operator} ${val}` : "";
+        
+        // 3. Save both the field and the final trigger string
+        setFormData({ 
+            ...newData, 
+            trigger: sentence 
+        });
+    };
+
+    // =============================================
+    // ACTIONS
     // =============================================
 
     // 1. TOGGLE STATUS (PATCH)
     const toggleStatus = async (id, currentStatus) => {
         try {
             const newStatus = !currentStatus;
-            // Optimistic Update (Change UI immediately)
+            // Optimistic Update
             setRoutines(prev => prev.map(r => r.routine_id === id ? { ...r, is_active: newStatus } : r));
 
             await fetch(`${API_URL}/${id}/toggle`, {
@@ -76,12 +135,10 @@ function RoutinesPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ is_active: newStatus })
             });
-            
-            // Refresh stats because "Active Routines" changed
             fetchAllData(); 
         } catch (error) {
             console.error("Error toggling status:", error);
-            fetchAllData(); // Revert on error
+            fetchAllData(); 
         }
     };
 
@@ -91,42 +148,43 @@ function RoutinesPage() {
             try {
                 await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
                 setRoutines(prev => prev.filter(r => r.routine_id !== id));
-                fetchAllData(); // Refresh stats
+                fetchAllData(); 
             } catch (error) {
                 console.error("Error deleting:", error);
             }
         }
     };
 
-    // 3. EXECUTE ROUTINE (POST - The "Play" Button)
+    // 3. EXECUTE ROUTINE (POST - The Play Button)
     const executeRoutine = async (id, name) => {
         try {
-            alert(`Executing Routine: ${name}...`);
+            toast.info(`Executing Routine: ${name}...`);
             const response = await fetch(`${API_URL}/${id}/execute`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ manual_trigger: true }) // Optional payload
+                body: JSON.stringify({ manual_trigger: true }) 
             });
             const data = await response.json();
             console.log("Packet Produced:", data);
-            alert("Routine Executed Successfully! (Check Console for JSON Packet)");
-            fetchAllData(); // Refresh "Executions 24h" stat
+            toast.success("Routine Executed Successfully!");
+            fetchAllData(); 
         } catch (error) {
             console.error("Execution failed:", error);
-            alert("Execution failed.");
+            toast.error("Execution failed.");
         }
     }
 
     // 4. CREATE ROUTINE (POST)
     const handleSaveRoutine = async () => {
-        if (!formData.name || !formData.trigger) return alert("Name and Trigger required");
+        // Validate
+        if (!formData.name || !formData.trigger) return alert("Name and Logic required");
         
         try {
             const payload = {
                 name: formData.name,
-                promise: formData.trigger,
+                promise: formData.trigger, // This is the string we built ("Oil < 10")
                 resolve: `${formData.actionType}: ${formData.actionDetails}`,
-                frequency: formData.frequency.toLowerCase() // Backend expects lowercase
+                frequency: formData.frequency.toLowerCase()
             };
 
             const response = await fetch(API_URL, {
@@ -137,8 +195,14 @@ function RoutinesPage() {
 
             if (response.ok) {
                 setIsModalOpen(false);
-                setFormData({ name: "", frequency: "daily", trigger: "", actionType: "Create Alert", actionDetails: "" });
-                fetchAllData(); // Refresh list to show new item
+                // Reset Form
+                setFormData({ 
+                    name: "", frequency: "daily", trigger: "", 
+                    logicTarget: "", logicOperator: "<", logicValue: "",
+                    actionType: "Create Alert", actionDetails: "" 
+                });
+                fetchAllData(); 
+                toast.success("Routine Saved!");
             } else {
                 alert("Failed to save routine");
             }
@@ -147,14 +211,13 @@ function RoutinesPage() {
         }
     };
 
-    // --- HELPER: FORMAT DATE ---
+    // --- TABLE COLUMNS ---
     const formatDate = (dateString) => {
         if (!dateString) return "Never";
         const date = new Date(dateString);
         return date.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     };
 
-    // --- TABLE COLUMNS (Updated to match DB Keys) ---
     const routineColumns = [
         {
             key: 'name',
@@ -180,7 +243,6 @@ function RoutinesPage() {
             render: (item) => (
                 <div className={styles.statusCell}>
                     <label className={styles.switch}>
-                        {/* Note: item.is_active comes from DB as 1 or 0, so we check !!item.is_active */}
                         <input type="checkbox" checked={!!item.is_active} onChange={() => toggleStatus(item.routine_id, !!item.is_active)} />
                         <span className={styles.slider}></span>
                     </label>
@@ -191,15 +253,12 @@ function RoutinesPage() {
             key: 'actions', label: 'ACTIONS',
             render: (item) => (
                 <div className={styles.actionButtons}>
-                    {/* Play Button - Connected to executeRoutine */}
                     <button className={`${styles.iconBtn} ${styles.playBtn}`} title="Run Now" onClick={() => executeRoutine(item.routine_id, item.name)}>
                         <FaPlay />
                     </button>
-                    {/* Edit Button - Visual Only for now */}
                     <button className={`${styles.iconBtn} ${styles.editBtn}`} title="Edit">
                         <FaPen />
                     </button>
-                    {/* Delete Button */}
                     <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => deleteRoutine(item.routine_id)}>
                         <FaTrash />
                     </button>
@@ -230,7 +289,7 @@ function RoutinesPage() {
                     <FaPlus /> New Routine
                 </button>
 
-                {/* Stats Grid (CONNECTED TO API) */}
+                {/* Stats Grid */}
                 <div className={styles.statsGrid}>
                     <div className={styles.statCard}>
                         <div><span className={styles.statLabel}>ACTIVE ROUTINES</span><span className={styles.statValue}>{stats.active_routines}</span></div>
@@ -296,16 +355,57 @@ function RoutinesPage() {
                                     </select>
                                 </div>
                             </div>
+                            
+                            {/* LOGIC BUILDER SECTION */}
                             <div className={styles.logicContainer}>
                                 <div className={styles.logicBox}>
                                     <div className={`${styles.logicHeader} ${styles.blueHeader}`}>THE PROMISE (TRIGGER)</div>
                                     <div className={styles.logicContent}>
                                         <div className={styles.formGroup}>
-                                            <label>TIME / SCHEDULE / CONDITION</label>
-                                            <div className={styles.inputIconWrapper}>
-                                                <input type="text" placeholder="e.g. Stock < 10" value={formData.trigger} onChange={e => setFormData({...formData, trigger: e.target.value})} />
-                                                <FaRegClock className={styles.inputIcon}/>
+                                            <label>CONDITION BUILDER</label>
+                                            
+                                            {/* 3-Part Logic Builder */}
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                {/* 1. Target Product */}
+                                                <select 
+                                                    style={{ flex: 2, background: '#202225', color: 'white', padding: '10px', border: '1px solid #40444b', borderRadius: '4px', outline: 'none' }}
+                                                    value={formData.logicTarget}
+                                                    onChange={(e) => updateLogic("logicTarget", e.target.value)}
+                                                >
+                                                    <option value="">Select Product...</option>
+                                                    {productList.map(prod => (
+                                                        <option key={prod.product_id} value={prod.name}>
+                                                            {prod.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+
+                                                {/* 2. Operator */}
+                                                <select 
+                                                    style={{ width: '60px', background: '#202225', color: 'white', padding: '10px', border: '1px solid #40444b', borderRadius: '4px', textAlign: 'center', outline: 'none' }}
+                                                    value={formData.logicOperator}
+                                                    onChange={(e) => updateLogic("logicOperator", e.target.value)}
+                                                >
+                                                    <option value="<">&lt;</option>
+                                                    <option value=">">&gt;</option>
+                                                    <option value="=">=</option>
+                                                </select>
+
+                                                {/* 3. Value */}
+                                                <input 
+                                                    type="number" 
+                                                    placeholder="Qty" 
+                                                    style={{ width: '80px', background: '#202225', color: 'white', padding: '10px', border: '1px solid #40444b', borderRadius: '4px', outline: 'none' }}
+                                                    value={formData.logicValue}
+                                                    onChange={(e) => updateLogic("logicValue", e.target.value)}
+                                                />
                                             </div>
+
+                                            {/* Preview Text */}
+                                            <div style={{ fontSize: '11px', color: '#72767d', marginTop: '8px', fontStyle: 'italic' }}>
+                                                Generated Logic: <span style={{ color: '#fff' }}>{formData.trigger || "..."}</span>
+                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -339,6 +439,9 @@ function RoutinesPage() {
                     </div>
                 </div>
             )}
+            
+            {/* Notification Container */}
+            <ToastContainer />
         </div>
     );
 }

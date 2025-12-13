@@ -58,61 +58,49 @@ export const deleteRoutine = async (req, res, next) => {
 // =========================================================
 // NEW: THE FORMAT PRODUCER (Step 2 & 3)
 // =========================================================
+// ... imports ...
+
 export const executeRoutine = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    // 1. Get the Routine data from the Database
     const routine = await RoutineModel.findById(id);
+    if (!routine) return res.status(404).json({ message: 'Routine not found' });
 
-    if (!routine) {
-      return res.status(404).json({ message: 'Routine not found' });
-    }
-
-    // 2. DEFINE THE FORMAT (The "Packet")
-    // This is the JSON structure your leader will use later
+    // 1. DEFINE THE PACKET
     const formatProducer = {
-      meta: {
-        producer: "system_routines_service",
-        timestamp: new Date().toISOString(),
-        version: "1.0"
-      },
-      action: {
-        type: "CREATE_TRANSACTION", // Telling the engine what to do
-        trigger: "AUTOMATED_ROUTINE"
-      },
+      meta: { producer: "system_routines", timestamp: new Date().toISOString() },
+      action: { type: "CREATE_TRANSACTION", trigger: "AUTOMATED_ROUTINE" },
       payload: {
         routine_id: routine.routine_id,
         routine_name: routine.name,
-        // In a real scenario, these values come from parsing the 'resolve' column
-        // For now, we default them or take them from the request
-        transaction_type: "outflow", 
-        target_product_id: req.body.product_id || null, 
-        quantity: req.body.quantity || 10,
         notes: `Executed via routine: ${routine.name}`
       }
     };
 
-    // 3. "Send" the packet
-    // Since the Transaction Service is not ready, we simulate sending it
-    // by returning it to the client.
-    console.log(">> FORMAT PRODUCED:", JSON.stringify(formatProducer, null, 2));
+    // 2. SAVE TO HISTORY TABLE (So Frontend knows it happened) <--- NEW PART
+    // We assume you use the dbPool import like in the model
+    // You might need to import 'db' at the top of this file if you haven't: 
+    // import db from '../config/dbPool.js'; 
+    // OR just use RoutineModel if you add a 'logHistory' function there.
+    
+    // Quickest way: direct query if you have access, or add to Model.
+    // Let's assume we add a helper to RoutineModel for cleaner code:
+    await RoutineModel.logHistory(id, `Automated Execution: ${routine.name}`);
 
-    // 4. Update the 'last_run' time in the database
-    // We don't wait for this, just fire and forget
-    // (You would need a Model function for updateLastRun, but we skip it for now to keep it simple)
-
+    // 3. Send Response
     res.status(200).json({
-      status: "success",
-      message: "Routine executed. Format produced successfully.",
+      message: "Routine executed.",
       produced_packet: formatProducer
     });
 
   } catch (error) {
-    next(error);
+    console.error("EXECUTION ERROR:", error);
+    // Don't crash the scheduler
+    if(res.headersSent) return; 
+    res.status(500).json({ error: error.message });
   }
 };
-
 
 // ... existing code ...
 
@@ -130,5 +118,20 @@ export const getStats = async (req, res, next) => {
         message: "Database Error", 
         detail: error.message 
     });
+  }
+};
+
+
+// =========================================================
+// NEW: GET PRODUCTS FOR DROPDOWN
+// =========================================================
+export const getProductOptions = async (req, res, next) => {
+  try {
+    const products = await RoutineModel.getAllProducts();
+    res.json(products);
+  } catch (error) {
+    // Manually handle error if middleware is broken
+    console.error("PRODUCT FETCH ERROR:", error);
+    res.status(500).json({ error: error.message });
   }
 };

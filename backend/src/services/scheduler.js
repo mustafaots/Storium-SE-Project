@@ -20,24 +20,26 @@ export const startScheduler = () => {
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
 
-      routines.forEach(routine => {
+    routines.forEach(routine => {
         if (!routine.is_active) return;
 
-        // LOGIC: Check if it's time to run
-        // In a real app, you parse "Daily 08:00". 
-        // Here is a simple example: If it's a "daily" routine and it's 8:00 AM
+        // ===================================================
+        // REAL MODE (Only runs at the specific time)
+        // ===================================================
+        
+        // Example: If Frequency is "Daily" and it is 08:00 AM
         if (routine.frequency === 'daily' && currentHour === 8 && currentMinute === 0) {
-           console.log(`🚀 Auto-Executing Routine: ${routine.name}`);
+           console.log(`🚀 Executing Daily Routine: ${routine.name}`);
            
-           // We pretend to send the Request/Response objects since we are calling a controller
            const mockReq = { params: { id: routine.routine_id }, body: {} };
            const mockRes = { 
-             json: (data) => console.log('Packet Produced:', data.produced_packet),
-             status: () => ({ json: () => {} }) // Dummy function to prevent crash
+             json: (data) => console.log('Packet Produced'),
+             status: () => ({ json: () => {} }) 
            };
-           
            executeRoutine(mockReq, mockRes, (err) => console.error(err));
         }
+
+        // You can add logic for 'weekly' here later if you want
       });
 
     } catch (error) {

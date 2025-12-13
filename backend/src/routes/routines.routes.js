@@ -5,14 +5,17 @@ import {
   toggleRoutineStatus, 
   deleteRoutine,
   executeRoutine,
-  getStats // <--- 1. IMPORT THIS
+  getStats,
+  getProductOptions // Make sure this is imported
 } from '../controllers/routines.controller.js';
 
 const router = express.Router();
 
-// 2. ADD THIS LINE AT THE TOP (Before the others)
-router.get('/stats', getStats); 
+// === STATIC ROUTES (Fixed Names) MUST BE FIRST ===
+router.get('/stats', getStats);
+router.get('/products', getProductOptions); // <--- This is the fix
 
+// === DYNAMIC ROUTES (Variable IDs) MUST BE LAST ===
 router.get('/', getAllRoutines);
 router.post('/', createRoutine);
 router.patch('/:id/toggle', toggleRoutineStatus);
