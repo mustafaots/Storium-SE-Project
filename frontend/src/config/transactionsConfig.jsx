@@ -1,12 +1,12 @@
 // src/config/transactionsConfig.jsx
-import { FaUser } from 'react-icons/fa';
+import { FaUser , FaEye } from 'react-icons/fa';
 
 export const transactionsConfig = {
   /**
    * Columns configuration for transactions table.
    * filterType: 'automatic' | 'manual' | 'mixed'
    */
-  columns: (styles, filterType) => {
+  columns: (styles, filterType , handlers = {} ) => {
     const baseColumns = [
       {
         key: 'timestamp',
@@ -49,9 +49,29 @@ export const transactionsConfig = {
 
     baseColumns.push({
       key: 'notes',
-      header: 'Action',
+      header: 'Note ',
       render: (item) => (
         <div className={styles.action}>{item.notes}</div>
+      )
+    });
+
+    baseColumns.push({
+      key: 'actions',
+      header: 'Action',
+      width: '80px',
+      render: (item) => (
+        <div className={styles.actionsCell}>
+          <button
+            type="button"
+            className={styles.detailsButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              handlers.onShowDetails && handlers.onShowDetails(item);
+            }}
+          >
+            <FaEye />
+          </button>
+        </div>
       )
     });
 
