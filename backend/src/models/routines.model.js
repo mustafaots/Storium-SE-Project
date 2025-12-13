@@ -47,5 +47,42 @@ export const RoutineModel = {
         resolve(result.affectedRows > 0);
       });
     });
+  } , 
+
+  // ... existing code (findAll, create, toggleStatus) ...
+
+  // 5. Find a single routine by ID (NEW)
+  findById: (id) => {
+    return new Promise((resolve, reject) => {
+      const sql = 'SELECT * FROM routines WHERE routine_id = ?';
+      db.query(sql, [id], (err, results) => {
+        if (err) return reject(err);
+        // Return the first result or null if not found
+        resolve(results[0] || null);
+      });
+    });
+  } , 
+
+  // ... existing code ...
+
+  // 6. Get Dashboard Stats (NEW)
+  getDashboardStats: () => {
+    return new Promise((resolve, reject) => {
+      // This single query counts 3 different things at the same time
+      const sql = `
+        SELECT
+          (SELECT COUNT(*) FROM routines WHERE is_active = 1) AS active_routines,
+          (SELECT COUNT(*) FROM alerts WHERE severity = 'critical') AS critical_errors,
+          (SELECT COUNT(*) FROM action_history WHERE created_at >= NOW() - INTERVAL 24 HOUR) AS executions_24h
+      `;
+      
+      db.query(sql, (err, results) => {
+        if (err) return reject(err);
+        // It returns an array like [{ active_routines: 2, critical_errors: 1... }]
+        resolve(results[0]);
+      });
+    });
   }
+
+// ... existing code (deleteById) ...
 };
