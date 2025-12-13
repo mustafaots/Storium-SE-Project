@@ -11,26 +11,33 @@ export const TransactionsService = {
     const params = [];
 
     if (filterType === 'automatic') {
-      whereClauses.push('is_automated = ?');
+      whereClauses.push('t.is_automated = ?');
       params.push(1);
     } else if (filterType === 'manual') {
-      whereClauses.push('is_automated = ?');
+      whereClauses.push('t.is_automated = ?');
       params.push(0);
     }
 
     if (dateFilter === 'today') {
-      whereClauses.push('DATE(`timestamp`) = CURDATE()');
+      whereClauses.push('DATE(t.timestamp) = CURDATE()');
     } else if (dateFilter === 'week') {
-      whereClauses.push('`timestamp` >= NOW() - INTERVAL 7 DAY');
+      whereClauses.push('t.timestamp >= NOW() - INTERVAL 7 DAY');
     } else if (dateFilter === 'month') {
-      whereClauses.push('YEAR(`timestamp`) = YEAR(CURDATE()) AND MONTH(`timestamp`) = MONTH(CURDATE())');
+      whereClauses.push(
+        'YEAR(t.timestamp) = YEAR(CURDATE()) AND MONTH(t.timestamp) = MONTH(CURDATE())'
+      );
     }
 
     if (search && search.trim() !== '') {
-      whereClauses.push('(notes LIKE ? OR reference_number LIKE ?)');
-      const like = `%${search.trim()}%`;
-      params.push(like, like);
-    }
+  const like = `%${search.trim()}%`;
+
+  // because we now join products/clients/sources with aliases p, c, s
+    whereClauses.push(
+    '(t.notes LIKE ? OR t.reference_number LIKE ? OR p.name LIKE ? OR c.client_name LIKE ? OR s.source_name LIKE ?)'
+  );
+
+  params.push(like, like, like, like, like);
+}
 
     const whereSql = whereClauses.length ? 'WHERE ' + whereClauses.join(' AND ') : '';
 
@@ -127,9 +134,9 @@ export const TransactionsService = {
     
  
   // Create : manual outflow transaction
-    async createManualOutflow({stockId , productId, fromSlotId ,clientId , quantity ,unitPrice , notes }) {
+    async createManualOutflow({stockId , productId, fromSlotId ,clientId , quantity ,unitPrice , note }) {
          const qty = Number(quantity) ; 
-         const price = unitPrice != null ? number (unitPrice) : 0 ;
+         const price = unitPrice != null ? Number (unitPrice) : 0 ;
 
          const connection = db.promise(); 
 
