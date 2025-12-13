@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './RoutinesPage.module.css';
 import NavBar from '../../components/UI/NavBar/NavBar';
 import Header from '../../components/UI/Header/Header.jsx'; 
-import Table from "../../components/Layout/Table/table.jsx"; // Adjust path if needed
+import Table from "../../components/Layout/Table/table.jsx"; 
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 
 // Icons
@@ -12,16 +12,15 @@ import {
 } from 'react-icons/fa';
 import { FaRegClock } from 'react-icons/fa';
 
+// API BASE URL
+const API_URL = "http://localhost:3001/api/routines";
+
 function RoutinesPage() {
     const activeItem = useActiveNavItem();
 
-    // --- 1. DATA STATE ---
-    const [routines, setRoutines] = useState([
-        { id: 1, name: 'Low Stock Monitor - Hydraulic Oil', description: 'Create Alert: Critical Severity Alert', trigger: 'Hydraulic Oil ISO 68 < 10', frequency: 'On Event', lastRun: '21 Nov 2025, 11:30', status: true, error: false },
-        { id: 2, name: 'Daily Transaction Summary', description: 'Email Report: Send to Admin', trigger: 'Every Day at 08:00', frequency: 'Daily', lastRun: '21 Nov 2025, 08:00', status: true, error: false },
-        { id: 3, name: 'Welding Rods Expiry Check', description: 'Create Alert: Warning Severity Alert', trigger: '< 30 Days Remaining', frequency: 'Weekly', lastRun: '15 Nov 2025, 09:00', status: false, error: false },
-        { id: 4, name: 'Auto-Reorder Steel Bolts', description: 'Create PO: Vendor: Fasteners Inc.', trigger: 'M12x50mm Bolts < 50', frequency: 'On Event', lastRun: '20 Nov 2025, 17:20', status: false, error: true }
-    ]);
+    // --- 1. DATA STATE (Now starts empty) ---
+    const [routines, setRoutines] = useState([]);
+    const [stats, setStats] = useState({ active_routines: 0, critical_errors: 0, executions_24h: 0 });
 
     // --- 2. FILTER STATE ---
     const [searchText, setSearchText] = useState("");
@@ -30,40 +29,132 @@ function RoutinesPage() {
     // --- 3. MODAL STATE ---
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
-        name: "", frequency: "Daily", trigger: "", actionType: "Create Alert", actionDetails: ""
+        name: "", frequency: "daily", trigger: "", actionType: "Create Alert", actionDetails: ""
     });
 
-    // --- ACTIONS ---
-    const toggleStatus = (id) => {
-        setRoutines(prev => prev.map(r => r.id === id ? { ...r, status: !r.status } : r));
-    };
+    // =============================================
+    // API INTEGRATION: FETCH DATA ON LOAD
+    // =============================================
+    const fetchAllData = async () => {
+        try {
+            // 1. Get List
+            const routinesRes = await fetch(API_URL);
+            const routinesData = await routinesRes.json();
+            setRoutines(routinesData);
 
-    const deleteRoutine = (id) => {
-        if(window.confirm("Delete this routine?")) {
-            setRoutines(prev => prev.filter(r => r.id !== id));
+            // 2. Get Stats
+            const statsRes = await fetch(`${API_URL}/stats`);
+            const statsData = await statsRes.json();
+            setStats(statsData);
+
+        } catch (error) {
+            console.error("Error fetching data:", error);
         }
     };
 
-    const handleSaveRoutine = () => {
-        if (!formData.name || !formData.trigger) return alert("Name and Trigger required");
-        
-        const newRoutine = {
-            id: Date.now(),
-            name: formData.name,
-            description: `${formData.actionType}: ${formData.actionDetails}`,
-            trigger: formData.trigger,
-            frequency: formData.frequency,
-            lastRun: "Never",
-            status: true,
-            error: false
-        };
+    useEffect(() => {
+        fetchAllData();
+        // Optional: Auto-refresh every 30 seconds to update stats/status
+        const interval = setInterval(fetchAllData, 30000);
+        return () => clearInterval(interval);
+    }, []);
 
-        setRoutines([newRoutine, ...routines]);
-        setIsModalOpen(false);
-        setFormData({ name: "", frequency: "Daily", trigger: "", actionType: "Create Alert", actionDetails: "" });
+
+    // =============================================
+    // ACTIONS (Connected to Backend)
+    // =============================================
+
+    // 1. TOGGLE STATUS (PATCH)
+    const toggleStatus = async (id, currentStatus) => {
+        try {
+            const newStatus = !currentStatus;
+            // Optimistic Update (Change UI immediately)
+            setRoutines(prev => prev.map(r => r.routine_id === id ? { ...r, is_active: newStatus } : r));
+
+            await fetch(`${API_URL}/${id}/toggle`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_active: newStatus })
+            });
+            
+            // Refresh stats because "Active Routines" changed
+            fetchAllData(); 
+        } catch (error) {
+            console.error("Error toggling status:", error);
+            fetchAllData(); // Revert on error
+        }
     };
 
-    // --- TABLE COLUMNS ---
+    // 2. DELETE ROUTINE (DELETE)
+    const deleteRoutine = async (id) => {
+        if(window.confirm("Delete this routine?")) {
+            try {
+                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                setRoutines(prev => prev.filter(r => r.routine_id !== id));
+                fetchAllData(); // Refresh stats
+            } catch (error) {
+                console.error("Error deleting:", error);
+            }
+        }
+    };
+
+    // 3. EXECUTE ROUTINE (POST - The "Play" Button)
+    const executeRoutine = async (id, name) => {
+        try {
+            alert(`Executing Routine: ${name}...`);
+            const response = await fetch(`${API_URL}/${id}/execute`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ manual_trigger: true }) // Optional payload
+            });
+            const data = await response.json();
+            console.log("Packet Produced:", data);
+            alert("Routine Executed Successfully! (Check Console for JSON Packet)");
+            fetchAllData(); // Refresh "Executions 24h" stat
+        } catch (error) {
+            console.error("Execution failed:", error);
+            alert("Execution failed.");
+        }
+    }
+
+    // 4. CREATE ROUTINE (POST)
+    const handleSaveRoutine = async () => {
+        if (!formData.name || !formData.trigger) return alert("Name and Trigger required");
+        
+        try {
+            const payload = {
+                name: formData.name,
+                promise: formData.trigger,
+                resolve: `${formData.actionType}: ${formData.actionDetails}`,
+                frequency: formData.frequency.toLowerCase() // Backend expects lowercase
+            };
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                setIsModalOpen(false);
+                setFormData({ name: "", frequency: "daily", trigger: "", actionType: "Create Alert", actionDetails: "" });
+                fetchAllData(); // Refresh list to show new item
+            } else {
+                alert("Failed to save routine");
+            }
+        } catch (error) {
+            console.error("Error creating routine:", error);
+        }
+    };
+
+    // --- HELPER: FORMAT DATE ---
+    const formatDate = (dateString) => {
+        if (!dateString) return "Never";
+        const date = new Date(dateString);
+        return date.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    };
+
+    // --- TABLE COLUMNS (Updated to match DB Keys) ---
     const routineColumns = [
         {
             key: 'name',
@@ -71,28 +162,28 @@ function RoutinesPage() {
             render: (item) => (
                 <div>
                     <div className={styles.routineName}>{item.name}</div>
-                    <div className={styles.routineDesc}>{item.description}</div>
+                    <div className={styles.routineDesc}>{item.resolve || "No action defined"}</div>
                 </div>
             )
         },
-        { key: 'trigger', label: 'PROMISE / TRIGGER', render: (item) => <span className={styles.triggerText}>{item.trigger}</span> },
+        { key: 'trigger', label: 'PROMISE / TRIGGER', render: (item) => <span className={styles.triggerText}>{item.promise}</span> },
         {
             key: 'frequency', label: 'FREQUENCY',
             render: (item) => {
-                const badgeClass = item.frequency === 'On Event' ? styles.badgeEvent : styles.badgeRegular;
+                const badgeClass = item.frequency === 'on_event' ? styles.badgeEvent : styles.badgeRegular;
                 return <span className={`${styles.badge} ${badgeClass}`}>{item.frequency}</span>;
             }
         },
-        { key: 'lastRun', label: 'LAST RUN', render: (item) => <span className={styles.metaText}>{item.lastRun}</span> },
+        { key: 'lastRun', label: 'LAST RUN', render: (item) => <span className={styles.metaText}>{formatDate(item.last_run)}</span> },
         {
             key: 'status', label: 'STATUS',
             render: (item) => (
                 <div className={styles.statusCell}>
                     <label className={styles.switch}>
-                        <input type="checkbox" checked={item.status} onChange={() => toggleStatus(item.id)} />
+                        {/* Note: item.is_active comes from DB as 1 or 0, so we check !!item.is_active */}
+                        <input type="checkbox" checked={!!item.is_active} onChange={() => toggleStatus(item.routine_id, !!item.is_active)} />
                         <span className={styles.slider}></span>
                     </label>
-                    {item.error && <FaExclamationTriangle className={styles.errorIcon} title="Last run failed"/>}
                 </div>
             )
         },
@@ -100,16 +191,16 @@ function RoutinesPage() {
             key: 'actions', label: 'ACTIONS',
             render: (item) => (
                 <div className={styles.actionButtons}>
-                    {/* Play Button - Green Hover */}
-                    <button className={`${styles.iconBtn} ${styles.playBtn}`} title="Run Now">
+                    {/* Play Button - Connected to executeRoutine */}
+                    <button className={`${styles.iconBtn} ${styles.playBtn}`} title="Run Now" onClick={() => executeRoutine(item.routine_id, item.name)}>
                         <FaPlay />
                     </button>
-                    {/* Edit Button - Yellow Hover */}
+                    {/* Edit Button - Visual Only for now */}
                     <button className={`${styles.iconBtn} ${styles.editBtn}`} title="Edit">
                         <FaPen />
                     </button>
-                    {/* Delete Button - Red Hover */}
-                    <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => deleteRoutine(item.id)}>
+                    {/* Delete Button */}
+                    <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => deleteRoutine(item.routine_id)}>
                         <FaTrash />
                     </button>
                 </div>
@@ -120,7 +211,7 @@ function RoutinesPage() {
     // Filter Logic
     const filteredData = routines.filter(r => {
         const matchSearch = r.name.toLowerCase().includes(searchText.toLowerCase());
-        const matchFreq = freqFilter === "All" || r.frequency === freqFilter;
+        const matchFreq = freqFilter === "All" || r.frequency === freqFilter.toLowerCase();
         return matchSearch && matchFreq;
     });
 
@@ -139,18 +230,18 @@ function RoutinesPage() {
                     <FaPlus /> New Routine
                 </button>
 
-                {/* Stats Grid */}
+                {/* Stats Grid (CONNECTED TO API) */}
                 <div className={styles.statsGrid}>
                     <div className={styles.statCard}>
-                        <div><span className={styles.statLabel}>ACTIVE ROUTINES</span><span className={styles.statValue}>{routines.filter(r => r.status).length}</span></div>
+                        <div><span className={styles.statLabel}>ACTIVE ROUTINES</span><span className={styles.statValue}>{stats.active_routines}</span></div>
                         <div className={`${styles.statIcon} ${styles.greenIcon}`}><FaChartLine /></div>
                     </div>
                     <div className={styles.statCard}>
-                        <div><span className={styles.statLabel}>CRITICAL ERRORS</span><span className={styles.statValue}>{routines.filter(r => r.error).length}</span><span className={styles.statSub}>Requires attention</span></div>
+                        <div><span className={styles.statLabel}>CRITICAL ERRORS</span><span className={styles.statValue}>{stats.critical_errors}</span><span className={styles.statSub}>Requires attention</span></div>
                         <div className={`${styles.statIcon} ${styles.redIcon}`}><FaExclamationTriangle /></div>
                     </div>
                     <div className={styles.statCard}>
-                        <div><span className={styles.statLabel}>EXECUTIONS (24H)</span><span className={styles.statValue}>{routines.length * 2}</span></div>
+                        <div><span className={styles.statLabel}>EXECUTIONS (24H)</span><span className={styles.statValue}>{stats.executions_24h}</span></div>
                         <div className={`${styles.statIcon} ${styles.blueIcon}`}><FaClock /></div>
                     </div>
                 </div>
@@ -167,7 +258,7 @@ function RoutinesPage() {
                             <option value="All">All Frequencies</option>
                             <option value="Daily">Daily</option>
                             <option value="Weekly">Weekly</option>
-                            <option value="On Event">On Event</option>
+                            <option value="on_event">On Event</option>
                         </select>
                     </div>
                 </div>
@@ -201,7 +292,7 @@ function RoutinesPage() {
                                     <select value={formData.frequency} onChange={e => setFormData({...formData, frequency: e.target.value})}>
                                         <option value="Daily">Daily</option>
                                         <option value="Weekly">Weekly</option>
-                                        <option value="On Event">On Event</option>
+                                        <option value="on_event">On Event</option>
                                     </select>
                                 </div>
                             </div>
@@ -212,7 +303,7 @@ function RoutinesPage() {
                                         <div className={styles.formGroup}>
                                             <label>TIME / SCHEDULE / CONDITION</label>
                                             <div className={styles.inputIconWrapper}>
-                                                <input type="text" placeholder="--:-- --" value={formData.trigger} onChange={e => setFormData({...formData, trigger: e.target.value})} />
+                                                <input type="text" placeholder="e.g. Stock < 10" value={formData.trigger} onChange={e => setFormData({...formData, trigger: e.target.value})} />
                                                 <FaRegClock className={styles.inputIcon}/>
                                             </div>
                                         </div>
