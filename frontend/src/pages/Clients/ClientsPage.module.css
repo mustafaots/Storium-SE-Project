@@ -185,7 +185,7 @@
 }
 
 .clientsTable th {
-  background: var(--industriafl-gold);
+  background: var(--industrial-gold);
   color: var(--discord-gray-dark);
   padding: 16px 12px;
   text-align: left;
