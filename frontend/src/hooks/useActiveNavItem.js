@@ -7,6 +7,7 @@ export function useActiveNavItem() {
         '/': 'Schema',
         '/home-page': 'Schema',
         '/schema': 'Schema',
+        '/locations': 'Schema',
         '/visualise': 'Visualise', 
         '/sources': 'Sources',
         '/products': 'Products',
@@ -21,6 +22,9 @@ export function useActiveNavItem() {
     // Check exact matches first
     if (routeToNameMap[path]) {
         return routeToNameMap[path];
+    }
+    if (path.startsWith('/locations/')) {
+        return 'Schema';
     }
     
     // Check if it's a coming-soon page for a specific feature
@@ -41,6 +45,8 @@ export function useActiveNavItem() {
         console.log(path);
         if (path.includes('visualise')) {
             return 'Visualise';
+        } else if (path.includes('locations')) {
+            return 'Schema';
         } else if (path.includes('sources')) {
             return 'Sources';
         } else if (path.includes('products')) {
