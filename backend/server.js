@@ -30,10 +30,11 @@ app.use(requestLogger);
 
 // Import routes
 import clientsRoutes from './src/routes/clients.routes.js';
+import productsRoutes from './src/routes/products.routes.js';
 import sourcesRoutes from './src/routes/sources.routes.js';
-
 // API Routes
 app.use('/api/clients', clientsRoutes);
+app.use('/api/products',productsRoutes);
 app.use('/api/sources',sourcesRoutes);
 
 // Health check

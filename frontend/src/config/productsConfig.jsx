@@ -31,12 +31,7 @@ export const productsConfig = {
       header: 'Unit',
       width: 'minmax(80px, 100px)',
     },
-    {
-      key: 'total_stock',
-      header: 'Total Stock',
-      width: 'minmax(100px, 120px)',
-      render: (row) => <span>{row.total_stock ?? row.total ?? 0}</span>,
-    },
+    
     {
       key: 'min_stock_level',
       header: 'Min Stock',
