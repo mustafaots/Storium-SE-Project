@@ -31,6 +31,25 @@ app.use('/api/locations', locationsRoutes);
 app.use('/api', utilityRoutes);
 
 // ===== ERROR HANDLING =====
+
+// Import routes
+import clientsRoutes from './src/routes/clients.routes.js';
+import transactionsRoutes from './src/routes/transactions.routes.js';
+import productsRoutes from './src/routes/products.routes.js';
+import sourcesRoutes from './src/routes/sources.routes.js';
+// API Routes
+app.use('/api/clients', clientsRoutes);
+app.use('/api/products',productsRoutes);
+app.use('/api/sources',sourcesRoutes);
+app.use('/api/transactions', transactionsRoutes);
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: 'Storium IMS API is running' });
+});
+
+// ===== ERROR HANDLING MIDDLEWARE (MUST BE LAST) =====
+
+// 4. 404 Handler - Catch routes that don't exist
 app.use(notFoundHandler);
 app.use(errorHandler);
 

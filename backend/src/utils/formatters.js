@@ -30,7 +30,7 @@ const formatDate = (dateString) => {
 
 // Format phone number for display
 const formatPhone = (phone) => {
-  if (!phone) return 'N/A';
+  if (!phone) return phone;
   
   // Format 10-digit numbers as 4-2-2-2 blocks (e.g., 0556 26 88 76)
   const cleaned = phone.replace(/\D/g, '');
