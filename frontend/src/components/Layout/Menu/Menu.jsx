@@ -9,8 +9,8 @@ function Menu() {
 
   const menuItems = [
     { label: 'Enter', action: () => navigate('/schema') },
-    { label: 'Settings', action: () => navigate('/settings') },
     { label: 'Support', action: () => navigate('/coming-soon') },
+    { label: 'Exit', action: () => ()=>{} },
   ];
 
   return (

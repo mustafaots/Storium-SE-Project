@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import ComingSoon from './pages/ComingSoon/ComingSoonPage';
-import SettingsPage from './pages/Settings/SettingsPage';
 import SchemaPage from './pages/Schema/SchemaPage';
 import VisualisePage from './pages/Visualise/VisualisePage';
 import SourcesPage from './pages/Sources/SourcesPage';
@@ -23,7 +22,6 @@ function App() {
       <Routes>
         <Route path="/" element={<MainPage />} /> 
         <Route path="/coming-soon" element={<ComingSoon />} />
-        <Route path="/settings" element={<SettingsPage />} />
         <Route path="/schema" element={<SchemaPage />} />
         <Route path="/visualise" element={<VisualisePage />} />
         <Route path="/sources" element={<SourcesPage />} />
