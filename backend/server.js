@@ -9,9 +9,7 @@ import notFoundHandler from './src/middleware/notFound.js';
 import errorHandler from './src/middleware/errorHandler.js';
 
 // Import routes
-import clientsRoutes from './src/routes/clients.routes.js';
-import locationsRoutes from './src/routes/locations.routes.js';
-import utilityRoutes from './src/routes/utility.routes.js';
+
 
 dotenv.config();
 
@@ -34,6 +32,8 @@ app.use('/api', utilityRoutes);
 
 // Import routes
 import clientsRoutes from './src/routes/clients.routes.js';
+import locationsRoutes from './src/routes/locations.routes.js';
+import utilityRoutes from './src/routes/utility.routes.js';
 import transactionsRoutes from './src/routes/transactions.routes.js';
 import productsRoutes from './src/routes/products.routes.js';
 import sourcesRoutes from './src/routes/sources.routes.js';
