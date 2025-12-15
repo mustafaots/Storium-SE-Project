@@ -10,8 +10,8 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
     contact_phone: '',
     address: '',
     coordinates: '',
-    rate: '',
-    rate_unit: '',
+    rate: '',        // allow empty string
+    rate_unit: '',   // allow empty string
     is_active: false
   });
 
@@ -27,7 +27,8 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
         contact_phone: currentSource.contact_phone || '',
         address: currentSource.address || '',
         coordinates: currentSource.coordinates || '',
-        rate: currentSource.rate || '',
+        // convert null to '' for form fields
+        rate: currentSource.rate != null ? String(currentSource.rate) : '',
         rate_unit: currentSource.rate_unit || '',
         is_active: !!currentSource.is_active
       });
@@ -61,11 +62,16 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
     const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
     return phoneRegex.test(v) ? '' : 'Invalid phone';
   };
-  const positiveNumber = (v) => {
-    if (v === '' || v === null || v === undefined) return 'Rate is required';
-    return Number(v) > 0 ? '' : 'Rate must be a positive number';
+
+  // Make rate optional: only validate if provided (non-empty)
+  const positiveNumberIfProvided = (v) => {
+    if (v === '' || v === null || v === undefined) return '';
+    const num = Number(v);
+    if (Number.isNaN(num)) return 'Rate must be a number';
+    return num > 0 ? '' : 'Rate must be a positive number';
   };
-  const rateUnitFormat = (v) => {
+
+  const rateUnitFormatIfProvided = (v) => {
     if (!v) return '';
     return /.+\s*\/\s*.+/.test(v) ? '' : 'Unit must be in format "product / time unit"';
   };
@@ -77,8 +83,8 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
     contact_phone: [optionalPhone],
     address: [],
     coordinates: [],
-    rate: [positiveNumber],
-    rate_unit: [rateUnitFormat],
+    rate: [positiveNumberIfProvided],
+    rate_unit: [rateUnitFormatIfProvided],
     is_active: []
   };
 
@@ -112,14 +118,29 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
 
     setSubmitting(true);
     try {
+      // Convert empty strings to null so backend / DB receives proper NULL values
+      const payload = {
+        source_name: String(formData.source_name).trim(),
+        contact_email: formData.contact_email ? String(formData.contact_email).trim() : null,
+        contact_phone: formData.contact_phone ? String(formData.contact_phone).trim() : null,
+        address: formData.address ? String(formData.address).trim() : null,
+        coordinates: formData.coordinates ? String(formData.coordinates).trim() : null,
+        rate: formData.rate === '' ? null : Number(formData.rate),
+        rate_unit: formData.rate_unit ? String(formData.rate_unit).trim() : null,
+        is_active: !!formData.is_active
+      };
+
       if (isEditing && currentSource?.source_id) {
-        await sourcesAPI.update(currentSource.source_id, formData);
+        const resp = await sourcesAPI.update(currentSource.source_id, payload);
+        if (!resp || !resp.success) throw new Error(resp?.error || 'Update failed');
       } else {
-        await sourcesAPI.create(formData);
+        const resp = await sourcesAPI.create(payload);
+        if (!resp || !resp.success) throw new Error(resp?.error || 'Create failed');
       }
+
       onSuccess();
     } catch (err) {
-      onError('Failed to ' + (isEditing ? 'update' : 'create') + ' source: ' + err.message);
+      onError('Failed to ' + (isEditing ? 'update' : 'create') + ' source: ' + (err.message || err));
     } finally {
       setSubmitting(false);
     }
@@ -201,17 +222,17 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
           <FormField
             type="number"
             field="rate"
-            placeholder="Rate (positive number)"
+            placeholder="Rate (positive number, optional)"
             value={formData.rate}
             onChange={handleChange}
             error={formErrors.rate}
-            required
+            // do NOT mark required here — rate is optional
           />
 
           <FormField
             type="text"
             field="rate_unit"
-            placeholder='Rate Unit e.g. "product / day"'
+            placeholder='Rate Unit e.g. "product / day" (optional)'
             value={formData.rate_unit}
             onChange={handleChange}
             error={formErrors.rate_unit}
@@ -245,14 +266,24 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
 
 const FormField = ({ type, field, placeholder, value, onChange, error, required }) => (
   <div className={styles.formGroup}>
-    <input
-      type={type}
-      placeholder={placeholder}
-      value={value}
-      onChange={(e) => onChange(field, e.target.value)}
-      required={required}
-      className={`${styles.formInput} ${error ? styles.inputError : ''}`}
-    />
+    {type === 'textarea' ? (
+      <textarea
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(field, e.target.value)}
+        rows={3}
+        className={`${styles.formTextarea} ${error ? styles.inputError : ''}`}
+      />
+    ) : (
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(field, e.target.value)}
+        required={required}
+        className={`${styles.formInput} ${error ? styles.inputError : ''}`}
+      />
+    )}
     {error && <span className={styles.errorText}>{error}</span>}
   </div>
 );
