@@ -1,3 +1,9 @@
+/* ProductsPage.module.css
+   Aligned with Clients page styles and class names used in ProductsPage.jsx
+   Uses project CSS variables: --discord-gray, --discord-gray-dark, --discord-gray-light,
+   --text-light, --text-gray, --industrial-gold, --industrial-gold-dark
+*/
+
 .pageWrapper {
   min-height: 100vh;
   display: flex;
@@ -15,52 +21,37 @@
   width: 100%;
 }
 
-/* Modal Form Overlay - MATCHING CLIENT STYLE */
-/* Modal Form Overlay - CENTERED & SCROLLABLE */
+/* Modal / Form overlay (matching client pattern) */
 .formContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* grey overlay */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  overflow-y: auto; /* Allow scrolling if content is too tall */
-  padding: 20px; /* Padding around the form */
+  min-height: 60vh;
 }
 
 .formContent {
   background: var(--discord-gray);
   padding: 40px;
   border-radius: 8px;
+  text-align: center;
   width: 100%;
   max-width: 900px;
-  max-height: 90vh; /* Limit height to 90% of viewport */
-  overflow-y: auto; /* Scrollable content inside form */
-  text-align: center;
-  position: relative;
-  margin: auto; /* Center vertically when scrolling */
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); /* Nice shadow for depth */
 }
 
-/* Smooth scrollbar for form content */
-.formContent::-webkit-scrollbar {
-  width: 8px;
-}
-
-.formContent::-webkit-scrollbar-thumb {
-  background: var(--discord-gray-light);
-  border-radius: 4px;
-}
-/* List Container */
+/* List container */
 .listContainer {
   width: 100%;
 }
 
-/* Header */
+.headerContent {
+  background: var(--discord-gray);
+  padding: 40px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Title / subtitle */
 .title {
   font-size: 3rem;
   color: var(--industrial-gold);
@@ -74,8 +65,9 @@
   margin-bottom: 30px;
 }
 
-/* Form Styles */
-.clientForm {
+/* Form inputs */
+.clientForm,
+.productForm {
   text-align: left;
 }
 
@@ -83,7 +75,8 @@
   margin-bottom: 20px;
 }
 
-.formInput, .formTextarea {
+.formInput,
+.formTextarea {
   width: 100%;
   padding: 12px 16px;
   background: var(--discord-gray-dark);
@@ -93,20 +86,25 @@
   font-size: 14px;
 }
 
-.formInput::placeholder, .formTextarea::placeholder {
-  color: var(--text-gray);
+/* Placeholder Styling */
+.formInput::placeholder,
+.formTextarea::placeholder {
+  color: #a3a3a3; /* Change this color to match the grey shade you're using */
+  opacity: 1; /* Ensure opacity is not set to low, otherwise placeholder will be too faint */
 }
 
-.formInput:focus, .formTextarea:focus {
+.formInput:focus::placeholder,
+.formTextarea:focus::placeholder {
+  color: #a3a3a3; /* Ensure placeholder color stays consistent when the input is focused */
+}
+
+/* If you want to style the form inputs differently when focused */
+.formInput:focus,
+.formTextarea:focus {
+  border-color: #007bff; /* Add any color you prefer */
   outline: none;
-  border-color: var(--industrial-gold);
 }
 
-.formTextarea {
-  resize: vertical;
-  min-height: 80px;
-  font-family: inherit;
-}
 
 .formActions {
   display: flex;
@@ -115,7 +113,7 @@
   margin-top: 30px;
 }
 
-/* Actions Container - For Add/Export Buttons */
+/* Actions Container - Add / Export controls (matches clients) */
 .actionsContainer {
   display: flex;
   justify-content: flex-start;
@@ -130,6 +128,57 @@
   align-items: center;
 }
 
+.buttonGroupInline {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* Export select + menu */
+.exportScopeSelect {
+  background: var(--discord-gray-dark);
+  color: var(--text-light);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 6px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.exportWrapper {
+  position: relative;
+}
+
+.exportMenu {
+  position: absolute;
+  right: 0;
+  top: 110%;
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 6px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  z-index: 20;
+}
+
+.exportMenu button {
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 4px;
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.exportMenu button:hover {
+  background: var(--discord-gray-light);
+  border-color: var(--industrial-gold);
+}
+
 /* Buttons */
 .primaryButton {
   background: var(--industrial-gold);
@@ -140,12 +189,11 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .primaryButton:hover:not(:disabled) {
   background: var(--industrial-gold-dark);
-  transform: translateY(-1px);
 }
 
 .primaryButton:disabled {
@@ -170,102 +218,122 @@
   color: var(--text-light);
 }
 
-/* Action Buttons in Table */
-.actionButtons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+/* Table area */
+.tableContainer {
+  background: var(--discord-gray);
+  padding: 30px;
+  border-radius: 8px;
 }
 
-.editBtn, .deleteBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.editBtn {
-  color: var(--industrial-gold);
-}
-
-.editBtn:hover {
-  background: rgba(212, 175, 55, 0.1);
-  transform: scale(1.1);
-}
-
-.deleteBtn {
-  color: #e74c3c;
-}
-
-.deleteBtn:hover {
-  background: rgba(231, 76, 60, 0.1);
-  transform: scale(1.1);
-}
-
-/* Error Alert */
-.errorAlert {
-  background: #e74c3c;
-  color: white;
-  padding: 16px 20px;
-  border-radius: 4px;
+.tableHeader {
   margin-bottom: 20px;
+  text-align: center;
 }
 
-.errorContent {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.tableWrapper {
+  overflow-x: auto;
 }
 
-.errorMessage {
+/* Reuse clientsTable styles for product table */
+.clientsTable,
+.productsTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--discord-gray-dark);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.clientsTable th,
+.productsTable th {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+  padding: 16px 12px;
+  text-align: left;
   font-weight: 600;
   font-size: 14px;
 }
 
-.closeBtn {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0;
-  width: 24px;
-  height: 24px;
+.clientsTable td,
+.productsTable td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--discord-gray-light);
+  color: var(--text-light);
+  font-size: 14px;
+}
+
+.clientsTable tr:last-child td,
+.productsTable tr:last-child td {
+  border-bottom: none;
+}
+
+/* Product-specific */
+.productName {
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.productMeta {
+  color: var(--text-gray);
+  font-size: 13px;
+}
+
+/* Action buttons */
+.actionButtons {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: 12px; /* Adjust spacing between Edit and Delete */
 }
 
-.closeBtn:hover {
-  opacity: 0.8;
+
+.editButton, .deleteButton, .editBtn, .deleteBtn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-/* Loading / Empty States */
-.loadingState, .emptyState {
+.editButton, .editBtn {
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+}
+.editButton:hover:not(:disabled), .editBtn:hover:not(:disabled) {
+  background: var(--industrial-gold-dark);
+}
+
+.deleteButton, .deleteBtn {
+  background: #e74c3c;
+  color: white;
+}
+.deleteButton:hover:not(:disabled), .deleteBtn:hover:not(:disabled) {
+  background: #c0392b;
+}
+
+/* States */
+.loadingState, .emptyState, .noResults {
   background: var(--discord-gray);
   padding: 60px 40px;
   border-radius: 8px;
   text-align: center;
+  border: 1px solid var(--discord-gray-light);
+  margin-top: 20px;
 }
 
-.loadingContent h2, .emptyContent h2 {
+.loadingContent h2, .emptyContent h2, .noResultsContent h2 {
   color: var(--industrial-gold);
   margin-bottom: 10px;
   font-size: 1.5rem;
 }
 
-.loadingContent p, .emptyContent p {
+.loadingContent p, .emptyContent p, .noResultsContent p {
   color: var(--text-gray);
   margin-bottom: 20px;
   font-size: 1rem;
 }
 
-/* Pagination Info */
+/* Pagination info */
 .paginationInfoContainer {
   display: flex;
   justify-content: center;
@@ -307,7 +375,7 @@
   font-style: normal;
 }
 
-/* Form Input Errors */
+/* Input error state */
 .inputError {
   border-color: #e74c3c !important;
   box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.3) !important;
@@ -321,50 +389,8 @@
   font-weight: 500;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .mainContent {
-    padding: 10px;
-  }
-  
-  .title {
-    font-size: 2rem;
-  }
-  
-  .formContent {
-    padding: 20px;
-    max-width: 90%;
-  }
-  
-  .formActions {
-    flex-direction: column;
-  }
-  
-  .actionsContainer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .buttonGroup {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .paginationInfo {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
-  .resultsText, .searchInfo {
-    font-size: 0.85rem;
-  }
-  
-  .paginationInfoContainer {
-    padding: 0.75rem;
-    margin: 1rem 0;
-  }
-}
-/* Product Image in Form */
+
+/* Product image in form / preview */
 .productImageContainer {
   width: 100%;
   margin-bottom: 30px;
@@ -376,14 +402,14 @@
 
 .productImage {
   width: 100%;
-  height: 400px; /* Changed from 250px to 400px */
+  height: 400px;
   object-fit: cover;
   display: block;
 }
 
 .imagePlaceholder {
   width: 100%;
-  height: 400px; /* Changed from 250px to 400px */
+  height: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -392,25 +418,58 @@
   color: var(--text-gray);
 }
 
-.imagePlaceholder span {
-  font-size: 5rem; /* Increased from 4rem */
-  margin-bottom: 10px;
+.imagePlaceholder span { font-size: 5rem; margin-bottom: 10px; }
+.imagePlaceholder p { font-size: 1rem; margin: 0; color: var(--text-gray); }
+
+/* NoResults actions */
+.noResultsActions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 20px;
+}
+.noResultsActions .primaryButton,
+.noResultsActions .secondaryButton {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.imagePlaceholder p {
-  font-size: 1rem;
-  margin: 0;
-  color: var(--text-gray);
+/* Responsive */
+@media (max-width: 1024px) {
+  .productImage { height: 320px; }
 }
 
-/* Responsive image */
 @media (max-width: 768px) {
-  .productImage,
-  .imagePlaceholder {
-    height: 250px; /* Mobile height */
-  }
-  
-  .imagePlaceholder span {
-    font-size: 3rem;
-  }
+  .mainContent { padding: 10px; }
+  .title { font-size: 2rem; }
+  .formContent, .headerContent, .tableContainer { padding: 20px; }
+  .formActions { flex-direction: column; }
+  .actionsContainer { flex-direction: column; align-items: stretch; }
+  .buttonGroup { flex-direction: column; width: 100%; }
+  .productsTable { font-size: 12px; }
+  .productsTable th, .productsTable td { padding: 10px 8px; }
+  .noResults { padding: 40px 20px; }
+  .noResultsActions { flex-direction: column; width: 100%; }
+  .noResultsActions button { width: 100%; }
+  .imagePlaceholder span { font-size: 3rem; }
+}
+.selectInput {
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  color: var(--text-light);
+  padding: 12px 16px;
+  font-size: 14px;
+  border-radius: 4px;
+  width: 100%;
+  appearance: none;
+}
+
+.selectInput::placeholder {
+  color: #a3a3a3; /* grey placeholder */
+  opacity: 1;
+}
+
+.selectInput:focus::placeholder {
+  color: #a3a3a3;
 }
