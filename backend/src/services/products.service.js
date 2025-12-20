@@ -38,10 +38,13 @@ const productsService = {
         p.name, 
         p.category, 
         p.description, 
-        p.image_url, 
+        TO_BASE64(p.image_data) AS image_data,
+        p.image_mime_type,
         p.unit,
         p.min_stock_level, 
         p.max_stock_level,
+        p.rate,
+        p.rate_unit,
         COALESCE(st.total_stock, 0) AS total_stock,
         ps.source_id,
         src.source_name AS supplier,
@@ -50,10 +53,9 @@ const productsService = {
       LEFT JOIN (
         SELECT product_id, SUM(quantity) AS total_stock
         FROM stocks
-        WHERE is_active = TRUE
         GROUP BY product_id
       ) st ON st.product_id = p.${PRIMARY_KEY}
-      LEFT JOIN product_sources ps ON ps.product_id = p.${PRIMARY_KEY} AND ps.is_active = TRUE AND ps.is_preferred_supplier = TRUE
+      LEFT JOIN product_sources ps ON ps.product_id = p.${PRIMARY_KEY} AND ps.is_preferred_supplier = TRUE
       LEFT JOIN sources src ON src.source_id = ps.source_id
       ${whereClause}
       ORDER BY p.created_at DESC 
@@ -70,12 +72,13 @@ const productsService = {
             console.error('❌ Service query error:', err);
             return reject(err);
           }
+          console.log('📦 Products service raw results:', JSON.stringify(results.slice(0, 2), null, 2));
           resolve(results);
         });
       }),
       new Promise((resolve, reject) => {
         connection.query(
-          `SELECT COUNT(*) as total FROM ${TABLE} ${whereClause}`,
+          `SELECT COUNT(*) as total FROM ${TABLE} p ${whereClause}`,
           params,
           (err, results) => {
             if (err) return reject(err);
@@ -105,10 +108,13 @@ const productsService = {
           p.name, 
           p.category, 
           p.description, 
-          p.image_url, 
+          TO_BASE64(p.image_data) AS image_data,
+          p.image_mime_type,
           p.unit,
           p.min_stock_level, 
           p.max_stock_level,
+          p.rate,
+          p.rate_unit,
           COALESCE(st.total_stock, 0) AS total_stock,
           ps.source_id,
           src.source_name AS supplier,
@@ -117,10 +123,9 @@ const productsService = {
         LEFT JOIN (
           SELECT product_id, SUM(quantity) AS total_stock
           FROM stocks
-          WHERE is_active = TRUE
           GROUP BY product_id
         ) st ON st.product_id = p.${PRIMARY_KEY}
-        LEFT JOIN product_sources ps ON ps.product_id = p.${PRIMARY_KEY} AND ps.is_active = TRUE AND ps.is_preferred_supplier = TRUE
+        LEFT JOIN product_sources ps ON ps.product_id = p.${PRIMARY_KEY} AND ps.is_preferred_supplier = TRUE
         LEFT JOIN sources src ON src.source_id = ps.source_id
         WHERE p.${PRIMARY_KEY} = ?
         LIMIT 1
@@ -140,13 +145,16 @@ const productsService = {
   // Create new product and return the inserted product row (including created_at and joined supplier/total_stock)
   create: (data) => {
     return new Promise((resolve, reject) => {
-      const { name, category, description, image_url, unit, min_stock_level, max_stock_level, source_id } = data;
+      const { name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, rate, rate_unit, source_id } = data;
+
+      // Validate rate if provided
+      const validRate = rate != null && rate !== '' && !isNaN(rate) && rate >= 0 ? rate : null;
 
       // 1) Insert product
       connection.query(
-        `INSERT INTO ${TABLE} (name, category, description, image_url, unit, min_stock_level, max_stock_level)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [name, category, description, image_url, unit, min_stock_level, max_stock_level],
+        `INSERT INTO ${TABLE} (name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, rate, rate_unit)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, category, description, image_data || null, image_mime_type || null, unit, min_stock_level, max_stock_level, validRate, rate_unit || null],
         (err, insertRes) => {
           if (err) {
             console.error('❌ Service create error (insert):', err);
@@ -166,14 +174,14 @@ const productsService = {
                 const productRow = rows[0];
                 // now fetch total_stock
                 connection.query(
-                  `SELECT COALESCE(SUM(quantity), 0) AS total_stock FROM stocks WHERE product_id = ? AND is_active = TRUE`,
+                  `SELECT COALESCE(SUM(quantity), 0) AS total_stock FROM stocks WHERE product_id = ?`,
                   [productId],
                   (errStock, stockRows) => {
                     if (errStock) return cb(errStock);
                     const total_stock = stockRows && stockRows[0] ? (stockRows[0].total_stock || 0) : 0;
                     // fetch preferred supplier if any
                     connection.query(
-                      `SELECT ps.source_id, s.source_name FROM product_sources ps JOIN sources s ON s.source_id = ps.source_id WHERE ps.product_id = ? AND ps.is_preferred_supplier = TRUE AND ps.is_active = TRUE LIMIT 1`,
+                      `SELECT ps.source_id, s.source_name FROM product_sources ps JOIN sources s ON s.source_id = ps.source_id WHERE ps.product_id = ? AND ps.is_preferred_supplier = TRUE LIMIT 1`,
                       [productId],
                       (errSup, supRows) => {
                         if (errSup) return cb(errSup);
@@ -198,7 +206,7 @@ const productsService = {
           // 2) If supplier provided, insert mapping then fetch product row; otherwise just fetch product row
           if (source_id !== null && source_id !== undefined && source_id !== '') {
             connection.query(
-              'INSERT INTO product_sources (product_id, source_id, is_preferred_supplier, is_active, created_at) VALUES (?, ?, TRUE, TRUE, NOW())',
+              'INSERT INTO product_sources (product_id, source_id, is_preferred_supplier, created_at) VALUES (?, ?, TRUE, NOW())',
               [productId, source_id],
               (psErr) => {
                 if (psErr) {
@@ -227,11 +235,26 @@ const productsService = {
   // Update existing product
   update: (id, data) => {
     return new Promise((resolve, reject) => {
-      const { name, category, description, image_url, unit, min_stock_level, max_stock_level, source_id } = data;
+      const { name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, rate, rate_unit, source_id } = data;
+
+      // Validate rate if provided
+      const validRate = rate != null && rate !== '' && !isNaN(rate) && rate >= 0 ? rate : null;
+
+      // Build update query - only update image if provided
+      let updateQuery;
+      let updateParams;
+      
+      if (image_data !== undefined) {
+        updateQuery = `UPDATE ${TABLE} SET name = ?, category = ?, description = ?, image_data = ?, image_mime_type = ?, unit = ?, min_stock_level = ?, max_stock_level = ?, rate = ?, rate_unit = ? WHERE ${PRIMARY_KEY} = ?`;
+        updateParams = [name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, validRate, rate_unit || null, id];
+      } else {
+        updateQuery = `UPDATE ${TABLE} SET name = ?, category = ?, description = ?, unit = ?, min_stock_level = ?, max_stock_level = ?, rate = ?, rate_unit = ? WHERE ${PRIMARY_KEY} = ?`;
+        updateParams = [name, category, description, unit, min_stock_level, max_stock_level, validRate, rate_unit || null, id];
+      }
 
       connection.query(
-        `UPDATE ${TABLE} SET name = ?, category = ?, description = ?, image_url = ?, unit = ?, min_stock_level = ?, max_stock_level = ? WHERE ${PRIMARY_KEY} = ?`,
-        [name, category, description, image_url, unit, min_stock_level, max_stock_level, id],
+        updateQuery,
+        updateParams,
         (err, results) => {
           if (err) {
             console.error('❌ Service update error:', err);
@@ -242,7 +265,7 @@ const productsService = {
 
           // Update supplier relationship: deactivate old mappings for product
           connection.query(
-            'UPDATE product_sources SET is_preferred_supplier = FALSE, is_active = FALSE WHERE product_id = ?',
+            'UPDATE product_sources SET is_preferred_supplier = FALSE WHERE product_id = ?',
             [id],
             (err2) => {
               if (err2) {
@@ -264,7 +287,7 @@ const productsService = {
                     if (existing.length > 0) {
                       // reactivate existing mapping
                       connection.query(
-                        'UPDATE product_sources SET is_preferred_supplier = TRUE, is_active = TRUE WHERE id = ?',
+                        'UPDATE product_sources SET is_preferred_supplier = TRUE WHERE id = ?',
                         [existing[0].id],
                         (err4) => {
                           if (err4) {
@@ -281,7 +304,7 @@ const productsService = {
                     } else {
                       // create new mapping
                       connection.query(
-                        'INSERT INTO product_sources (product_id, source_id, is_preferred_supplier, is_active) VALUES (?, ?, TRUE, TRUE)',
+                        'INSERT INTO product_sources (product_id, source_id, is_preferred_supplier) VALUES (?, ?, TRUE)',
                         [id, source_id],
                         (err4) => {
                           if (err4) {
@@ -315,10 +338,23 @@ const productsService = {
   // Delete product
   delete: (id) => {
     return new Promise((resolve, reject) => {
-      connection.query(`DELETE FROM ${TABLE} WHERE ${PRIMARY_KEY} = ?`, [id], (err, results) => {
-        if (err) return reject(err);
-        resolve(results);
-      });
+      // First delete supplier mappings
+      connection.query(
+        'DELETE FROM product_sources WHERE product_id = ?',
+        [id],
+        (err) => {
+          if (err) return reject(err);
+          // Then delete the product
+          connection.query(
+            `DELETE FROM ${TABLE} WHERE ${PRIMARY_KEY} = ?`,
+            [id],
+            (err, results) => {
+              if (err) return reject(err);
+              resolve(results);
+            }
+          );
+        }
+      );
     });
   }
 };

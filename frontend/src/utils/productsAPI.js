@@ -42,10 +42,8 @@ export const productsAPI = {
     
     const response = await fetch(`${API_BASE_URL}/products`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(productData),
+      // Don't set Content-Type - browser will set it with boundary for FormData
+      body: productData,
     });
     
     if (!response.ok) {
@@ -66,10 +64,8 @@ export const productsAPI = {
     
     const response = await fetch(`${API_BASE_URL}/products/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(productData),
+      // Don't set Content-Type - browser will set it with boundary for FormData
+      body: productData,
     });
     
     if (!response.ok) {
@@ -100,26 +96,14 @@ export const productsAPI = {
     return data;
   },
 
-  // Get all suppliers (sources) - Get only active sources
+  // Get all suppliers (sources)
   getAllSuppliers: async () => {
-  
-    
     const response = await fetch(`${API_BASE_URL}/sources?limit=1000`); // Get all sources
     if (!response.ok) throw new Error('Failed to fetch suppliers');
     
     const data = await response.json();
     
-   
-    
-    // Return only active sources
-    if (data.success && data.data) {
-      const activeSuppliers = data.data.filter(source => source.is_active);
-      
-      return {
-        success: true,
-        data: activeSuppliers
-      };
-    }
+    // Return all sources (is_active column no longer exists)
     return data;
   }
 };

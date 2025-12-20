@@ -62,17 +62,14 @@ export const Source = {
   // Create new source
   create: (sourceData) => {
     return new Promise((resolve, reject) => {
-      const { source_name, contact_email, contact_phone, address, coordinates, rate, rate_unit, is_active } = sourceData;
-
-      // Ensure rate is positive
-      const validRate = rate != null && rate >= 0 ? rate : 0;
+      const { source_name, contact_email, contact_phone, address, coordinates } = sourceData;
 
       connection.query(
-        'INSERT INTO sources (source_name, contact_email, contact_phone, address, coordinates, rate, rate_unit, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [source_name, contact_email, contact_phone, address, coordinates, validRate, rate_unit, is_active],
+        'INSERT INTO sources (source_name, contact_email, contact_phone, address, coordinates) VALUES (?, ?, ?, ?, ?)',
+        [source_name, contact_email, contact_phone, address, coordinates],
         (err, results) => {
           if (err) reject(err);
-          else resolve({ source_id: results.insertId, ...sourceData, rate: validRate });
+          else resolve({ source_id: results.insertId, ...sourceData });
         }
       );
     });
@@ -81,13 +78,11 @@ export const Source = {
   // Update source
   update: (id, sourceData) => {
     return new Promise((resolve, reject) => {
-      const { source_name, contact_email, contact_phone, address, coordinates, rate, rate_unit, is_active } = sourceData;
-
-      const validRate = rate != null && rate >= 0 ? rate : 0;
+      const { source_name, contact_email, contact_phone, address, coordinates } = sourceData;
 
       connection.query(
-        'UPDATE sources SET source_name = ?, contact_email = ?, contact_phone = ?, address = ?, coordinates = ?, rate = ?, rate_unit = ?, is_active = ? WHERE source_id = ?',
-        [source_name, contact_email, contact_phone, address, coordinates, validRate, rate_unit, is_active, id],
+        'UPDATE sources SET source_name = ?, contact_email = ?, contact_phone = ?, address = ?, coordinates = ? WHERE source_id = ?',
+        [source_name, contact_email, contact_phone, address, coordinates, id],
         (err, results) => {
           if (err) reject(err);
           else resolve(results);

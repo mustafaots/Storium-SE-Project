@@ -60,11 +60,19 @@ const productsController = {
   // Create product
   createProduct: async (req, res) => {
     try {
-      const productData = req.body;
-    
+      const productData = { ...req.body };
+      
+      // Handle file upload from multer
+      if (req.file) {
+        productData.image_data = req.file.buffer;
+        productData.image_mime_type = req.file.mimetype;
+      }
+      
+      console.log('Creating product with data:', { ...productData, image_data: productData.image_data ? '[BUFFER]' : null });
+      console.log('source_id received:', productData.source_id, 'type:', typeof productData.source_id);
 
       const newProduct = await productsService.create(productData);
-      
+      console.log('Product created:', { ...newProduct, image_data: newProduct.image_data ? '[BUFFER]' : null });
 
       return res.status(201).json(apiResponse.successResponse(newProduct, 'Product created successfully'));
     } catch (error) {
@@ -76,8 +84,13 @@ const productsController = {
   // Update product
   updateProduct: async (req, res) => {
     try {
-      const productData = req.body;
+      const productData = { ...req.body };
       
+      // Handle file upload from multer
+      if (req.file) {
+        productData.image_data = req.file.buffer;
+        productData.image_mime_type = req.file.mimetype;
+      }
 
       const result = await productsService.update(req.params.id, productData);
 

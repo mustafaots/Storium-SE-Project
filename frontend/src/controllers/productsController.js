@@ -17,6 +17,8 @@ export const productsController = {
       setError('');
 
       const response = await productsAPI.getAll(page, limit, search);
+      console.log('loadProducts response:', response);
+      console.log('Products with suppliers:', response.data?.map(p => ({ id: p.product_id, name: p.name, supplier: p.supplier })));
 
       if (response.success) {
         setProducts(response.data || []);

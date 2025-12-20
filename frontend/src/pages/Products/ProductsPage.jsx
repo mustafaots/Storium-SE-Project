@@ -7,8 +7,7 @@ import Button from '../../components/UI/Button/Button';
 import DataTable from '../../components/UI/DataTable/DataTable';
 import ProductForm from '../../components/Layout/ProductLayout/ProductForm';
 import { FaBox, FaFile, FaPlus } from 'react-icons/fa';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { exportToCSV, exportToPDF } from '../../utils/export';
 
 
 import { useProducts } from '../../hooks/useProducts';
@@ -122,49 +121,17 @@ function ProductsPage() {
     }
   };
 
-  const exportToCSV = async () => {
+  const handleExportCSV = async () => {
     const rows = exportScope === 'current' ? buildExportRows(products) : await fetchAllProductsForExport();
     if (!rows.length) return;
-
-    const escape = (value) => {
-      const str = String(value ?? '');
-      return str.includes('"') || str.includes(',') || str.includes('\n') ? `"${str.replace(/"/g, '""')}"` : str;
-    };
-
-    const csv = [exportHeaders.map(h => escape(h.label)).join(','), ...rows.map(row => exportHeaders.map(h => escape(row[h.key])).join(','))].join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'products.csv';
-    link.click();
-    URL.revokeObjectURL(url);
+    exportToCSV(rows, 'products');
     setShowExportMenu(false);
   };
 
-   const exportToPDF = async () => {
+  const handleExportPDF = async () => {
     const rows = exportScope === 'current' ? buildExportRows(products) : await fetchAllProductsForExport();
     if (!rows.length) return;
-
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-    doc.setFontSize(14);
-    doc.text('Products', 40, 40);
-
-    const head = [exportHeaders.map(h => h.label)]; // an array-of-array (single header row)
-    const body = rows.map(row => exportHeaders.map(h => row[h.key] ?? ''));
-
-    // call the plugin function directly and pass doc as first arg
-    autoTable(doc, {
-      head,
-      body,
-      startY: 60,
-      styles: { fontSize: 10, cellPadding: 6 },
-      headStyles: { fillColor: [54, 57, 63] },
-      alternateRowStyles: { fillColor: [245, 245, 245] }
-    });
-
-    doc.save('products.pdf');
+    exportToPDF(rows, exportHeaders, 'Products Report', 'products');
     setShowExportMenu(false);
   };
 
@@ -223,8 +190,8 @@ function ProductsPage() {
                         <Button onClick={() => setShowExportMenu((prev) => !prev)} variant="primary" leadingIcon={<FaFile />}>Export</Button>
                         {showExportMenu && (
                           <div className={styles.exportMenu}>
-                            <button onClick={exportToCSV}>Export CSV</button>
-                            <button onClick={exportToPDF}>Export PDF</button>
+                            <button onClick={handleExportCSV}>Export CSV</button>
+                            <button onClick={handleExportPDF}>Export PDF</button>
                           </div>
                         )}
                       </div>

@@ -1,19 +1,50 @@
 // src/components/Layout/ProductLayout/ProductForm.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { productsAPI } from '../../../utils/productsAPI';
 import styles from '../../../pages/Products/ProductsPage.module.css';
+
+// Measurement units for product unit selection
+const MEASUREMENT_UNITS = ['pcs', 'kg', 'g', 'lb', 'oz', 'liters', 'ml', 'boxes', 'pallets'];
+
+// Rate temporal units
+const RATE_UNITS = ['/min', '/hour', '/day', '/week', '/month'];
+
+// Product categories
+const PRODUCT_CATEGORIES = [
+  'Electronics',
+  'Food',
+  'Clothing',
+  'Medicine',
+  'Furniture',
+  'Automotive',
+  'Chemicals',
+  'Raw Materials',
+  'Office Supplies',
+  'Tools & Equipment',
+  'Packaging',
+  'Textiles',
+  'Cosmetics',
+  'Beverages',
+  'Hardware',
+  'Other'
+];
 
 const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onCancel, onError }) => {
   const [formData, setFormData] = useState({
     name: '',
     category: '',
     description: '',
-    image_url: '',
     unit: '',
-    min_stock_level: 0,
-    max_stock_level: 0,
+    min_stock_level: '',
+    max_stock_level: '',
+    rate: '',
+    rate_unit: '',
     source_id: ''
   });
+
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
 
   const [suppliers, setSuppliers] = useState([]);
   const [loadingSuppliers, setLoadingSuppliers] = useState(false);
@@ -26,9 +57,11 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
       try {
         setLoadingSuppliers(true);
         const response = await productsAPI.getAllSuppliers();
+        console.log('Suppliers response:', response);
         if (response && response.success) {
           setSuppliers(response.data || []);
         } else {
+          console.error('Failed to load suppliers:', response);
           setSuppliers([]);
         }
       } catch (err) {
@@ -49,23 +82,34 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
         name: currentProduct.name || '',
         category: currentProduct.category || '',
         description: currentProduct.description || '',
-        image_url: currentProduct.image_url || '',
         unit: currentProduct.unit || '',
         min_stock_level: currentProduct.min_stock_level ?? 0,
         max_stock_level: currentProduct.max_stock_level ?? 0,
+        rate: currentProduct.rate != null ? String(currentProduct.rate) : '',
+        rate_unit: currentProduct.rate_unit || '',
         source_id: currentProduct.source_id ?? ''
       });
+      // Set image preview if product has an image
+      if (currentProduct.image_data) {
+        setImagePreview(`data:${currentProduct.image_mime_type || 'image/png'};base64,${currentProduct.image_data}`);
+      } else {
+        setImagePreview(null);
+      }
+      setImageFile(null);
     } else {
       setFormData({
         name: '',
         category: '',
         description: '',
-        image_url: '',
         unit: '',
-        min_stock_level: 0,
-        max_stock_level: 0,
+        min_stock_level: '',
+        max_stock_level: '',
+        rate: '',
+        rate_unit: '',
         source_id: ''
       });
+      setImageFile(null);
+      setImagePreview(null);
     }
     setFormErrors({});
   }, [currentProduct, isEditing]);
@@ -78,6 +122,14 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
     return Number(v) >= 0 ? '' : 'Must be a positive number';
   };
 
+  // Rate validators (optional fields)
+  const positiveNumberIfProvided = (v) => {
+    if (v === '' || v === null || v === undefined) return '';
+    const num = Number(v);
+    if (Number.isNaN(num)) return 'Rate must be a number';
+    return num > 0 ? '' : 'Rate must be a positive number';
+  };
+
   // Validation schema
   const productValidationSchema = {
     name: [required, (v) => minLength(v, 2, 'Product name')],
@@ -85,6 +137,8 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
     unit: [required],
     min_stock_level: [positiveNumber],
     max_stock_level: [positiveNumber],
+    rate: [positiveNumberIfProvided],
+    rate_unit: [],
     source_id: []
   };
 
@@ -133,36 +187,40 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
 
     setSubmitting(true);
     try {
-      // Prepare data - convert to proper types
-      const dataToSend = {
-        name: String(formData.name).trim(),
-        category: String(formData.category).trim(),
-        description: String(formData.description || '').trim(),
-        image_url: String(formData.image_url || '').trim(),
-        unit: String(formData.unit).trim(),
-        min_stock_level: formData.min_stock_level !== '' && formData.min_stock_level !== null && formData.min_stock_level !== undefined
-          ? parseInt(formData.min_stock_level, 10)
-          : 0,
-        max_stock_level: formData.max_stock_level !== '' && formData.max_stock_level !== null && formData.max_stock_level !== undefined
-          ? parseInt(formData.max_stock_level, 10)
-          : 0,
-        source_id: formData.source_id ? parseInt(formData.source_id, 10) : null
-      };
+      // Prepare FormData for multipart upload
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', String(formData.name).trim());
+      formDataToSend.append('category', String(formData.category).trim());
+      formDataToSend.append('description', String(formData.description || '').trim());
+      formDataToSend.append('unit', String(formData.unit).trim());
+      formDataToSend.append('min_stock_level', formData.min_stock_level !== '' && formData.min_stock_level !== null && formData.min_stock_level !== undefined
+        ? parseInt(formData.min_stock_level, 10)
+        : 0);
+      formDataToSend.append('max_stock_level', formData.max_stock_level !== '' && formData.max_stock_level !== null && formData.max_stock_level !== undefined
+        ? parseInt(formData.max_stock_level, 10)
+        : 0);
+      formDataToSend.append('rate', formData.rate !== '' ? Number(formData.rate) : '');
+      formDataToSend.append('rate_unit', formData.rate_unit ? String(formData.rate_unit).trim() : '');
+      formDataToSend.append('source_id', formData.source_id ? parseInt(formData.source_id, 10) : '');
+      
+      if (imageFile) {
+        formDataToSend.append('image', imageFile);
+      }
 
       // Defensive check (double-check numeric relation)
-      if (!Number.isNaN(dataToSend.min_stock_level) && !Number.isNaN(dataToSend.max_stock_level)) {
-        if (dataToSend.min_stock_level >= dataToSend.max_stock_level) {
-          setFormErrors(prev => ({ ...prev, min_stock_level: 'Minimum stock level must be less than maximum stock level' }));
-          setSubmitting(false);
-          return;
-        }
+      const minVal = parseInt(formData.min_stock_level, 10) || 0;
+      const maxVal = parseInt(formData.max_stock_level, 10) || 0;
+      if (minVal >= maxVal) {
+        setFormErrors(prev => ({ ...prev, min_stock_level: 'Minimum stock level must be less than maximum stock level' }));
+        setSubmitting(false);
+        return;
       }
 
       if (isEditing && currentProduct?.product_id) {
-        const resp = await productsAPI.update(currentProduct.product_id, dataToSend);
+        const resp = await productsAPI.update(currentProduct.product_id, formDataToSend);
         if (!resp || !resp.success) throw new Error(resp?.error || 'Update failed');
       } else {
-        const resp = await productsAPI.create(dataToSend);
+        const resp = await productsAPI.create(formDataToSend);
         if (!resp || !resp.success) throw new Error(resp?.error || 'Create failed');
       }
 
@@ -177,6 +235,34 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (formErrors[field]) setFormErrors((prev) => ({ ...prev, [field]: '' }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        setFormErrors(prev => ({ ...prev, image: 'Please select a valid image file (JPEG, PNG, GIF, WebP)' }));
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setFormErrors(prev => ({ ...prev, image: 'Image must be less than 5MB' }));
+        return;
+      }
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+      setFormErrors(prev => ({ ...prev, image: '' }));
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -203,30 +289,46 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
             required
           />
 
-          <FormField
-            type="text"
-            field="category"
-            placeholder="Category *"
-            value={formData.category}
-            onChange={handleChange}
-            error={formErrors.category}
-            required
-          />
+          {/* Category Dropdown */}
+          <div className={styles.formGroup}>
+            <select
+              value={formData.category}
+              onChange={(e) => handleChange('category', e.target.value)}
+              className={`${styles.formInput} ${formErrors.category ? styles.inputError : ''}`}
+              required
+            >
+              <option value="">Select Category *</option>
+              {PRODUCT_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+            {formErrors.category && <span className={styles.errorText}>{formErrors.category}</span>}
+          </div>
 
-          <FormField
-            type="text"
-            field="unit"
-            placeholder="Unit (e.g., kg, liters, pieces) *"
-            value={formData.unit}
-            onChange={handleChange}
-            error={formErrors.unit}
-            required
-          />
+          {/* Unit Dropdown */}
+          <div className={styles.formGroup}>
+            <select
+              value={formData.unit}
+              onChange={(e) => handleChange('unit', e.target.value)}
+              className={`${styles.formInput} ${formErrors.unit ? styles.inputError : ''}`}
+              required
+            >
+              <option value="">Select Unit *</option>
+              {MEASUREMENT_UNITS.map((unit) => (
+                <option key={unit} value={unit}>
+                  {unit}
+                </option>
+              ))}
+            </select>
+            {formErrors.unit && <span className={styles.errorText}>{formErrors.unit}</span>}
+          </div>
 
           <FormField
             type="number"
             field="min_stock_level"
-            placeholder="Minimum Stock Level"
+            placeholder="Minimum Stock Level (e.g., 10)"
             value={formData.min_stock_level}
             onChange={handleChange}
             error={formErrors.min_stock_level}
@@ -235,11 +337,38 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
           <FormField
             type="number"
             field="max_stock_level"
-            placeholder="Maximum Stock Level"
+            placeholder="Maximum Stock Level (e.g., 100)"
             value={formData.max_stock_level}
             onChange={handleChange}
             error={formErrors.max_stock_level}
           />
+
+          {/* Rate fields */}
+          <FormField
+            type="number"
+            field="rate"
+            placeholder="Rate (positive number, optional)"
+            value={formData.rate}
+            onChange={handleChange}
+            error={formErrors.rate}
+          />
+
+          {/* Rate Unit Dropdown */}
+          <div className={styles.formGroup}>
+            <select
+              value={formData.rate_unit}
+              onChange={(e) => handleChange('rate_unit', e.target.value)}
+              className={`${styles.formInput} ${formErrors.rate_unit ? styles.inputError : ''}`}
+            >
+              <option value="">Select Rate Unit (Optional)</option>
+              {RATE_UNITS.map((unit) => (
+                <option key={unit} value={unit}>
+                  {unit}
+                </option>
+              ))}
+            </select>
+            {formErrors.rate_unit && <span className={styles.errorText}>{formErrors.rate_unit}</span>}
+          </div>
 
           {/* Supplier Dropdown */}
           <div className={styles.formGroup}>
@@ -249,14 +378,16 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
               className={`${styles.formInput} ${formErrors.source_id ? styles.inputError : ''}`}
               disabled={loadingSuppliers}
             >
-              <option value="">select supplier</option>
+              <option value="">{loadingSuppliers ? 'Loading suppliers...' : 'Select Supplier (Optional)'}</option>
               {suppliers.map((supplier) => (
                 <option key={supplier.source_id} value={supplier.source_id}>
                   {supplier.source_name}
                 </option>
               ))}
             </select>
-            {loadingSuppliers && <span className={styles.loadingText}>Loading suppliers...</span>}
+            {!loadingSuppliers && suppliers.length === 0 && (
+              <span className={styles.hintText}>No suppliers available. Add suppliers in the Sources page.</span>
+            )}
             {formErrors.source_id && <span className={styles.errorText}>{formErrors.source_id}</span>}
           </div>
 
@@ -269,14 +400,34 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
             error={formErrors.description}
           />
 
-          <FormField
-            type="text"
-            field="image_url"
-            placeholder="Image URL (Optional)"
-            value={formData.image_url}
-            onChange={handleChange}
-            error={formErrors.image_url}
-          />
+          {/* Image Upload */}
+          <div className={styles.formGroup}>
+            <label className={styles.imageUploadLabel}>Product Image</label>
+            <div className={styles.imageUploadContainer}>
+              {imagePreview ? (
+                <div className={styles.imagePreviewWrapper}>
+                  <img src={imagePreview} alt="Preview" className={styles.imagePreview} />
+                  <button type="button" onClick={handleRemoveImage} className={styles.removeImageBtn}>×</button>
+                </div>
+              ) : (
+                <div 
+                  className={styles.imageUploadPlaceholder}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <span>Click to upload image</span>
+                  <span className={styles.imageHint}>JPEG, PNG, GIF, WebP (max 5MB)</span>
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                onChange={handleImageChange}
+                className={styles.hiddenFileInput}
+              />
+            </div>
+            {formErrors.image && <span className={styles.errorText}>{formErrors.image}</span>}
+          </div>
 
           <div className={styles.formActions}>
             <button

@@ -17,14 +17,18 @@ export const Product = {
           p.unit,
           p.min_stock_level, 
           p.max_stock_level, 
+          p.rate,
+          p.rate_unit,
           p.description, 
-          p.image_url,
+          TO_BASE64(p.image_data) AS image_data,
+          p.image_mime_type,
+          p.created_at,
           COALESCE(SUM(st.quantity), 0) AS total_stock,
           ps.source_id, 
           s.source_name AS supplier
         FROM products p
-        LEFT JOIN stocks st ON st.product_id = p.product_id AND st.is_active = TRUE
-        LEFT JOIN product_sources ps ON ps.product_id = p.product_id AND ps.is_active = TRUE AND ps.is_preferred_supplier = TRUE
+        LEFT JOIN stocks st ON st.product_id = p.product_id
+        LEFT JOIN product_sources ps ON ps.product_id = p.product_id AND ps.is_preferred_supplier = TRUE
         LEFT JOIN sources s ON s.source_id = ps.source_id
       `;
 
@@ -39,6 +43,7 @@ export const Product = {
 
       connection.query(query, params, (err, results) => {
         if (err) return reject(err);
+        console.log('getAllPaginated raw results:', JSON.stringify(results.slice(0, 3), null, 2));
         resolve(results);
       });
     });
@@ -74,14 +79,17 @@ export const Product = {
           p.unit,
           p.min_stock_level, 
           p.max_stock_level, 
+          p.rate,
+          p.rate_unit,
           p.description, 
-          p.image_url,
+          TO_BASE64(p.image_data) AS image_data,
+          p.image_mime_type,
           COALESCE(SUM(st.quantity), 0) AS total_stock,
           ps.source_id, 
           s.source_name AS supplier
         FROM products p
-        LEFT JOIN stocks st ON st.product_id = p.product_id AND st.is_active = TRUE
-        LEFT JOIN product_sources ps ON ps.product_id = p.product_id AND ps.is_active = TRUE AND ps.is_preferred_supplier = TRUE
+        LEFT JOIN stocks st ON st.product_id = p.product_id
+        LEFT JOIN product_sources ps ON ps.product_id = p.product_id AND ps.is_preferred_supplier = TRUE
         LEFT JOIN sources s ON s.source_id = ps.source_id
         WHERE p.product_id = ?
         GROUP BY p.product_id, ps.source_id, s.source_name
@@ -97,26 +105,37 @@ export const Product = {
   // Create product with supplier
   create: (productData) => {
     return new Promise((resolve, reject) => {
-      const { name, category, description, image_url, unit, min_stock_level, max_stock_level, source_id } = productData;
+      const { name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, rate, rate_unit, source_id } = productData;
+      console.log('Model create - source_id:', source_id, 'type:', typeof source_id);
+      
+      // Validate rate if provided
+      const validRate = rate != null && rate !== '' && !isNaN(rate) && rate >= 0 ? rate : null;
       
       connection.query(
-        'INSERT INTO products (name, category, description, image_url, unit, min_stock_level, max_stock_level) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [name, category, description, image_url, unit, min_stock_level, max_stock_level],
+        'INSERT INTO products (name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, rate, rate_unit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [name, category, description, image_data || null, image_mime_type || null, unit, min_stock_level, max_stock_level, validRate, rate_unit || null],
         (err, results) => {
           if (err) return reject(err);
           
           const productId = results.insertId;
+          console.log('Product inserted with ID:', productId);
           
           if (source_id !== null && source_id !== undefined && source_id !== '') {
+            console.log('Inserting product_sources with productId:', productId, 'source_id:', source_id);
             connection.query(
-              'INSERT INTO product_sources (product_id, source_id, is_preferred_supplier, is_active) VALUES (?, ?, TRUE, TRUE)',
+              'INSERT INTO product_sources (product_id, source_id, is_preferred_supplier) VALUES (?, ?, TRUE)',
               [productId, source_id],
               (err2) => {
-                if (err2) return reject(err2);
+                if (err2) {
+                  console.error('Error inserting product_sources:', err2);
+                  return reject(err2);
+                }
+                console.log('product_sources inserted successfully');
                 resolve({ product_id: productId, ...productData });
               }
             );
           } else {
+            console.log('No source_id provided, skipping product_sources insert');
             resolve({ product_id: productId, ...productData });
           }
         }
@@ -127,16 +146,31 @@ export const Product = {
   // Update product with supplier
   update: (id, productData) => {
     return new Promise((resolve, reject) => {
-      const { name, category, description, image_url, unit, min_stock_level, max_stock_level, source_id } = productData;
+      const { name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, rate, rate_unit, source_id } = productData;
+      
+      // Validate rate if provided
+      const validRate = rate != null && rate !== '' && !isNaN(rate) && rate >= 0 ? rate : null;
+      
+      // Build update query - only update image if provided
+      let updateQuery;
+      let updateParams;
+      
+      if (image_data !== undefined) {
+        updateQuery = 'UPDATE products SET name = ?, category = ?, description = ?, image_data = ?, image_mime_type = ?, unit = ?, min_stock_level = ?, max_stock_level = ?, rate = ?, rate_unit = ? WHERE product_id = ?';
+        updateParams = [name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, validRate, rate_unit || null, id];
+      } else {
+        updateQuery = 'UPDATE products SET name = ?, category = ?, description = ?, unit = ?, min_stock_level = ?, max_stock_level = ?, rate = ?, rate_unit = ? WHERE product_id = ?';
+        updateParams = [name, category, description, unit, min_stock_level, max_stock_level, validRate, rate_unit || null, id];
+      }
       
       connection.query(
-        'UPDATE products SET name = ?, category = ?, description = ?, image_url = ?, unit = ?, min_stock_level = ?, max_stock_level = ? WHERE product_id = ?',
-        [name, category, description, image_url, unit, min_stock_level, max_stock_level, id],
+        updateQuery,
+        updateParams,
         (err, results) => {
           if (err) return reject(err);
           
           connection.query(
-            'UPDATE product_sources SET is_preferred_supplier = FALSE, is_active = FALSE WHERE product_id = ?',
+            'UPDATE product_sources SET is_preferred_supplier = FALSE WHERE product_id = ?',
             [id],
             (err2) => {
               if (err2) return reject(err2);
@@ -150,7 +184,7 @@ export const Product = {
                     
                     if (existing.length > 0) {
                       connection.query(
-                        'UPDATE product_sources SET is_preferred_supplier = TRUE, is_active = TRUE WHERE id = ?',
+                        'UPDATE product_sources SET is_preferred_supplier = TRUE WHERE id = ?',
                         [existing[0].id],
                         (err4) => {
                           if (err4) return reject(err4);
@@ -159,7 +193,7 @@ export const Product = {
                       );
                     } else {
                       connection.query(
-                        'INSERT INTO product_sources (product_id, source_id, is_preferred_supplier, is_active) VALUES (?, ?, TRUE, TRUE)',
+                        'INSERT INTO product_sources (product_id, source_id, is_preferred_supplier) VALUES (?, ?, TRUE)',
                         [id, source_id],
                         (err4) => {
                           if (err4) return reject(err4);

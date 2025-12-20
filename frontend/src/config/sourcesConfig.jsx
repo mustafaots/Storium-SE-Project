@@ -37,34 +37,6 @@ export const sourcesConfig = {
       ),
     },
     {
-      key: 'rate',
-      header: 'Rate',
-      width: 'minmax(80px, 120px)',
-      render: (row) => <span>{row.rate !== undefined && row.rate !== null ? row.rate : '-'}</span>,
-    },
-    {
-      key: 'rate_unit',
-      header: 'rate-Unit',
-      width: 'minmax(80px, 120px)',
-      render: (row) => <span>{row.rate_unit || '-'}</span>,
-    },
-    {
-      key: 'is_active',
-      header: 'Status',
-      width: 'minmax(90px, 110px)',
-      render: (row) => (
-        <span style={{ 
-          color: row.is_active ? '#4CAF50' : '#999',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '5px'
-        }}>
-          {row.is_active ? <FaCheckCircle /> : <FaTimesCircle />}
-          {row.is_active ? 'Active' : 'Inactive'}
-        </span>
-      ),
-    },
-    {
       key: 'actions',
       header: 'Actions',
       width: 'minmax(120px, 150px)',

@@ -9,10 +9,7 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
     contact_email: '',
     contact_phone: '',
     address: '',
-    coordinates: '',
-    rate: '',        // allow empty string
-    rate_unit: '',   // allow empty string
-    is_active: false
+    coordinates: ''
   });
 
   const [formErrors, setFormErrors] = useState({});
@@ -26,11 +23,7 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
         contact_email: currentSource.contact_email || '',
         contact_phone: currentSource.contact_phone || '',
         address: currentSource.address || '',
-        coordinates: currentSource.coordinates || '',
-        // convert null to '' for form fields
-        rate: currentSource.rate != null ? String(currentSource.rate) : '',
-        rate_unit: currentSource.rate_unit || '',
-        is_active: !!currentSource.is_active
+        coordinates: currentSource.coordinates || ''
       });
     } else {
       setFormData({
@@ -38,10 +31,7 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
         contact_email: '',
         contact_phone: '',
         address: '',
-        coordinates: '',
-        rate: '',
-        rate_unit: '',
-        is_active: false
+        coordinates: ''
       });
     }
     setFormErrors({});
@@ -63,29 +53,13 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
     return phoneRegex.test(v) ? '' : 'Invalid phone';
   };
 
-  // Make rate optional: only validate if provided (non-empty)
-  const positiveNumberIfProvided = (v) => {
-    if (v === '' || v === null || v === undefined) return '';
-    const num = Number(v);
-    if (Number.isNaN(num)) return 'Rate must be a number';
-    return num > 0 ? '' : 'Rate must be a positive number';
-  };
-
-  const rateUnitFormatIfProvided = (v) => {
-    if (!v) return '';
-    return /.+\s*\/\s*.+/.test(v) ? '' : 'Unit must be in format "product / time unit"';
-  };
-
   // Validation schema
   const sourceValidationSchema = {
     source_name: [required, (v) => minLength(v, 2, 'Source name')],
     contact_email: [optionalEmail],
     contact_phone: [optionalPhone],
     address: [],
-    coordinates: [],
-    rate: [positiveNumberIfProvided],
-    rate_unit: [rateUnitFormatIfProvided],
-    is_active: []
+    coordinates: []
   };
 
   // ----------------------------
@@ -124,10 +98,7 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
         contact_email: formData.contact_email ? String(formData.contact_email).trim() : null,
         contact_phone: formData.contact_phone ? String(formData.contact_phone).trim() : null,
         address: formData.address ? String(formData.address).trim() : null,
-        coordinates: formData.coordinates ? String(formData.coordinates).trim() : null,
-        rate: formData.rate === '' ? null : Number(formData.rate),
-        rate_unit: formData.rate_unit ? String(formData.rate_unit).trim() : null,
-        is_active: !!formData.is_active
+        coordinates: formData.coordinates ? String(formData.coordinates).trim() : null
       };
 
       if (isEditing && currentSource?.source_id) {
@@ -217,37 +188,6 @@ const SourceForm = ({ isEditing, currentSource, loading, error, onSuccess, onCan
             onChange={handleChange}
             error={formErrors.coordinates}
           />
-
-          {/* Rate fields */}
-          <FormField
-            type="number"
-            field="rate"
-            placeholder="Rate (positive number, optional)"
-            value={formData.rate}
-            onChange={handleChange}
-            error={formErrors.rate}
-            // do NOT mark required here — rate is optional
-          />
-
-          <FormField
-            type="text"
-            field="rate_unit"
-            placeholder='Rate Unit e.g. "product / day" (optional)'
-            value={formData.rate_unit}
-            onChange={handleChange}
-            error={formErrors.rate_unit}
-          />
-
-          <div className={styles.formGroup}>
-            <label>
-              <input
-                type="checkbox"
-                checked={formData.is_active}
-                onChange={(e) => handleCheckboxChange('is_active', e.target.checked)}
-              />{' '}
-              Active
-            </label>
-          </div>
 
           <div className={styles.formActions}>
             <button type="submit" disabled={loading || submitting} className={styles.primaryButton}>
