@@ -1,3 +1,0 @@
-ALTER TABLE sources 
-CHANGE COLUMN rating rate FLOAT,
-ADD COLUMN rate_unit VARCHAR(50);

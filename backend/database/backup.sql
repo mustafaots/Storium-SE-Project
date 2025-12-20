@@ -31,7 +31,7 @@ CREATE TABLE `action_history` (
   `routine_id` int DEFAULT NULL COMMENT 'If automated, which routine triggered it',
   PRIMARY KEY (`action_id`),
   KEY `routine_id` (`routine_id`),
-  CONSTRAINT `action_history_ibfk_1` FOREIGN KEY (`routine_id`) REFERENCES `routines` (`routine_id`) ON DELETE SET NULL
+  CONSTRAINT `action_history_ibfk_1` FOREIGN KEY (`routine_id`) REFERENCES `routines` (`routine_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -58,7 +58,7 @@ CREATE TABLE `aisles` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`aisle_id`),
   KEY `parent_depot` (`parent_depot`),
-  CONSTRAINT `aisles_ibfk_1` FOREIGN KEY (`parent_depot`) REFERENCES `depots` (`depot_id`) ON DELETE CASCADE
+  CONSTRAINT `aisles_ibfk_1` FOREIGN KEY (`parent_depot`) REFERENCES `depots` (`depot_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -92,8 +92,8 @@ CREATE TABLE `alerts` (
   KEY `idx_alerts_linked_product` (`linked_product`),
   KEY `idx_alerts_sent_at` (`sent_at`),
   KEY `idx_alerts_is_read` (`is_read`),
-  CONSTRAINT `alerts_ibfk_1` FOREIGN KEY (`linked_stock`) REFERENCES `stocks` (`stock_id`) ON DELETE SET NULL,
-  CONSTRAINT `alerts_ibfk_2` FOREIGN KEY (`linked_product`) REFERENCES `products` (`product_id`) ON DELETE SET NULL
+  CONSTRAINT `alerts_ibfk_1` FOREIGN KEY (`linked_stock`) REFERENCES `stocks` (`stock_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `alerts_ibfk_2` FOREIGN KEY (`linked_product`) REFERENCES `products` (`product_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -120,9 +120,7 @@ CREATE TABLE `clients` (
   `contact_phone` varchar(50) DEFAULT NULL,
   `address` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `is_active` tinyint(1) DEFAULT '1',
-  PRIMARY KEY (`client_id`),
-  KEY `idx_clients_is_active` (`is_active`)
+  PRIMARY KEY (`client_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -149,7 +147,7 @@ CREATE TABLE `depots` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`depot_id`),
   KEY `parent_location` (`parent_location`),
-  CONSTRAINT `depots_ibfk_1` FOREIGN KEY (`parent_location`) REFERENCES `locations` (`location_id`) ON DELETE CASCADE
+  CONSTRAINT `depots_ibfk_1` FOREIGN KEY (`parent_location`) REFERENCES `locations` (`location_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -160,31 +158,6 @@ CREATE TABLE `depots` (
 LOCK TABLES `depots` WRITE;
 /*!40000 ALTER TABLE `depots` DISABLE KEYS */;
 /*!40000 ALTER TABLE `depots` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `inventory_records`
---
-
-DROP TABLE IF EXISTS `inventory_records`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `inventory_records` (
-  `record_id` int NOT NULL AUTO_INCREMENT,
-  `record_type` varchar(100) DEFAULT NULL COMMENT 'snapshot, report, audit, etc.',
-  `record_data` json DEFAULT NULL COMMENT 'Use JSON instead of BLOB for queryability',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`record_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `inventory_records`
---
-
-LOCK TABLES `inventory_records` WRITE;
-/*!40000 ALTER TABLE `inventory_records` DISABLE KEYS */;
-/*!40000 ALTER TABLE `inventory_records` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -228,12 +201,11 @@ CREATE TABLE `product_sources` (
   `lead_time_days` int DEFAULT NULL,
   `is_preferred_supplier` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `is_active` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`),
   KEY `source_id` (`source_id`),
-  CONSTRAINT `product_sources_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE,
-  CONSTRAINT `product_sources_ibfk_2` FOREIGN KEY (`source_id`) REFERENCES `sources` (`source_id`) ON DELETE CASCADE
+  CONSTRAINT `product_sources_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `product_sources_ibfk_2` FOREIGN KEY (`source_id`) REFERENCES `sources` (`source_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -297,7 +269,7 @@ CREATE TABLE `rack_slots` (
   PRIMARY KEY (`slot_id`),
   KEY `idx_rack_slots_rack_id` (`rack_id`),
   KEY `idx_rack_slots_coordinates` (`bay_no`,`level_no`,`bin_no`),
-  CONSTRAINT `rack_slots_ibfk_1` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`rack_id`) ON DELETE CASCADE
+  CONSTRAINT `rack_slots_ibfk_1` FOREIGN KEY (`rack_id`) REFERENCES `racks` (`rack_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -324,7 +296,7 @@ CREATE TABLE `racks` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`rack_id`),
   KEY `parent_aisle` (`parent_aisle`),
-  CONSTRAINT `racks_ibfk_1` FOREIGN KEY (`parent_aisle`) REFERENCES `aisles` (`aisle_id`) ON DELETE CASCADE
+  CONSTRAINT `racks_ibfk_1` FOREIGN KEY (`parent_aisle`) REFERENCES `aisles` (`aisle_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -369,31 +341,6 @@ LOCK TABLES `routines` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `settings`
---
-
-DROP TABLE IF EXISTS `settings`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `settings` (
-  `setting_key` varchar(255) NOT NULL,
-  `setting_value` text,
-  `description` varchar(500) DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`setting_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `settings`
---
-
-LOCK TABLES `settings` WRITE;
-/*!40000 ALTER TABLE `settings` DISABLE KEYS */;
-/*!40000 ALTER TABLE `settings` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `sources`
 --
 
@@ -407,11 +354,10 @@ CREATE TABLE `sources` (
   `contact_phone` varchar(50) DEFAULT NULL,
   `address` text,
   `coordinates` varchar(255) DEFAULT NULL,
-  `rating` float DEFAULT NULL COMMENT 'Supplier rating or reliability score',
+  `rate` float DEFAULT NULL,
+  `rate_unit` varchar(50) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `is_active` tinyint(1) DEFAULT '1',
-  PRIMARY KEY (`source_id`),
-  KEY `idx_sources_is_active` (`is_active`)
+  PRIMARY KEY (`source_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -435,6 +381,7 @@ CREATE TABLE `stocks` (
   `stock_id` int NOT NULL AUTO_INCREMENT,
   `product_id` int DEFAULT NULL,
   `slot_id` int DEFAULT NULL,
+  `slot_coordinates` varchar(50) DEFAULT NULL,
   `quantity` int NOT NULL,
   `batch_no` varchar(100) DEFAULT NULL,
   `expiry_date` date DEFAULT NULL,
@@ -444,14 +391,12 @@ CREATE TABLE `stocks` (
   `sale_price` decimal(10,2) DEFAULT NULL,
   `cost_price` decimal(10,2) DEFAULT NULL,
   `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `is_active` tinyint(1) DEFAULT '1' COMMENT 'Soft delete flag',
   PRIMARY KEY (`stock_id`),
   KEY `idx_stocks_product_id` (`product_id`),
   KEY `idx_stocks_slot_id` (`slot_id`),
-  KEY `idx_stocks_is_active` (`is_active`),
   KEY `idx_stocks_expiry_date` (`expiry_date`),
-  CONSTRAINT `stocks_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE RESTRICT,
-  CONSTRAINT `stocks_ibfk_2` FOREIGN KEY (`slot_id`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL
+  CONSTRAINT `stocks_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `stocks_ibfk_2` FOREIGN KEY (`slot_id`) REFERENCES `rack_slots` (`slot_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -499,13 +444,13 @@ CREATE TABLE `transactions` (
   KEY `idx_transactions_txn_type` (`txn_type`),
   KEY `idx_transactions_timestamp` (`timestamp`),
   KEY `idx_transactions_reference_number` (`reference_number`),
-  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`stock_id`) REFERENCES `stocks` (`stock_id`) ON DELETE SET NULL,
-  CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE RESTRICT,
-  CONSTRAINT `transactions_ibfk_3` FOREIGN KEY (`source_id`) REFERENCES `sources` (`source_id`) ON DELETE SET NULL,
-  CONSTRAINT `transactions_ibfk_4` FOREIGN KEY (`client_id`) REFERENCES `clients` (`client_id`) ON DELETE SET NULL,
-  CONSTRAINT `transactions_ibfk_5` FOREIGN KEY (`routine_id`) REFERENCES `routines` (`routine_id`) ON DELETE SET NULL,
-  CONSTRAINT `transactions_ibfk_6` FOREIGN KEY (`from_slot_id`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL,
-  CONSTRAINT `transactions_ibfk_7` FOREIGN KEY (`to_slot_id`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL
+  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`stock_id`) REFERENCES `stocks` (`stock_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `transactions_ibfk_3` FOREIGN KEY (`source_id`) REFERENCES `sources` (`source_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `transactions_ibfk_4` FOREIGN KEY (`client_id`) REFERENCES `clients` (`client_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `transactions_ibfk_5` FOREIGN KEY (`routine_id`) REFERENCES `routines` (`routine_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `transactions_ibfk_6` FOREIGN KEY (`from_slot_id`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `transactions_ibfk_7` FOREIGN KEY (`to_slot_id`) REFERENCES `rack_slots` (`slot_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -527,4 +472,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-28 15:06:00
+-- Dump completed on 2025-12-20 14:05:50
