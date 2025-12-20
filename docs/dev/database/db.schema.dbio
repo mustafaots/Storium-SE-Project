@@ -1,0 +1,269 @@
+// TO RENDER THIS SCHEMA GO TO THE WEBSITE : `https://dbdiagram.io`
+
+// =====================
+// PHYSICAL STRUCTURE
+// =====================
+
+// Represents a physical site or campus of the organization
+Table locations {
+  location_id integer [primary key]
+  name varchar
+  address text
+  coordinates varchar
+  created_at timestamp [default: `now()`]
+}
+
+// Storage building or warehouse belonging to a location
+Table depots {
+  depot_id integer [primary key]
+  parent_location integer
+  name varchar
+  created_at timestamp [default: `now()`]
+}
+
+// Aisle or zone inside a warehouse
+Table aisles {
+  aisle_id integer [primary key]
+  parent_depot integer
+  name varchar
+  created_at timestamp [default: `now()`]
+}
+
+// Rack structure containing multiple bays, levels, and bins
+Table racks {
+  rack_id integer [primary key]
+  parent_aisle integer
+  rack_code varchar
+  created_at timestamp [default: `now()`]
+}
+
+// Each physical slot identified by (bay, level, bin) coordinates
+Table rack_slots {
+  slot_id integer [primary key]
+  rack_id integer
+  direction enum('right', 'left')
+  bay_no integer [not null]
+  level_no integer [not null]
+  bin_no integer [not null]
+  capacity integer
+  is_occupied bool [default: false]
+  created_at timestamp [default: `now()`]
+}
+
+
+// =====================
+// PRODUCT HIERARCHY
+// =====================
+
+// Defines a product at the conceptual level (not tied to location)
+Table products {
+  product_id integer [primary key]
+  name varchar [not null]
+  category varchar
+  description text
+  image_data blob [note: 'Product image stored as binary data']
+  image_mime_type varchar [note: 'MIME type of the image (e.g., image/png, image/jpeg)']
+  unit varchar [note: 'pcs, kg, liters, boxes, etc.']
+  min_stock_level integer [note: 'Alert threshold for low stock']
+  max_stock_level integer [note: 'Alert threshold for overstocking']
+  rate float [note: 'Production or procurement rate']
+  rate_unit varchar [note: 'Unit for rate (e.g., pcs/day, kg/hour)']
+  created_at timestamp [default: `now()`]
+}
+
+// Physical stock of a given product stored in a particular slot
+Table stocks {
+  stock_id integer [primary key]
+  product_id integer
+  slot_id integer
+  slot_coordinates varchar
+  quantity integer [not null]
+  batch_no varchar
+  expiry_date date
+  strategy enum('FIFO', 'LIFO', 'JIT') [default: 'FIFO']
+  product_type enum('raw', 'wip', 'to_ship', 'deadstock', 'discrepancy') [not null]
+  is_consumable bool [default: false]
+  sale_price decimal(10,2)
+  cost_price decimal(10,2)
+  last_updated timestamp [default: `now()`] // on update: now
+}
+
+
+// =====================
+// SOURCES & CLIENTS
+// =====================
+
+// Suppliers, factories, or input sources of materials
+Table sources {
+  source_id integer [primary key]
+  source_name varchar [not null]
+  contact_email varchar
+  contact_phone varchar
+  address text
+  coordinates varchar
+  created_at timestamp [default: `now()`]
+}
+
+// Junction table: many products can have many sources
+Table product_sources {
+  id integer [primary key]
+  product_id integer
+  source_id integer
+  cost_price decimal(10,2)
+  lead_time_days integer
+  is_preferred_supplier bool [default: false]
+  created_at timestamp [default: `now()`]
+}
+
+// Buyers, departments, or external customers for stock outflows
+Table clients {
+  client_id integer [primary key]
+  client_name varchar [not null]
+  contact_email varchar
+  contact_phone varchar
+  address text
+  created_at timestamp [default: `now()`]
+}
+
+
+// =====================
+// AUTOMATION & HISTORY
+// =====================
+
+Table routines {
+  routine_id integer [primary key]
+  name varchar [not null]
+  promise text [note: 'Condition or schedule description']
+  resolve text [note: 'Action to take when triggered']
+  frequency enum('daily', 'weekly', 'monthly', 'on_event')
+  is_active bool [default: true]
+  last_run timestamp
+  created_at timestamp [default: `now()`]
+}
+
+// User- or system-triggered operations for audit trail
+Table action_history {
+  action_id integer [primary key]
+  action text [not null]
+  created_at timestamp [default: `now()`]
+  is_automated bool [default: false]
+  actor_name varchar [note: 'Name of user or "System"']
+  routine_id integer [note: 'If automated, which routine triggered it']
+}
+
+
+// =====================
+// STOCK MOVEMENTS
+// =====================
+
+// Tracks all stock inflows, outflows, transfers, and consumptions
+Table transactions {
+  txn_id integer [primary key]
+  is_automated bool [default: false]
+  routine_id integer
+  stock_id integer
+  product_id integer [not null, note: 'Denormalized for historical integrity']
+  from_slot_id integer [note: 'Denormalized slot reference for historical integrity']
+  to_slot_id integer [note: 'Denormalized slot reference for historical integrity']
+  txn_type enum('inflow', 'outflow', 'transfer', 'consumption', 'adjustment') [not null]
+  quantity integer [not null]
+  total_value decimal(12,2)
+  reference_number varchar [note: 'PO number, invoice ID, delivery note']
+  notes text
+  timestamp timestamp [default: `now()`]
+  source_id integer [note: 'Supplier or origin source, if applicable']
+  client_id integer [note: 'Client or consumer for outflows']
+  stock_snapshot json [note: 'JSON snapshot of stock details at time of transaction']
+}
+
+
+// =====================
+// ALERTS
+// =====================
+
+// Overstocking, understocking, expiry, or supply warnings
+Table alerts {
+  alert_id integer [primary key]
+  alert_type enum('low_stock', 'overstock', 'expiry', 'reorder') [not null]
+  severity enum('info', 'warning', 'critical') [default: 'warning']
+  sent_at timestamp [default: `now()`]
+  is_read bool [default: false]
+  content text
+  linked_stock integer
+  linked_product integer
+}
+
+
+// =====================
+// INDEXES for Performance
+// =====================
+
+/*
+
+Indexes {
+  // Stocks table indexes
+  stocks: (product_id) [name: 'idx_stocks_product_id']
+  stocks: (slot_id) [name: 'idx_stocks_slot_id']
+  stocks: (expiry_date) [name: 'idx_stocks_expiry_date']
+  
+  // Transactions table indexes
+  transactions: (stock_id) [name: 'idx_transactions_stock_id']
+  transactions: (product_id) [name: 'idx_transactions_product_id']
+  transactions: (txn_type) [name: 'idx_transactions_txn_type']
+  transactions: (timestamp) [name: 'idx_transactions_timestamp']
+  transactions: (reference_number) [name: 'idx_transactions_reference_number']
+  
+  // Rack_slots table indexes
+  rack_slots: (rack_id) [name: 'idx_rack_slots_rack_id']
+  rack_slots: (bay_no, level_no, bin_no) [name: 'idx_rack_slots_coordinates']
+  
+  // Products table indexes
+  products: (category) [name: 'idx_products_category']
+  
+  // Routines table indexes
+  routines: (is_active) [name: 'idx_routines_is_active']
+  routines: (frequency) [name: 'idx_routines_frequency']
+  
+  // Alerts table indexes
+  alerts: (linked_stock) [name: 'idx_alerts_linked_stock']
+  alerts: (linked_product) [name: 'idx_alerts_linked_product']
+  alerts: (sent_at) [name: 'idx_alerts_sent_at']
+  alerts: (is_read) [name: 'idx_alerts_is_read']
+}
+
+*/
+
+// =====================
+// RELATIONSHIPS
+// =====================
+
+// Physical Structure - CASCADE delete for physical hierarchy
+Ref: depots.parent_location > locations.location_id [delete: cascade, update: cascade]
+Ref: aisles.parent_depot > depots.depot_id [delete: cascade, update: cascade]
+Ref: racks.parent_aisle > aisles.aisle_id [delete: cascade, update: cascade]
+Ref: rack_slots.rack_id > racks.rack_id [delete: cascade, update: cascade]
+
+// Products & Stock - CASCADE delete for product-stock relationship
+Ref: stocks.slot_id > rack_slots.slot_id [delete: cascade, update: cascade]
+Ref: stocks.product_id > products.product_id [delete: cascade, update: cascade]
+
+// Sources & Clients - CASCADE delete for product_sources
+Ref: product_sources.product_id > products.product_id [delete: cascade, update: cascade]
+Ref: product_sources.source_id > sources.source_id [delete: cascade, update: cascade]
+
+// Transactions - SET NULL for deleted references, maintain historical integrity
+Ref: transactions.stock_id > stocks.stock_id [delete: set null, update: cascade]
+Ref: transactions.product_id > products.product_id [delete: restrict, update: cascade]
+Ref: transactions.source_id > sources.source_id [delete: set null, update: cascade]
+Ref: transactions.client_id > clients.client_id [delete: set null, update: cascade]
+Ref: transactions.routine_id > routines.routine_id [delete: set null, update: cascade]
+Ref: transactions.from_slot_id > rack_slots.slot_id [delete: set null, update: cascade]
+Ref: transactions.to_slot_id > rack_slots.slot_id [delete: set null, update: cascade]
+
+// Alerts - SET NULL for deleted references
+Ref: alerts.linked_stock > stocks.stock_id [delete: set null, update: cascade]
+Ref: alerts.linked_product > products.product_id [delete: set null, update: cascade]
+
+// Action History
+Ref: action_history.routine_id > routines.routine_id [delete: set null, update: cascade]
+
