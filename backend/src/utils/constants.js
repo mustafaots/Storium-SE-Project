@@ -49,7 +49,30 @@ const PAGINATION = {
 };
 
 // Measurement units
-const MEASUREMENT_UNITS = ['pcs', 'kg', 'g', 'lb', 'oz', 'liters', 'ml', 'boxes', 'pallets'];
+const MEASUREMENT_UNITS = ['kg', 'g', 'lb', 'oz', 'liters', 'ml', 'boxes', 'pallets', 'units'];
+
+// Rate temporal units
+const RATE_UNITS = ['/min', '/hour', '/day', '/week', '/month'];
+
+// Product categories
+const PRODUCT_CATEGORIES = [
+  'Electronics',
+  'Food',
+  'Clothing',
+  'Medicine',
+  'Furniture',
+  'Automotive',
+  'Chemicals',
+  'Raw Materials',
+  'Office Supplies',
+  'Tools & Equipment',
+  'Packaging',
+  'Textiles',
+  'Cosmetics',
+  'Beverages',
+  'Hardware',
+  'Other'
+];
 
 const constants = {
   INVENTORY_SCOPES,
@@ -58,7 +81,9 @@ const constants = {
   ALERT_TYPES,
   ALERT_SEVERITIES,
   PAGINATION,
-  MEASUREMENT_UNITS
+  MEASUREMENT_UNITS,
+  RATE_UNITS,
+  PRODUCT_CATEGORIES
 };
 
 export { constants };
