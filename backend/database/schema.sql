@@ -63,10 +63,13 @@ CREATE TABLE products (
     name VARCHAR(255) NOT NULL,
     category VARCHAR(100),
     description TEXT,
-    image_url VARCHAR(500) COMMENT 'URL or path to product image',
+    image_data LONGBLOB COMMENT 'Product image stored as binary data',
+    image_mime_type VARCHAR(50) COMMENT 'MIME type of the image (e.g., image/png, image/jpeg)',
     unit VARCHAR(50) COMMENT 'pcs, kg, liters, boxes, etc.',
     min_stock_level INT COMMENT 'Alert threshold for low stock',
     max_stock_level INT COMMENT 'Alert threshold for overstocking',
+    rate FLOAT COMMENT 'Production or procurement rate',
+    rate_unit VARCHAR(50) COMMENT 'Unit for rate (e.g., pcs/day, kg/hour)',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -102,8 +105,6 @@ CREATE TABLE sources (
     contact_phone VARCHAR(50),
     address TEXT,
     coordinates VARCHAR(255),
-    rate FLOAT,
-    rate_unit VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
