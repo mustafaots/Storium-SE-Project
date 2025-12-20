@@ -4,6 +4,8 @@ import { formatDate } from '../utils/formatters.js';
 import { constants } from '../utils/constants.js';
 import { RackSlot } from '../models/rackSlots.model.js';
 import { Stock } from '../models/stocks.model.js';
+import db from '../config/database.js';
+import { TransactionsService } from '../services/transactions.service.js';
 
 const buildRackCode = ({ face_type, levels, bays, bins_per_bay }) => {
   const face = face_type === 'double' ? 'D' : 'S';
@@ -321,29 +323,65 @@ const racksController = {
         return res.status(400).json(apiResponse.errorResponse('stockId and targetSlotId are required'));
       }
 
-      // Get the target slot to build coordinates
-      const targetSlot = await RackSlot.getSlotById(targetSlotId);
-      if (!targetSlot) {
-        return res.status(404).json(apiResponse.errorResponse('Target slot not found'));
+      const connection = db.promise();
+      await connection.beginTransaction();
+      try {
+        const [stockRows] = await connection.query(
+          'SELECT stock_id, product_id, slot_id, quantity FROM stocks WHERE stock_id = ? FOR UPDATE',
+          [stockId]
+        );
+        const stockRow = stockRows?.[0];
+        if (!stockRow) {
+          await connection.rollback();
+          return res.status(404).json(apiResponse.errorResponse('Stock not found'));
+        }
+
+        // Get the target slot to build coordinates
+        const targetSlot = await RackSlot.getSlotById(targetSlotId);
+        if (!targetSlot) {
+          await connection.rollback();
+          return res.status(404).json(apiResponse.errorResponse('Target slot not found'));
+        }
+
+        // Check if slot is empty
+        const slotsWithStock = await RackSlot.getSlotsWithStock(targetSlot.rack_id);
+        const slotData = slotsWithStock.find(s => s.slot_id === parseInt(targetSlotId));
+        if (slotData?.stock_id) {
+          await connection.rollback();
+          return res.status(400).json(apiResponse.errorResponse('Target slot is not empty'));
+        }
+
+        // Build new coordinates
+        const dirCode = targetSlot.direction === 'right' ? 'R' : (targetSlot.direction === 'left' ? 'L' : targetSlot.direction);
+        const newCoordinates = `${rackCode}-${dirCode}-B${targetSlot.bay_no}-L${targetSlot.level_no}-P${targetSlot.bin_no}`;
+
+        const [updateResult] = await connection.query(
+          'UPDATE stocks SET slot_id = ?, slot_coordinates = ?, last_updated = CURRENT_TIMESTAMP WHERE stock_id = ?',
+          [targetSlotId, newCoordinates, stockId]
+        );
+        if (updateResult.affectedRows === 0) {
+          await connection.rollback();
+          return res.status(404).json(apiResponse.errorResponse('Stock not found'));
+        }
+
+        // Record the move as a relocation/transfer depending on depot boundaries.
+        await TransactionsService.createRelocation({
+          stockId: stockRow.stock_id,
+          productId: stockRow.product_id,
+          fromSlotId: stockRow.slot_id,
+          toSlotId: Number(targetSlotId),
+          quantity: stockRow.quantity,
+          note: `Stock migrated to ${newCoordinates}`,
+          dbConn: connection
+        });
+
+        await connection.commit();
+
+        res.json(apiResponse.successResponse(null, 'Stock migrated successfully'));
+      } catch (innerError) {
+        await connection.rollback();
+        throw innerError;
       }
-
-      // Check if slot is empty
-      const slotsWithStock = await RackSlot.getSlotsWithStock(targetSlot.rack_id);
-      const slotData = slotsWithStock.find(s => s.slot_id === parseInt(targetSlotId));
-      if (slotData?.stock_id) {
-        return res.status(400).json(apiResponse.errorResponse('Target slot is not empty'));
-      }
-
-      // Build new coordinates
-      const dirCode = targetSlot.direction === 'right' ? 'R' : (targetSlot.direction === 'left' ? 'L' : targetSlot.direction);
-      const newCoordinates = `${rackCode}-${dirCode}-B${targetSlot.bay_no}-L${targetSlot.level_no}-P${targetSlot.bin_no}`;
-
-      const result = await Stock.migrateToSlot(stockId, targetSlotId, newCoordinates);
-      if (result.affectedRows === 0) {
-        return res.status(404).json(apiResponse.errorResponse('Stock not found'));
-      }
-
-      res.json(apiResponse.successResponse(null, 'Stock migrated successfully'));
     } catch (error) {
       res.status(400).json(apiResponse.errorResponse(error.message));
     }

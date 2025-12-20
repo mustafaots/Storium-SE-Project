@@ -8,31 +8,6 @@ router.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Storium IMS API is running' });
 });
 
-// Get all products (paginated)
-router.get('/products', (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 50;
-  const offset = (page - 1) * limit;
-
-  connection.query(
-    'SELECT * FROM products ORDER BY created_at DESC LIMIT ? OFFSET ?',
-    [limit, offset],
-    (err, results) => {
-      if (err) {
-        return res.status(500).json({ success: false, error: err.message });
-      }
-      connection.query('SELECT COUNT(*) as total FROM products', (err2, countResult) => {
-        const total = countResult?.[0]?.total || 0;
-        res.json({
-          success: true,
-          data: results,
-          pagination: { page, limit, total, pages: Math.ceil(total / limit) }
-        });
-      });
-    }
-  );
-});
-
 // Get empty slots for a specific rack (for migration)
 router.get('/racks/:rackId/empty-slots', (req, res) => {
   const rackId = req.params.rackId;
@@ -41,7 +16,7 @@ router.get('/racks/:rackId/empty-slots', (req, res) => {
             CONCAT(r.rack_code, '-', UPPER(LEFT(rs.direction, 1)), '-B', rs.bay_no, '-L', rs.level_no, '-P', rs.bin_no) AS coordinate
      FROM rack_slots rs
      JOIN racks r ON r.rack_id = rs.rack_id
-     LEFT JOIN stocks s ON s.slot_id = rs.slot_id AND s.is_active = 1
+     LEFT JOIN stocks s ON s.slot_id = rs.slot_id
      WHERE rs.rack_id = ? AND s.stock_id IS NULL
      ORDER BY rs.direction, rs.level_no DESC, rs.bay_no, rs.bin_no`,
     [rackId],
@@ -62,7 +37,7 @@ router.get('/schema/stats', (req, res) => {
     aisles: 'SELECT COUNT(*) as count FROM aisles',
     racks: 'SELECT COUNT(*) as count FROM racks',
     slots: 'SELECT COUNT(*) as count FROM rack_slots',
-    stocks: 'SELECT COUNT(*) as count FROM stocks WHERE is_active = 1',
+    stocks: 'SELECT COUNT(*) as count FROM stocks',
     products: 'SELECT COUNT(*) as count FROM products'
   };
 
@@ -116,7 +91,7 @@ router.get('/depots/:depotId/export', (req, res) => {
          JOIN aisles a ON a.aisle_id = r.parent_aisle
          JOIN depots d ON d.depot_id = a.parent_depot
          LEFT JOIN products p ON p.product_id = s.product_id
-         WHERE d.depot_id = ? AND s.is_active = 1
+         WHERE d.depot_id = ?
          ORDER BY a.name, r.rack_code, rs.direction, rs.level_no DESC, rs.bay_no, rs.bin_no`,
         [depotId],
         (err2, stockRows) => {

@@ -71,7 +71,15 @@ export const Stock = {
     allowed.forEach((key) => {
       if (payload[key] !== undefined) {
         fields.push(`${key} = ?`);
-        params.push(key === 'is_consumable' ? (payload[key] ? 1 : 0) : payload[key]);
+        let value = payload[key];
+        // Handle special cases
+        if (key === 'is_consumable') {
+          value = value ? 1 : 0;
+        } else if (key === 'expiry_date' && (value === '' || value === null)) {
+          // Allow empty expiry_date - convert empty string to null
+          value = null;
+        }
+        params.push(value);
       }
     });
     if (!fields.length) return Promise.resolve({ affectedRows: 0 });
@@ -93,7 +101,7 @@ export const Stock = {
   softDelete: (stockId) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        'UPDATE stocks SET is_active = 0, last_updated = CURRENT_TIMESTAMP WHERE stock_id = ?',
+        'DELETE FROM stocks WHERE stock_id = ?',
         [stockId],
         (err, results) => {
           if (err) reject(err);

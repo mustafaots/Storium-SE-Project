@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { FaArrowLeft, FaSyncAlt, FaPlus, FaBoxes, FaTrash, FaEdit, FaTruck } from 'react-icons/fa';
+import { FaArrowLeft, FaSyncAlt, FaPlus, FaBoxes, FaTrash, FaEdit, FaTruck, FaUtensils, FaUserTie } from 'react-icons/fa';
 
 import NavBar from '../../../../components/UI/NavBar/NavBar';
 import Header from '../../../../components/UI/Header/Header';
 import Button from '../../../../components/UI/Button/Button';
 import { useActiveNavItem } from '../../../../hooks/useActiveNavItem';
 import { useRackLayout } from '../../../../hooks/useRackLayout';
+import { transactionsAPI } from '../../../../utils/transactionsAPI';
 
 import styles from './RackDetailPage.module.css';
 
@@ -54,7 +55,7 @@ const RackDetailPage = () => {
   // Stock options modal state
   const [showStockOptions, setShowStockOptions] = useState(false);
   const [selectedStock, setSelectedStock] = useState(null);
-  const [stockOptionMode, setStockOptionMode] = useState(null); // 'edit' | 'migrate'
+  const [stockOptionMode, setStockOptionMode] = useState(null); // 'edit' | 'migrate' | 'consume' | 'send'
   const [editForm, setEditForm] = useState({});
   
   // Migration state
@@ -70,6 +71,11 @@ const RackDetailPage = () => {
     rackId: '',
     slotId: ''
   });
+
+  // Consume and Send to Client state
+  const [clients, setClients] = useState([]);
+  const [consumeForm, setConsumeForm] = useState({ quantity: 1, note: '' });
+  const [sendForm, setSendForm] = useState({ quantity: 1, clientId: '', note: '' });
 
   useEffect(() => {
     loadLayout();
@@ -134,10 +140,13 @@ const RackDetailPage = () => {
     setStockOptionMode(null);
     setEditForm({});
     setMigrateForm({ locationId: '', depotId: '', aisleId: '', rackId: '', slotId: '' });
+    setConsumeForm({ quantity: 1, note: '' });
+    setSendForm({ quantity: 1, clientId: '', note: '' });
     setDepots([]);
     setAisles([]);
     setRacks([]);
     setEmptySlots([]);
+    setClients([]);
   };
 
   const handleDiscardStock = async () => {
@@ -170,7 +179,6 @@ const RackDetailPage = () => {
       strategy: selectedStock.strategy,
       product_type: selectedStock.product_type,
       is_consumable: selectedStock.is_consumable,
-      is_active: selectedStock.is_active !== false,
       sale_price: selectedStock.sale_price || '',
       cost_price: selectedStock.cost_price || ''
     });
@@ -306,6 +314,92 @@ const RackDetailPage = () => {
     }
   };
 
+  // Consume stock handlers
+  const handleConsumeStock = () => {
+    const stockIsConsumable = Boolean(selectedStock?.is_consumable ?? selectedStock?.consumable);
+    if (!stockIsConsumable) return;
+    setConsumeForm({ quantity: 1, note: '' });
+    setStockOptionMode('consume');
+  };
+
+  const handleConsumeChange = (e) => {
+    const { name, value } = e.target;
+    setConsumeForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveConsume = async (e) => {
+    e.preventDefault();
+    if (!selectedStock || !consumeForm.quantity) return;
+    if (Number(consumeForm.quantity) > selectedStock.quantity) {
+      setError('Cannot consume more than available quantity');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      await transactionsAPI.consumption({
+        stockId: selectedStock.stock_id,
+        productId: selectedStock.product_id,
+        slotId: selectedStock.slot?.slot_id,
+        quantity: Number(consumeForm.quantity),
+        note: consumeForm.note || `Consumed ${consumeForm.quantity} units`
+      });
+      handleCloseStockOptions();
+      await loadLayout();
+    } catch (err) {
+      setError(err?.message || 'Failed to consume stock');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Send to client handlers
+  const handleSendToClient = async () => {
+    setSendForm({ quantity: 1, clientId: '', note: '' });
+    setStockOptionMode('send');
+    // Load clients
+    try {
+      const resp = await fetch(`${API_BASE_URL}/clients?limit=100`);
+      const data = await resp.json();
+      if (data.success) {
+        setClients(data.data || []);
+      }
+    } catch (err) {
+      setError('Failed to load clients');
+    }
+  };
+
+  const handleSendChange = (e) => {
+    const { name, value } = e.target;
+    setSendForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveSend = async (e) => {
+    e.preventDefault();
+    if (!selectedStock || !sendForm.quantity || !sendForm.clientId) return;
+    if (Number(sendForm.quantity) > selectedStock.quantity) {
+      setError('Cannot send more than available quantity');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      await transactionsAPI.manualOutflow({
+        stockId: selectedStock.stock_id,
+        productId: selectedStock.product_id,
+        fromSlotId: selectedStock.slot?.slot_id,
+        clientId: Number(sendForm.clientId),
+        quantity: Number(sendForm.quantity),
+        unitPrice: selectedStock.sale_price || 0,
+        note: sendForm.note || `Sent to client`
+      });
+      handleCloseStockOptions();
+      await loadLayout();
+    } catch (err) {
+      setError(err?.message || 'Failed to send stock to client');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleBack = () => {
     navigate(`/locations/${locationId}/depots/${depotId}/aisles/${aisleId}/racks`, {
       state: {
@@ -349,7 +443,20 @@ const RackDetailPage = () => {
         cost_price: stockForm.cost_price === '' ? null : Number(stockForm.cost_price)
       };
 
-      const resp = await createStock(targetSlot.slot_id, payload, async () => {
+      const resp = await createStock(targetSlot.slot_id, payload, async (newStockData) => {
+        // Create inflow transaction for new stock
+        try {
+          await transactionsAPI.stockInflow({
+            stockId: newStockData.stock_id,
+            productId: payload.product_id,
+            slotId: targetSlot.slot_id,
+            quantity: payload.quantity,
+            unitPrice: payload.cost_price || 0,
+            note: `New stock added: ${payload.quantity} units`
+          });
+        } catch (txnError) {
+          console.error('Failed to create inflow transaction:', txnError);
+        }
         await loadLayout();
       });
       if (resp?.success) {
@@ -372,9 +479,17 @@ const RackDetailPage = () => {
 
     if (!stockId || !targetSlotId || sourceSlotId === targetSlotId) return;
 
+    const sourceSlot = layoutData.slots?.find((s) => s.slot_id === sourceSlotId);
     const targetSlot = layoutData.slots?.find((s) => s.slot_id === targetSlotId);
     if (targetSlot?.stock) {
       setError('Target slot already has stock.');
+      return;
+    }
+
+    // Get stock info for the transaction
+    const stockInfo = sourceSlot?.stock;
+    if (!stockInfo) {
+      setError('Stock information not found.');
       return;
     }
 
@@ -382,6 +497,20 @@ const RackDetailPage = () => {
     setError('');
     try {
       await moveStock(stockId, targetSlotId, async () => {
+        // Create relocation transaction after successful move
+        try {
+          await transactionsAPI.relocation({
+            stockId: stockId,
+            productId: stockInfo.product_id,
+            fromSlotId: sourceSlotId,
+            toSlotId: targetSlotId,
+            quantity: stockInfo.quantity,
+            note: `Stock relocated from slot ${sourceSlot?.coordinate || sourceSlotId} to slot ${targetSlot?.coordinate || targetSlotId}`
+          });
+        } catch (txnError) {
+          console.error('Failed to create relocation transaction:', txnError);
+          // Don't block the UI since the move was successful
+        }
         await loadLayout();
       });
     } finally {
@@ -774,6 +903,18 @@ const RackDetailPage = () => {
                   <span className={styles.optionLabel}>Migrate</span>
                   <span className={styles.optionDesc}>Move to another rack</span>
                 </button>
+                {Boolean(selectedStock?.is_consumable ?? selectedStock?.consumable) && (
+                  <button className={styles.stockOptionBtn} onClick={handleConsumeStock} disabled={actionLoading}>
+                    <FaUtensils className={styles.optionIcon} />
+                    <span className={styles.optionLabel}>Consume</span>
+                    <span className={styles.optionDesc}>Use internally</span>
+                  </button>
+                )}
+                <button className={styles.stockOptionBtn} onClick={handleSendToClient} disabled={actionLoading}>
+                  <FaUserTie className={styles.optionIcon} />
+                  <span className={styles.optionLabel}>Send</span>
+                  <span className={styles.optionDesc}>Send to client</span>
+                </button>
               </div>
             )}
 
@@ -892,19 +1033,6 @@ const RackDetailPage = () => {
                   </div>
                 </div>
 
-                <div className={styles.formRowSplit}>
-                  <div className={`${styles.formRow} ${styles.checkboxRow}`}>
-                    <label className={styles.formLabel}>Active</label>
-                    <input
-                      type="checkbox"
-                      name="is_active"
-                      checked={editForm.is_active !== false}
-                      onChange={handleEditChange}
-                      disabled={actionLoading}
-                    />
-                  </div>
-                </div>
-
                 <div className={styles.modalActions}>
                   <button type="button" className={styles.secondaryButton} onClick={() => setStockOptionMode(null)} disabled={actionLoading}>
                     Back
@@ -1012,6 +1140,111 @@ const RackDetailPage = () => {
                   </button>
                   <button type="submit" className={styles.primaryButton} disabled={actionLoading || !migrateForm.slotId}>
                     {actionLoading ? 'Migrating...' : 'Migrate stock'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Consume form */}
+            {stockOptionMode === 'consume' && (
+              <form onSubmit={handleSaveConsume} className={styles.modalForm}>
+                <p className={styles.migrateHint}>Consume stock internally (available: {selectedStock.quantity} units)</p>
+
+                <div className={styles.formRow}>
+                  <label className={styles.formLabel}>Quantity to consume</label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    className={styles.formInput}
+                    value={consumeForm.quantity}
+                    onChange={handleConsumeChange}
+                    min="1"
+                    max={selectedStock.quantity}
+                    required
+                    disabled={actionLoading}
+                  />
+                </div>
+
+                <div className={styles.formRow}>
+                  <label className={styles.formLabel}>Note (optional)</label>
+                  <input
+                    type="text"
+                    name="note"
+                    className={styles.formInput}
+                    value={consumeForm.note}
+                    onChange={handleConsumeChange}
+                    placeholder="Reason for consumption..."
+                    disabled={actionLoading}
+                  />
+                </div>
+
+                <div className={styles.modalActions}>
+                  <button type="button" className={styles.secondaryButton} onClick={() => setStockOptionMode(null)} disabled={actionLoading}>
+                    Back
+                  </button>
+                  <button type="submit" className={styles.primaryButton} disabled={actionLoading}>
+                    {actionLoading ? 'Processing...' : 'Consume stock'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Send to Client form */}
+            {stockOptionMode === 'send' && (
+              <form onSubmit={handleSaveSend} className={styles.modalForm}>
+                <p className={styles.migrateHint}>Send stock to client (available: {selectedStock.quantity} units)</p>
+
+                <div className={styles.formRow}>
+                  <label className={styles.formLabel}>Client</label>
+                  <select
+                    name="clientId"
+                    className={styles.formInput}
+                    value={sendForm.clientId}
+                    onChange={handleSendChange}
+                    required
+                    disabled={actionLoading}
+                  >
+                    <option value="">Select client...</option>
+                    {clients.map((c) => (
+                      <option key={c.client_id} value={c.client_id}>{c.client_name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.formRow}>
+                  <label className={styles.formLabel}>Quantity to send</label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    className={styles.formInput}
+                    value={sendForm.quantity}
+                    onChange={handleSendChange}
+                    min="1"
+                    max={selectedStock.quantity}
+                    required
+                    disabled={actionLoading}
+                  />
+                </div>
+
+                <div className={styles.formRow}>
+                  <label className={styles.formLabel}>Note (optional)</label>
+                  <input
+                    type="text"
+                    name="note"
+                    className={styles.formInput}
+                    value={sendForm.note}
+                    onChange={handleSendChange}
+                    placeholder="Order reference, delivery note..."
+                    disabled={actionLoading}
+                  />
+                </div>
+
+                <div className={styles.modalActions}>
+                  <button type="button" className={styles.secondaryButton} onClick={() => setStockOptionMode(null)} disabled={actionLoading}>
+                    Back
+                  </button>
+                  <button type="submit" className={styles.primaryButton} disabled={actionLoading || !sendForm.clientId}>
+                    {actionLoading ? 'Sending...' : 'Send to client'}
                   </button>
                 </div>
               </form>

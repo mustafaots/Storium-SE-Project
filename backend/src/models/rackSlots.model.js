@@ -66,9 +66,9 @@ export const RackSlot = {
   getSlotsWithStock: (rackId) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT rs.*, s.stock_id, s.product_id, s.quantity, s.batch_no, s.expiry_date, s.strategy, s.product_type, s.is_consumable, s.sale_price, s.cost_price, s.is_active
+        `SELECT rs.*, s.stock_id, s.product_id, s.quantity, s.batch_no, s.expiry_date, s.strategy, s.product_type, s.is_consumable, s.sale_price, s.cost_price
          FROM rack_slots rs
-         LEFT JOIN stocks s ON s.slot_id = rs.slot_id AND s.is_active = 1
+         LEFT JOIN stocks s ON s.slot_id = rs.slot_id
          WHERE rs.rack_id = ?
          ORDER BY rs.direction ASC, rs.level_no DESC, rs.bay_no ASC, rs.bin_no ASC`,
         [rackId],
