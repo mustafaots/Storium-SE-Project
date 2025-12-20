@@ -47,8 +47,8 @@ export const exportToCSV = (data, filename = 'export') => {
 
 export const exportToPDF = (data, columns, title = 'Report', filename = 'export') => {
     try {
-        // Create new PDF document
-        const doc = new jsPDF();
+        // Create new PDF document in landscape orientation
+        const doc = new jsPDF('landscape');
         
         // Add title
         doc.setFontSize(18);
