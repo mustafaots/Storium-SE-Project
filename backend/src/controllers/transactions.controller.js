@@ -110,6 +110,97 @@ export const createTransfer = async (req, res, next) => {
   }
 };
 
+// RELOCATION: move stock from one slot to another
+export const createRelocation = async (req, res, next) => {
+  try {
+    const {
+      stockId,
+      productId,
+      fromSlotId,
+      toSlotId,
+      quantity,
+      note
+    } = req.body;
+
+    if (!stockId || !productId || !fromSlotId || !toSlotId || !quantity) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    const txn = await TransactionsService.createRelocation({
+      stockId,
+      productId,
+      fromSlotId,
+      toSlotId,
+      quantity,
+      note
+    });
+
+    res.status(201).json({ success: true, data: txn });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// CONSUMPTION: internal stock consumption
+export const createConsumption = async (req, res, next) => {
+  try {
+    const {
+      stockId,
+      productId,
+      slotId,
+      quantity,
+      note
+    } = req.body;
+
+    if (!stockId || !productId || !slotId || !quantity) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    const txn = await TransactionsService.createConsumption({
+      stockId,
+      productId,
+      slotId,
+      quantity,
+      note
+    });
+
+    res.status(201).json({ success: true, data: txn });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// STOCK INFLOW: new stock added to inventory
+export const createStockInflow = async (req, res, next) => {
+  try {
+    const {
+      stockId,
+      productId,
+      slotId,
+      quantity,
+      unitPrice,
+      note
+    } = req.body;
+
+    if (!stockId || !productId || !slotId || !quantity) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    const txn = await TransactionsService.createStockInflow({
+      stockId,
+      productId,
+      slotId,
+      quantity,
+      unitPrice,
+      note
+    });
+
+    res.status(201).json({ success: true, data: txn });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ADJUSTMENT: found/lost stock
 export const createAdjustment = async (req, res, next) => {
   try {

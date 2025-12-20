@@ -65,6 +65,45 @@ export const transactionsAPI = {
       throw new Error(json.error || 'Failed to create adjustment');
     }
     return json.data;
+  },
+
+  async relocation(payload) {
+    const res = await fetch(`${API_BASE_URL}/transactions/relocation`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error || 'Failed to create relocation transaction');
+    }
+    return json.data;
+  },
+
+  async consumption(payload) {
+    const res = await fetch(`${API_BASE_URL}/transactions/consumption`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error || 'Failed to create consumption transaction');
+    }
+    return json.data;
+  },
+
+  async stockInflow(payload) {
+    const res = await fetch(`${API_BASE_URL}/transactions/stock-inflow`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error || 'Failed to create stock inflow transaction');
+    }
+    return json.data;
   }
 
 };

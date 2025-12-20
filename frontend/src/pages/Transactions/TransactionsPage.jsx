@@ -422,6 +422,19 @@ function TransactionsPage() {
   const [showDetails, setShowDetails] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
+  const formatSlotContext = (txn, side) => {
+    const isFrom = side === 'from';
+    const locationName = isFrom ? txn?.from_location_name : txn?.to_location_name;
+    const depotName = isFrom ? txn?.from_depot_name : txn?.to_depot_name;
+    const rackCode = isFrom ? txn?.from_rack_code : txn?.to_rack_code;
+    const slotId = isFrom ? txn?.from_slot_id : txn?.to_slot_id;
+
+    const parts = [locationName, depotName, rackCode].filter(Boolean);
+    if (slotId) parts.push(`Slot ${slotId}`);
+
+    return parts.length ? parts.join(' · ') : '—';
+  };
+
   const {
     transactions,
     loading,
@@ -459,41 +472,54 @@ function TransactionsPage() {
 
   const handleExportCSV = () => {
     const dataToExport = filteredTransactions.map(item => ({
-      Timestamp: item.timestamp,
-      ...(filterType === 'automatic' && { Routine: `R${item.routine_id}` }),
-      ...(filterType !== 'automatic' && {
-        Type: item.is_automated ? `R${item.routine_id}` : 'Manual'
-      }),
-      Action: item.notes
+      'Transaction ID': item.txn_id,
+      'Timestamp': item.timestamp,
+      'Type': item.txn_type,
+      'Automated': item.is_automated ? 'Yes' : 'No',
+      'Routine': item.routine_id ? `R${item.routine_id}` : '',
+      'Product': item.product_name || (item.product_id ? `ID ${item.product_id}` : ''),
+      'Source': item.source_name || (item.source_id ? `ID ${item.source_id}` : ''),
+      'Client': item.client_name || (item.client_id ? `ID ${item.client_id}` : ''),
+      'Quantity': item.quantity,
+      'Total Value': item.total_value,
+      'From Slot ID': item.from_slot_id || '',
+      'To Slot ID': item.to_slot_id || '',
+      'Reference': item.reference_number || '',
+      'Notes': item.notes || ''
     }));
     exportToCSV(dataToExport, 'transactions');
     setShowExportModal(false);
   };
 
   const handleExportPDF = () => {
-    let columns = [];
-    if (filterType === 'automatic') {
-      columns = [
-        { key: 'timestamp', label: 'Timestamp' },
-        { key: 'routine_id', label: 'Routine' },
-        { key: 'notes', label: 'Action' }
-      ];
-    } else if (filterType === 'manual') {
-      columns = [
-        { key: 'timestamp', label: 'Timestamp' },
-        { key: 'notes', label: 'Action' }
-      ];
-    } else {
-      columns = [
-        { key: 'timestamp', label: 'Timestamp' },
-        { key: 'type', label: 'Type' },
-        { key: 'notes', label: 'Action' }
-      ];
-    }
+    const columns = [
+      { key: 'txn_id', label: 'ID' },
+      { key: 'timestamp', label: 'Timestamp' },
+      { key: 'txn_type', label: 'Type' },
+      { key: 'automated', label: 'Auto' },
+      { key: 'product', label: 'Product' },
+      { key: 'source', label: 'Source' },
+      { key: 'client', label: 'Client' },
+      { key: 'quantity', label: 'Qty' },
+      { key: 'total_value', label: 'Value' },
+      { key: 'from_slot_id', label: 'From Slot' },
+      { key: 'to_slot_id', label: 'To Slot' },
+      { key: 'notes', label: 'Notes' }
+    ];
 
     const pdfData = filteredTransactions.map(item => ({
-      ...item,
-      type: item.is_automated ? `R${item.routine_id}` : 'Manual'
+      txn_id: item.txn_id,
+      timestamp: item.timestamp,
+      txn_type: item.txn_type,
+      automated: item.is_automated ? 'Yes' : 'No',
+      product: item.product_name || (item.product_id ? `ID ${item.product_id}` : '—'),
+      source: item.source_name || (item.source_id ? `ID ${item.source_id}` : '—'),
+      client: item.client_name || (item.client_id ? `ID ${item.client_id}` : '—'),
+      quantity: item.quantity,
+      total_value: item.total_value,
+      from_slot_id: item.from_slot_id || '—',
+      to_slot_id: item.to_slot_id || '—',
+      notes: item.notes || '—'
     }));
 
     exportToPDF(pdfData, columns, 'Transactions Report', 'transactions');
@@ -714,8 +740,8 @@ function TransactionsPage() {
 
                     <p><strong>Quantity:</strong> {selectedTransaction.quantity}</p>
                     <p><strong>Total value:</strong> {selectedTransaction.total_value}</p>
-                    <p><strong>From slot ID:</strong> {selectedTransaction.from_slot_id || '—'}</p>
-                    <p><strong>To slot ID:</strong> {selectedTransaction.to_slot_id || '—'}</p>
+                    <p><strong>From:</strong> {formatSlotContext(selectedTransaction, 'from')}</p>
+                    <p><strong>To:</strong> {formatSlotContext(selectedTransaction, 'to')}</p>
 
                     <hr />
 
