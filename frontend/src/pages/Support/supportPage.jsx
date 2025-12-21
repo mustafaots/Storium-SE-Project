@@ -1,6 +1,7 @@
 // frontend/src/pages/support/SupportPage.jsx
 import React, { useState, useRef , useMemo } from "react";
 import {
+  FaCompass,
   FaSearch,
   FaQuestionCircle,
   FaBook,
@@ -22,6 +23,15 @@ import {
 } from "react-icons/fa";
 import styles from './support.module.css';
 import Header from '../../components/UI/Header/Header';
+import NavBar from '../../components/UI/NavBar/NavBar';
+
+const MENU_ONLY_NAV_ITEMS = [
+  {
+    name: 'Menu',
+    icon: <FaCompass />,
+    path: '/',
+  },
+];
 
 const DOC_ENTRIES = [
   {
@@ -780,6 +790,8 @@ const SupportPage = () => {
           </footer>
         </div>
       </main>
+
+      <NavBar navItems={MENU_ONLY_NAV_ITEMS} activeItem="" />
 
       {/* Modal for documentation entry */}
       {activeDoc && (
