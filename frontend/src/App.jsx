@@ -15,6 +15,7 @@ import DepotsPage from './pages/Schema/Subpages/Depots/DepotsPage.jsx';
 import AislesPage from './pages/Schema/Subpages/Aisles/AislesPage.jsx';
 import RacksPage from './pages/Schema/Subpages/Racks/RacksPage.jsx';
 import RackDetailPage from './pages/Schema/Subpages/Racks/RackDetailPage.jsx';
+import SupportPage from './pages/Support/supportPage.jsx';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/" element={<MainPage />} /> 
         <Route path="/coming-soon" element={<ComingSoon />} />
         <Route path="/schema" element={<SchemaPage />} />
+        <Route path="/support" element={<SupportPage />} />
         <Route path="/visualise" element={<VisualisePage />} />
         <Route path="/sources" element={<SourcesPage />} />
         <Route path="/transactions" element={<TransactionsPage />} />

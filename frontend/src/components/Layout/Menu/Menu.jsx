@@ -9,7 +9,7 @@ function Menu() {
 
   const menuItems = [
     { label: 'Enter', action: () => navigate('/schema') },
-    { label: 'Support', action: () => navigate('/coming-soon') },
+    { label: 'Support', action: () => navigate('/support') },
     { label: 'Exit', action: () => ()=>{} },
   ];
 
