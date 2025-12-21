@@ -10,9 +10,10 @@ import 'react-toastify/dist/ReactToastify.css';
 // Icons
 import { 
     FaChartLine, FaExclamationTriangle, FaClock, FaSearch, FaFilter, 
-    FaPlus, FaBolt, FaTimes, FaPlay, FaPen, FaTrash, FaEnvelope, FaBoxOpen, FaBell, FaBullseye 
+    FaPlus, FaBolt, FaTimes, FaPlay, FaPen, FaTrash, FaEnvelope, FaBoxOpen, FaBell 
 } from 'react-icons/fa';
 
+// API BASE URL
 const API_URL = "http://localhost:3001/api/routines";
 
 function RoutinesPage() {
@@ -21,7 +22,9 @@ function RoutinesPage() {
     // --- STATE ---
     const [routines, setRoutines] = useState([]);
     const [stats, setStats] = useState({ active_routines: 0, critical_errors: 0, executions_24h: 0 });
-    const [products, setProducts] = useState([]); // Store product list for dropdown
+    
+    // THIS IS THE FIX: We use the same state name and fetching logic as your original working code
+    const [productList, setProductList] = useState([]); 
     
     // --- FILTER STATE ---
     const [searchText, setSearchText] = useState("");
@@ -35,12 +38,12 @@ function RoutinesPage() {
         name: "", 
         frequency: "daily", 
         
-        // TRIGGER (PROMISE)
+        // TRIGGER
         routineType: "low_stock",  
         targetScope: "all",        // 'all' or 'specific'
         targetProductId: "",       // ID if specific
         
-        // ACTION (RESOLVE)
+        // ACTION
         actionType: "create_alert", 
         actionDetail: "warning"    
     });
@@ -52,43 +55,42 @@ function RoutinesPage() {
     const [prevExecCount, setPrevExecCount] = useState(0);
 
     // =============================================
-    // FETCH DATA
+    // FETCH DATA (Restored to your working logic)
     // =============================================
     const fetchAllData = async () => {
         try {
+            // 1. Get List of Routines
             const routinesRes = await fetch(API_URL);
             const routinesData = await routinesRes.json();
             setRoutines(routinesData);
 
+            // 2. Get Stats
             const statsRes = await fetch(`${API_URL}/stats`);
             const statsData = await statsRes.json();
             
+            // Check for notifications
             if (prevExecCount > 0 && statsData.executions_24h > prevExecCount) {
                 toast.success(`🚀 Routine Executed Automatically!`, { position: "top-right", theme: "dark" });
             }
             setStats(statsData);
             setPrevExecCount(statsData.executions_24h); 
 
+            // 3. GET PRODUCTS (Restored: using the endpoint that worked for you)
+            const prodRes = await fetch(`${API_URL}/products`);
+            if (prodRes.ok) {
+                const prodData = await prodRes.json();
+                setProductList(prodData);
+            } else {
+                console.warn("Could not fetch products from /api/routines/products");
+            }
+
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     };
 
-    // Fetch Products for the Dropdown
-    const fetchProducts = async () => {
-        try {
-            // Assuming you have an endpoint for this. If not, use your existing one.
-            const res = await fetch("http://localhost:3001/api/products"); 
-            const data = await res.json();
-            setProducts(data);
-        } catch (error) {
-            console.error("Error fetching products", error);
-        }
-    };
-
     useEffect(() => {
         fetchAllData();
-        fetchProducts(); // Get list of products when page loads
         const interval = setInterval(fetchAllData, 5000); 
         return () => clearInterval(interval);
     }, [prevExecCount]);
@@ -140,7 +142,6 @@ function RoutinesPage() {
 
         try {
             // 1. CONSTRUCT PROMISE (Trigger)
-            // Format: "type:scope" (e.g., "low_stock:all" OR "low_stock:15")
             const scopeValue = formData.targetScope === 'all' ? 'all' : formData.targetProductId;
             const promiseString = `${formData.routineType}:${scopeValue}`;
 
@@ -190,7 +191,13 @@ function RoutinesPage() {
         if(type === 'expiry') typeText = '📅 Expiry';
         if(type === 'dead_stock') typeText = '💀 Dead Stock';
 
-        const scopeText = scope === 'all' ? '(All Products)' : `(Product #${scope})`;
+        // Try to find product name from list, fallback to ID
+        let scopeText = "(All Products)";
+        if (scope && scope !== 'all') {
+            const prod = productList.find(p => p.product_id === parseInt(scope));
+            scopeText = prod ? `(${prod.name})` : `(Product #${scope})`;
+        }
+        
         return `${typeText} ${scopeText}`;
     };
 
@@ -237,7 +244,6 @@ function RoutinesPage() {
                 <Header title="ROUTINES" subtitle="Automated inventory health checks" icon={<FaBolt size={28}/>} />
                 <button className={styles.primaryBtn} onClick={() => setIsModalOpen(true)}><FaPlus /> New Routine</button>
 
-                {/* Stats & Filters (Hidden for brevity, keep your existing ones) */}
                 <div className={styles.tableContainer}>
                     <Table data={filteredData} columns={routineColumns} size="medium" />
                 </div>
@@ -295,7 +301,7 @@ function RoutinesPage() {
                                             </select>
                                         </div>
 
-                                        {/* PRODUCT DROPDOWN (Only if specific) */}
+                                        {/* PRODUCT DROPDOWN (Based on productList) */}
                                         {formData.targetScope === 'specific' && (
                                             <div className={styles.formGroup}>
                                                 <label>SELECT PRODUCT</label>
@@ -305,7 +311,7 @@ function RoutinesPage() {
                                                     onChange={(e) => setFormData({...formData, targetProductId: e.target.value})}
                                                 >
                                                     <option value="">-- Choose Product --</option>
-                                                    {products.map(p => (
+                                                    {productList.map(p => (
                                                         <option key={p.product_id} value={p.product_id}>{p.name}</option>
                                                     ))}
                                                 </select>
@@ -344,6 +350,9 @@ function RoutinesPage() {
                                             )}
                                             {txnStrategy === 'fixed' && formData.actionType === 'create_transaction' && (
                                                 <input type="number" value={txnQty} onChange={e => setTxnQty(e.target.value)} placeholder="Qty" />
+                                            )}
+                                            {formData.actionType === 'send_email' && (
+                                                <input type="email" value={formData.actionDetail} onChange={e => setFormData({...formData, actionDetail: e.target.value})} placeholder="Email Address" />
                                             )}
                                         </div>
                                     </div>

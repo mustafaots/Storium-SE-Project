@@ -2,113 +2,230 @@ import cron from 'node-cron';
 import db from '../config/database.js';
 
 export const startScheduler = () => {
-    console.log('🕒 Scheduler started: Listening to your Routines table...');
-    cron.schedule('* * * * *', () => {
+    console.log('🚀 SCHEDULER STARTED: Debug Mode (Running every 20s)...');
+    
+    // Run every 20 seconds
+    cron.schedule('*/20 * * * * *', () => {
+        const now = new Date().toLocaleTimeString();
+        console.log(`\n[${now}] ⏰ TICK: Scheduler Waking Up...`);
         processActiveRoutines();
     });
 };
 
 const processActiveRoutines = () => {
     db.query("SELECT * FROM routines WHERE is_active = 1", (err, routines) => {
-        if (err || routines.length === 0) return;
+        if (err) return console.error("❌ DB Error:", err);
+
+        if (routines.length === 0) {
+            console.log("   💤 No active routines found.");
+            return;
+        }
+
+        console.log(`   🔎 Found ${routines.length} active routines.`);
 
         routines.forEach(routine => {
-            if (shouldRunRoutine(routine)) {
-                executeRoutineLogic(routine);
-            }
+            // FORCE RUN FOR TEST
+            executeSmartLogic(routine);
         });
     });
 };
 
-// Check if it's time to run
-const shouldRunRoutine = (routine) => {
-    const freq = routine.frequency;
-    const now = new Date();
-    if (freq === 'always') return true;
-    if (freq === 'daily') return now.getHours() === 9 && now.getMinutes() === 0;
-    if (freq === 'weekly') return now.getDay() === 1 && now.getHours() === 9 && now.getMinutes() === 0;
-    return false;
-};
+const executeSmartLogic = (routine) => {
+    // 🛡️ SAFETY CHECK: If promise is empty, skip this routine
+    if (!routine.promise) {
+        console.log(`      ⚠️ Skipping Routine "${routine.name}" (No logic defined)`);
+        return; 
+    }
 
-const executeRoutineLogic = (routine) => {
-    // 1. PARSE PROMISE: "low_stock:all" OR "low_stock:15"
     const [triggerType, scope] = routine.promise.split(':');
     
-    let baseQuery = "";
+    // Log what we are trying to do
+    console.log(`   👉 Running Routine: "${routine.name}"`);
+    console.log(`      Target: ${triggerType.toUpperCase()} | Scope: ${scope}`);
+
+    let sqlQuery = "";
     
-    // 2. BUILD BASE QUERY
+    // 1. BUILD SQL (Updated to fetch Max Level for Reordering)
     if (triggerType === 'low_stock') {
-        baseQuery = `
-            SELECT s.stock_id, p.product_id, p.name, s.quantity, p.min_stock_level, p.max_stock_level
+        sqlQuery = `
+            SELECT s.stock_id, s.product_id, p.name, s.quantity, 
+                   p.min_stock_level as limit_val, 
+                   p.max_stock_level
             FROM stocks s JOIN products p ON s.product_id = p.product_id 
             WHERE s.quantity <= p.min_stock_level
         `;
     } 
     else if (triggerType === 'overstock') {
-        baseQuery = `
-            SELECT s.stock_id, p.product_id, p.name, s.quantity, p.max_stock_level
+        sqlQuery = `
+            SELECT s.stock_id, s.product_id, p.name, s.quantity, p.max_stock_level as limit_val
             FROM stocks s JOIN products p ON s.product_id = p.product_id 
             WHERE s.quantity >= p.max_stock_level
         `;
-    }
+    } 
     else if (triggerType === 'expiry') {
-        baseQuery = `
-            SELECT s.stock_id, p.product_id, p.name, s.expiry_date
+        sqlQuery = `
+            SELECT s.stock_id, s.product_id, p.name, s.expiry_date, 
+            DATEDIFF(s.expiry_date, CURDATE()) as days_left
             FROM stocks s JOIN products p ON s.product_id = p.product_id 
-            WHERE s.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+            WHERE s.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) 
+            AND s.expiry_date IS NOT NULL
         `;
     }
 
-    if (!baseQuery) return;
-
-    // 3. APPLY SCOPE (Filter by Specific Product if needed)
-    if (scope && scope !== 'all') {
-        baseQuery += ` AND s.product_id = ${parseInt(scope)}`;
-        console.log(`⚡ Running Specific Routine "${routine.name}" for Product ID ${scope}`);
-    } else {
-        console.log(`⚡ Running Global Routine "${routine.name}" for ALL products`);
+    // Apply Scope
+    if (scope && scope !== 'all' && !isNaN(parseInt(scope))) {
+        sqlQuery += ` AND s.product_id = ${parseInt(scope)}`;
     }
 
-    // 4. EXECUTE SQL
-    db.query(baseQuery, (err, results) => {
-        if (err || results.length === 0) return;
+    // 2. RUN QUERY & LOG RESULTS
+    db.query(sqlQuery, (err, results) => {
+        if (err) return console.error("      ❌ Query Error:", err);
 
-        results.forEach(item => {
-            performAction(routine, routine.resolve, item);
+        if (results.length === 0) {
+            console.log(`      ✅ Check Complete: No issues found in DB.`);
+            return;
+        }
+
+        console.log(`      ⚠️  FOUND ${results.length} ISSUES IN DATABASE:`);
+        
+        results.forEach(row => {
+            if (triggerType === 'expiry') {
+                const dateStr = new Date(row.expiry_date).toLocaleDateString();
+                console.log(`         📦 Item: ${row.name} | Expiry: ${dateStr} | Days Diff: ${row.days_left}`);
+            } else {
+                console.log(`         📦 Item: ${row.name} | Qty: ${row.quantity} | Limit: ${row.limit_val}`);
+            }
         });
 
-        // Update Last Run
-        db.query("UPDATE routines SET last_run = NOW() WHERE routine_id = ?", [routine.routine_id]);
+        // 3. PERFORM ACTION (Alert OR Transaction)
+        results.forEach(item => {
+            performAction(routine, triggerType, item);
+        });
     });
 };
 
-// ... performAction function stays the same as before ...
-const performAction = (routine, resolveStr, item) => {
-    const [actionType, actionDetail] = resolveStr.split(':');
+const performAction = (routine, triggerType, item) => {
+    // Parse the resolve string: "create_alert:critical" OR "create_transaction:fill_max"
+    // Safety check in case resolve is empty
+    if (!routine.resolve) return;
+    
+    const [actionType, actionDetail] = routine.resolve.split(':');
 
-    if (actionType === 'create_alert') {
-        const severity = actionDetail || 'warning';
-        // Check for duplicate unread alert
-        db.query("SELECT alert_id FROM alerts WHERE linked_stock = ? AND alert_type = ? AND is_read = 0", 
-        [item.stock_id, routine.promise.split(':')[0]], (err, res) => {
-            if (res.length === 0) {
-                const msg = `${item.name}: Condition met (Routine: ${routine.name})`;
-                db.query(`INSERT INTO alerts (alert_type, severity, content, linked_stock, linked_product, sent_at) VALUES (?, ?, ?, ?, ?, NOW())`,
-                    ['low_stock', severity, msg, item.stock_id, item.product_id]);
-                console.log(`   -> Alert sent for ${item.name}`);
+    // ====================================================
+    // 🅰️ LOGIC: CREATE TRANSACTION (Auto-Reorder)
+    // ====================================================
+    if (actionType === 'create_transaction') {
+        console.log(`         ⚙️ STARTING AUTO-REORDER for: ${item.name}`);
+
+        let amountToOrder = 0;
+        let note = "";
+
+        // Calculate Amount
+        if (actionDetail === 'fill_max') {
+            const maxLevel = item.max_stock_level || 100; // Default to 100 if null
+            amountToOrder = maxLevel - item.quantity;
+            note = `Auto-Reorder (Fill to Max: ${maxLevel})`;
+        } 
+        else if (actionDetail && actionDetail.startsWith('fixed_')) {
+            // Example: fixed_100 -> 100
+            amountToOrder = parseInt(actionDetail.split('_')[1]);
+            note = `Auto-Reorder (Fixed Qty: ${amountToOrder})`;
+        }
+        else {
+            // Fallback
+            amountToOrder = 50;
+            note = "Auto-Reorder (Default 50)";
+        }
+
+        if (amountToOrder <= 0) {
+            console.log(`         ✋ No reorder needed (Qty sufficient).`);
+            return;
+        }
+
+        // 1. DUPLICATE CHECK (Prevent spamming transactions)
+        // Checks transactions from the last minute
+        // FIX: Added backticks around `timestamp` and handled ERROR callback
+        const dupSql = `
+            SELECT txn_id FROM transactions 
+            WHERE stock_id = ? AND is_automated = 1 AND \`timestamp\` > NOW() - INTERVAL 1 MINUTE
+        `;
+
+        db.query(dupSql, [item.stock_id], (err, txns) => {
+            // 🛡️ CRITICAL FIX: Check for error first!
+            if (err) {
+                console.error("         ❌ DB Error during Duplicate Check:", err.message);
+                return;
+            }
+
+            // Now it is safe to check length
+            if (txns && txns.length === 0) {
+                // 2. INSERT TRANSACTION
+                const txnSql = `
+                    INSERT INTO transactions 
+                    (is_automated, routine_id, stock_id, product_id, txn_type, quantity, total_value, notes, \`timestamp\`)
+                    VALUES (1, ?, ?, ?, 'inflow', ?, 0.00, ?, NOW())
+                `;
+
+                db.query(txnSql, [routine.routine_id, item.stock_id, item.product_id, amountToOrder, note], (tErr, res) => {
+                    if (tErr) return console.error("            ❌ Txn Insert Failed:", tErr.message);
+                    
+                    console.log(`            ✅ TRANSACTION CREATED! Added +${amountToOrder} units.`);
+
+                    // 3. UPDATE STOCK (Fix the problem)
+                    const stockUpd = "UPDATE stocks SET quantity = quantity + ? WHERE stock_id = ?";
+                    db.query(stockUpd, [amountToOrder, item.stock_id], (uErr) => {
+                        if (uErr) console.error("            ❌ Stock Update Failed:", uErr.message);
+                        else console.log(`            📈 Stock Updated. New Qty: ${item.quantity + amountToOrder}`);
+                    });
+                });
+            } else {
+                console.log(`         ✋ Skipped: Recently ordered (Wait 1 min).`);
             }
         });
     }
-    else if (actionType === 'create_transaction') {
-        let qty = 0;
-        if (actionDetail === 'fill_max') qty = (item.max_stock_level || 100) - item.quantity;
-        else if (actionDetail.startsWith('fixed_')) qty = parseInt(actionDetail.split('_')[1]);
 
-        if (qty > 0) {
-            db.query(`INSERT INTO transactions (product_id, stock_id, txn_type, quantity, notes, is_automated, routine_id) VALUES (?, ?, 'inflow', ?, 'Auto-Reorder', 1, ?)`,
-                [item.product_id, item.stock_id, qty, routine.routine_id]);
-            db.query(`UPDATE stocks SET quantity = quantity + ? WHERE stock_id = ?`, [qty, item.stock_id]);
-            console.log(`   -> Reordered ${qty} for ${item.name}`);
+    // ====================================================
+    // 🅱️ LOGIC: CREATE ALERT (Notification)
+    // ====================================================
+    else if (actionType === 'create_alert') {
+        let severity = actionDetail || 'warning';
+        let alertType = triggerType; 
+        let message = "";
+
+        if (triggerType === 'low_stock') {
+            message = `${item.name}: Low Stock! Qty is ${item.quantity} (Min: ${item.limit_val})`;
+            if (severity === 'info') alertType = 'reorder';
+        } 
+        else if (triggerType === 'overstock') {
+            message = `${item.name}: Overstocked! Qty is ${item.quantity} (Max: ${item.limit_val})`;
+        } 
+        else if (triggerType === 'expiry') {
+            if (item.days_left < 0) {
+                message = `${item.name}: EXPIRED ${Math.abs(item.days_left)} days ago!`;
+                severity = 'critical';
+            } else {
+                message = `${item.name}: Expiring in ${item.days_left} days.`;
+            }
         }
+
+        // Check Duplicate
+        const checkSql = "SELECT alert_id FROM alerts WHERE linked_stock = ? AND alert_type = ? AND is_read = 0";
+        
+        db.query(checkSql, [item.stock_id, alertType], (err, existingAlerts) => {
+            if (err) return console.error("         ❌ Alert Check Failed:", err.message);
+
+            if (existingAlerts && existingAlerts.length === 0) {
+                const insertSql = `
+                    INSERT INTO alerts (alert_type, severity, content, linked_stock, linked_product, sent_at) 
+                    VALUES (?, ?, ?, ?, ?, NOW())
+                `;
+                db.query(insertSql, [alertType, severity, message, item.stock_id, item.product_id], (insErr, res) => {
+                    if (insErr) console.error("         ❌ Insert Alert Failed:", insErr.message);
+                    else console.log(`         🔥 INSERTED ALERT: "${message}"`);
+                });
+            } else {
+                console.log(`         ✋ Duplicate Skipped (Alert Active)`);
+            }
+        });
     }
 };
