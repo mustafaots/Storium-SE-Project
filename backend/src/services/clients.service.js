@@ -40,5 +40,3 @@ const clientsService = {
 };
 
 export default clientsService;
-
-export default clientsService;
