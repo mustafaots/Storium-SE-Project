@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { FaArrowLeft, FaBoxes } from 'react-icons/fa';
+import { FaArrowLeft, FaLayerGroup } from 'react-icons/fa';
 
 import NavBar from '../../../../components/UI/NavBar/NavBar';
 import Header from '../../../../components/UI/Header/Header';
@@ -189,6 +189,7 @@ const RacksPage = () => {
                 subtitle="Manage racks within this aisle"
                 size="small"
                 align="left"
+                icon={<FaLayerGroup size={28} />}
               />
 
               {error && (
@@ -217,7 +218,7 @@ const RacksPage = () => {
                 searchTerm={search.searchTerm}
                 onRowClick={handleRowClick}
                 rightControls={(
-                  <Button variant="secondary" leadingIcon={<FaBoxes />} onClick={handlers.onNew}>
+                  <Button variant="secondary" leadingIcon={<FaLayerGroup />} onClick={handlers.onNew}>
                     Add
                   </Button>
                 )}

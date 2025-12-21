@@ -14,6 +14,7 @@ import {
   FaBell,
   FaMapMarkerAlt,
   FaProjectDiagram,
+  FaSitemap,
   FaLayerGroup,
   FaBorderAll,
   FaHeadset,
@@ -57,7 +58,7 @@ Use "Support" to open this help center, and "Exit" to close your session.
   {
     id: "inventory-overview",
     title: "Inventory overview (Schema)",
-    icon: <FaProjectDiagram />,
+    icon: <FaSitemap />,
     short: "See a high‑level snapshot of locations, depots, aisles, racks, and slots.",
     content: `
 Schema overview

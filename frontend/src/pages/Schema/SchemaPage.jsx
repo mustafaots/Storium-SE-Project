@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FaMapMarkerAlt, FaWarehouse, FaRoad, FaServer, FaTh, FaBoxes, FaCubes } from 'react-icons/fa';
+import { FaBorderAll, FaBoxes, FaCubes, FaLayerGroup, FaMapMarkerAlt, FaProjectDiagram, FaWarehouse } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import styles from './SchemaPage.module.css';
 import NavBar from '../../components/UI/NavBar/NavBar';
@@ -36,9 +36,9 @@ function SchemaPage() {
     const statCards = [
         { key: 'locations', label: 'Locations', icon: FaMapMarkerAlt, color: '#FFD700' },
         { key: 'depots', label: 'Depots', icon: FaWarehouse, color: '#4CAF50' },
-        { key: 'aisles', label: 'Aisles', icon: FaRoad, color: '#2196F3' },
-        { key: 'racks', label: 'Racks', icon: FaServer, color: '#9C27B0' },
-        { key: 'slots', label: 'Slots', icon: FaTh, color: '#FF5722' },
+        { key: 'aisles', label: 'Aisles', icon: FaProjectDiagram, color: '#2196F3' },
+        { key: 'racks', label: 'Racks', icon: FaLayerGroup, color: '#9C27B0' },
+        { key: 'slots', label: 'Slots', icon: FaBorderAll, color: '#FF5722' },
         { key: 'stocks', label: 'Active Stocks', icon: FaBoxes, color: '#00BCD4' },
         { key: 'products', label: 'Products', icon: FaCubes, color: '#E91E63' }
     ];

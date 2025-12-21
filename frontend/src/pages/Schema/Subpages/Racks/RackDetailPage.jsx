@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { FaArrowLeft, FaSyncAlt, FaPlus, FaBoxes, FaTrash, FaEdit, FaTruck, FaUtensils, FaUserTie } from 'react-icons/fa';
+import { FaArrowLeft, FaBorderAll, FaSyncAlt, FaPlus, FaBoxes, FaTrash, FaEdit, FaTruck, FaUtensils, FaUserTie } from 'react-icons/fa';
 
 import NavBar from '../../../../components/UI/NavBar/NavBar';
 import Header from '../../../../components/UI/Header/Header';
@@ -646,7 +646,7 @@ const RackDetailPage = () => {
             </div>
           </div>
 
-          <Header title="RACK DETAIL" subtitle="Manage slots and stock placements" size="small" align="left" />
+          <Header title="RACK DETAIL" subtitle="Manage slots and stock placements" size="small" align="left" icon={<FaBorderAll size={28} />} />
 
           {(error || productsError) && (
             <div className={styles.errorAlert}>
@@ -686,7 +686,7 @@ const RackDetailPage = () => {
           <div className={styles.layoutSection}>
             <div className={styles.sectionHeader}>
               <div className={styles.sectionTitle}>
-                <FaBoxes />
+                <FaBorderAll />
                 <span>Slots</span>
               </div>
               <div className={styles.directionToggle}>

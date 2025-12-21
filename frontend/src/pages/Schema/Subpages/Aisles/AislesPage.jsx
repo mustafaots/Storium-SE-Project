@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { FaArrowLeft, FaStream, FaDownload, FaFileCsv, FaFilePdf } from 'react-icons/fa';
+import { FaArrowLeft, FaDownload, FaFileCsv, FaFilePdf, FaProjectDiagram } from 'react-icons/fa';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -275,6 +275,7 @@ export const AislesPage = () => {
                 subtitle="Manage aisles within this depot"
                 size="small"
                 align="left"
+                icon={<FaProjectDiagram size={28} />}
               />
 
               {error && (
@@ -323,7 +324,7 @@ export const AislesPage = () => {
                         </div>
                       )}
                     </div>
-                    <Button variant="secondary" leadingIcon={<FaStream />} onClick={handlers.onNew}>
+                    <Button variant="secondary" leadingIcon={<FaProjectDiagram />} onClick={handlers.onNew}>
                       Add
                     </Button>
                   </div>
