@@ -10,6 +10,7 @@ export const getAllRoutines = async (req, res, next) => {
   }
 };
 
+/*
 // Create New Routine
 export const createRoutine = async (req, res, next) => {
   try {
@@ -24,7 +25,41 @@ export const createRoutine = async (req, res, next) => {
       routineId: newId 
     });
   } catch (error) {
-    next(error);
+    //next(error); => DELETED 
+  }
+};
+
+*/
+
+// POST /api/routines
+export const createRoutine = async (req, res, next) => {
+  try {
+    // 1. Validation
+    if (!req.body.name || !req.body.promise) {
+      return res.status(400).json({ message: 'Name and Promise are required' });
+    }
+
+    // 2. Create in DB
+    const newId = await RoutineModel.create(req.body);
+    
+    // 3. Success Response
+    res.status(201).json({ 
+      message: 'Routine created', 
+      routineId: newId 
+    });
+
+  } catch (error) {
+    // ✅ BYPASS THE BROKEN ERROR HANDLER
+    console.error("❌ REAL DB ERROR (Create Routine):", error);
+    
+    // Send the error to the frontend directly
+    if (!res.headersSent) {
+        res.status(500).json({ 
+            success: false, 
+            message: "Database Error", 
+            error: error.message 
+        });
+    }
   }
 };
 
