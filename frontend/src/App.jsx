@@ -1,5 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
+// 🔔 GLOBAL NOTIFICATION WATCHER (The Component we just made)
+import NotificationWatcher from './components/notificationWatcher/NotificationWatcher';
+
+// Pages
 import ComingSoon from './pages/ComingSoon/ComingSoonPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import SchemaPage from './pages/Schema/SchemaPage';
@@ -15,6 +21,20 @@ import MainPage from './pages/Main/MainPage';
 function App() {
   return (
     <Router>
+      
+      {/* 
+          1. NOTIFICATION WATCHER 
+          Checks backend every 5 seconds. Floating Icon + Sound.
+      */}
+      <NotificationWatcher />
+
+      {/* 
+          2. TOAST CONTAINER 
+          Required to display the popup messages globally.
+      */}
+      <ToastContainer position="top-right" autoClose={5000} theme="dark" />
+
+      {/* 3. PAGE ROUTES */}
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/coming-soon" element={<ComingSoon />} />
