@@ -9,33 +9,34 @@ const ALERTS_URL = "http://localhost:3001/api/alerts";
 const NotificationWatcher = () => {
     const lastAlertIdRef = useRef(null);
 
-const checkForNewAlerts = async () => {
-    try {
-        const res = await fetch(ALERTS_URL);
-        const data = await res.json();
-        
-        // 1. Get all unread records
-        const unreadAlerts = data.filter(a => a.is_read === 0);
+    const checkForNewAlerts = async () => {
+        try {
+            // FIX: Append a timestamp to the URL to prevent the browser from caching the response
+            const res = await fetch(`${ALERTS_URL}?t=${Date.now()}`); 
+            const data = await res.json();
+            
+            // Filter for unread alerts
+            const unreadAlerts = data.filter(a => a.is_read === 0);
+            const latestAlert = unreadAlerts[0]; 
 
-        if (unreadAlerts.length > 0) {
-            // Get the very newest one
-            const latest = unreadAlerts[0]; 
-            const currentId = latest.alert_id;
+            if (latestAlert) {
+                const currentId = latestAlert.alert_id;
+                const rememberedId = lastAlertIdRef.current;
 
-            // 2. The ONLY check: Is this ID different from the last one we popped up?
-            if (currentId !== lastAlertIdRef.current) {
-                
-                showRedAlertToast(latest.content, currentId);
-                playSound();
+                console.log(`Syncing... DB ID: ${currentId} | Memory: ${rememberedId}`);
 
-                // 3. Save this ID so we don't repeat it in 5 seconds
-                lastAlertIdRef.current = currentId;
+                // Only trigger if we have a valid ID and it's different from the last one shown
+                if (currentId && currentId !== rememberedId) {
+                    console.log("%c NEW DATA DETECTED - TRIGGERING POPUP", "color: #ff4d4d; font-weight: bold;");
+                    showRedAlertToast(latestAlert.content, currentId);
+                    playSound();
+                    lastAlertIdRef.current = currentId;
+                }
             }
+        } catch (error) {
+            console.error("Watcher Sync Error:", error);
         }
-    } catch (error) {
-        console.error("Check failed", error);
-    }
-};
+    };
 
     const showRedAlertToast = (message, id) => {
         toast(
@@ -51,7 +52,7 @@ const checkForNewAlerts = async () => {
                 </div>
             </div>,
             {
-                // Forces it to pop up even if a similar toast exists
+                // Unique toastId ensures the alert pops up immediately
                 toastId: `alert-${id}-${Date.now()}`, 
                 position: "bottom-right",
                 autoClose: 5000,
@@ -62,12 +63,17 @@ const checkForNewAlerts = async () => {
 
     const playSound = () => {
         const audio = new Audio('/alert.mp3'); 
-        audio.play().catch(() => {});
+        audio.play().catch((err) => console.warn("Audio blocked:", err));
     };
 
     useEffect(() => {
+        // Run once on load
         checkForNewAlerts();
+
+        // Setup the 5-second loop
         const interval = setInterval(checkForNewAlerts, 5000);
+
+        // Cleanup the loop if the component unmounts
         return () => clearInterval(interval);
     }, []);
 
