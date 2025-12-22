@@ -6,7 +6,6 @@ import {
   FaCubes,
   FaExchangeAlt,
   FaBoxes,
-  FaProjectDiagram,
   FaSitemap,
   FaUsers,
 } from 'react-icons/fa';
