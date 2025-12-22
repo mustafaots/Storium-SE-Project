@@ -1,31 +1,85 @@
-/* CHANGE 3: Force the container to be tiny and floating */
+/* --- 1. GLOBAL OVERRIDES --- */
 :global(.Toastify__toast-container) {
     width: auto !important;
-    height: auto !important;
     padding: 0 !important;
-    pointer-events: none; /* Let clicks pass through empty space */
+    pointer-events: none;
+    z-index: 999999 !important;
 }
 
+/* Ensure Routine toasts look normal/dark to match your theme */
 :global(.Toastify__toast) {
-    pointer-events: auto; /* Re-enable clicks for the actual box */
-    background: transparent !important;
-    box-shadow: none !important;
-}
-
-/* Your existing styles below... */
-.toastContainerRed {
-    background: white !important;
-    color: #333 !important;
-    border-radius: 4px !important;
+    pointer-events: auto;
+    background: #1a1a1a !important; /* Matches your dashboard dark gray */
+    color: #ffffff !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
     padding: 0 !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    min-width: 320px;
-    overflow: hidden;
+    margin-bottom: 12px !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
 }
 
-.toastHeader {
-    background: #ffffff;
-    padding: 6px 12px;
-    border-bottom: 1px solid #f0f0f0;
+/* --- 2. DANGER ALERT DESIGN (System Alerts) --- */
+
+.toastContainerRed {
+    background: #121212 !important; /* Deeper dark for "Danger" */
+    border: 1px solid #331111 !important; /* Suble dark red border */
 }
-/* ... rest of your CSS remains the same */
+
+.customToast {
+    width: 300px; /* Slightly smaller width */
+    background-color: transparent;
+    border-left: 4px solid #ff4d4d; /* High-intensity danger red */
+}
+
+/* Dark, sleek Header */
+.toastHeader {
+    background-color: #1e1e1e; 
+    padding: 8px 12px;
+    border-bottom: 1px solid #2d2d2d;
+    display: flex;
+    align-items: center;
+}
+
+.brandName {
+    font-size: 10px; /* Smaller, sharper font */
+    font-weight: 800;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.brandSuffix {
+    color: #ffbc00; /* Yellow accent matching your "ROUTINES" logo */
+    margin-left: 2px;
+}
+
+/* Body with padding and danger styling */
+.toastBody {
+    padding: 16px; /* Increased padding for better breathability */
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(90deg, #1a1a1a 0%, #121212 100%);
+}
+
+.errorCircle {
+    width: 28px;
+    height: 28px;
+    background-color: rgba(255, 77, 77, 0.15); /* Soft red glow */
+    color: #ff4d4d; /* Bright red icon */
+    border: 1px solid rgba(255, 77, 77, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.toastMessage {
+    font-size: 12px; /* Smaller font as requested */
+    color: #e0e0e0;
+    line-height: 1.5;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif; /* Cleaner modern font */
+}

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { toast } from 'react-toastify'; // REMOVED ToastContainer import
+import { toast } from 'react-toastify';
 import { FaExclamationCircle } from 'react-icons/fa';
 import 'react-toastify/dist/ReactToastify.css';
 import styles from './NotificationWatcher.module.css';
@@ -7,29 +7,35 @@ import styles from './NotificationWatcher.module.css';
 const ALERTS_URL = "http://localhost:3001/api/alerts";
 
 const NotificationWatcher = () => {
-    const prevCountRef = useRef(0);
+    const lastAlertIdRef = useRef(null);
 
-    const checkForNewAlerts = async () => {
-        try {
-            const res = await fetch(ALERTS_URL);
-            const data = await res.json();
-            
-            const unreadAlerts = data.filter(a => a.is_read === 0);
-            const currentUnreadCount = unreadAlerts.length;
+const checkForNewAlerts = async () => {
+    try {
+        const res = await fetch(ALERTS_URL);
+        const data = await res.json();
+        
+        // 1. Get all unread records
+        const unreadAlerts = data.filter(a => a.is_read === 0);
 
-            // If we have more unread now than before, show the NEWEST one
-            if (currentUnreadCount > prevCountRef.current) {
-                const latestAlert = unreadAlerts[0]; 
-                if (latestAlert) {
-                    showRedAlertToast(latestAlert.content, latestAlert.id);
-                    playSound();
-                }
+        if (unreadAlerts.length > 0) {
+            // Get the very newest one
+            const latest = unreadAlerts[0]; 
+            const currentId = latest.alert_id;
+
+            // 2. The ONLY check: Is this ID different from the last one we popped up?
+            if (currentId !== lastAlertIdRef.current) {
+                
+                showRedAlertToast(latest.content, currentId);
+                playSound();
+
+                // 3. Save this ID so we don't repeat it in 5 seconds
+                lastAlertIdRef.current = currentId;
             }
-            prevCountRef.current = currentUnreadCount;
-        } catch (error) {
-            console.error("Notification check failed", error);
         }
-    };
+    } catch (error) {
+        console.error("Check failed", error);
+    }
+};
 
     const showRedAlertToast = (message, id) => {
         toast(
@@ -45,13 +51,10 @@ const NotificationWatcher = () => {
                 </div>
             </div>,
             {
-                // CHANGE 1: Unique toastId ensures the alert ALWAYS pops up
-                toastId: `${id}-${Date.now()}`, 
-                position: "bottom-right", // Matching your request for the bottom
+                // Forces it to pop up even if a similar toast exists
+                toastId: `alert-${id}-${Date.now()}`, 
+                position: "bottom-right",
                 autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
                 className: styles.toastContainerRed
             }
         );
@@ -68,8 +71,6 @@ const NotificationWatcher = () => {
         return () => clearInterval(interval);
     }, []);
 
-    // CHANGE 2: Return null. This component is a "watcher," 
-    // it uses the Container sitting in App.js.
     return null;
 };
 
