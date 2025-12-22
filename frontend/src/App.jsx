@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// 🔔 GLOBAL NOTIFICATION WATCHER (The Component we just made)
+// 🔔 GLOBAL NOTIFICATION WATCHER
+// This stays here so it runs the timer even when you switch pages
 import NotificationWatcher from './components/notificationWatcher/NotificationWatcher';
 
 // Pages
@@ -22,17 +23,24 @@ function App() {
   return (
     <Router>
       
-      {/* 
-          1. NOTIFICATION WATCHER 
-          Checks backend every 5 seconds. Floating Icon + Sound.
+      {/* 1. NOTIFICATION WATCHER 
+          Placing this here ensures it watches for new alerts 
+          regardless of which page you are currently viewing.
       */}
       <NotificationWatcher />
 
-      {/* 
-          2. TOAST CONTAINER 
-          Required to display the popup messages globally.
+      {/* 2. TOAST CONTAINER 
+          Positioned at bottom-right. 
+          The CSS we added to NotificationWatcher.module.css will ensure 
+          this doesn't take up any extra space on the page.
       */}
-      <ToastContainer position="top-right" autoClose={5000} theme="dark" />
+      <ToastContainer 
+        position="bottom-right" 
+        autoClose={5000} 
+        theme="dark" 
+        newestOnTop={false}
+        limit={5}
+      />
 
       {/* 3. PAGE ROUTES */}
       <Routes>

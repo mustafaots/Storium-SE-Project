@@ -1,55 +1,31 @@
-/* The Floating Red Icon */
-.notificationIcon {
-    position: fixed; /* Floats on top of everything */
-    bottom: 30px;
-    right: 30px;
-    background-color: #e74c3c; /* Red */
-    color: white;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    cursor: pointer;
-    z-index: 1000;
-    
-    /* Animation */
-    animation: fadeIn 0.5s ease;
+/* CHANGE 3: Force the container to be tiny and floating */
+:global(.Toastify__toast-container) {
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    pointer-events: none; /* Let clicks pass through empty space */
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.5); }
-    to { opacity: 1; transform: scale(1); }
+:global(.Toastify__toast) {
+    pointer-events: auto; /* Re-enable clicks for the actual box */
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
-/* Optional: Pulse animation for attention */
-.notificationIcon:hover {
-    animation: pulse 1.5s infinite;
+/* Your existing styles below... */
+.toastContainerRed {
+    background: white !important;
+    color: #333 !important;
+    border-radius: 4px !important;
+    padding: 0 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    min-width: 320px;
+    overflow: hidden;
 }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+.toastHeader {
+    background: #ffffff;
+    padding: 6px 12px;
+    border-bottom: 1px solid #f0f0f0;
 }
-
-/* Close button inside the icon */
-.closeButton {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #fff;
-    color: #e74c3c;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    border: none;
-    font-size: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+/* ... rest of your CSS remains the same */
