@@ -6,6 +6,8 @@ import styles from './NotificationWatcher.module.css';
 
 const ALERTS_URL = "http://localhost:3001/api/alerts";
 
+import alertSound from '../../assets/audio/alert.mp3';
+
 const NotificationWatcher = () => {
     const lastAlertIdRef = useRef(null);
 
@@ -61,11 +63,10 @@ const NotificationWatcher = () => {
         );
     };
 
-    const playSound = () => {
-        const audio = new Audio('/alert.mp3'); 
-        audio.play().catch((err) => console.warn("Audio blocked:", err));
-    };
-
+const playSound = () => {
+    const audio = new Audio(alertSound);
+    audio.play().catch((err) => console.warn("Audio blocked:", err));
+};
     useEffect(() => {
         // Run once on load
         checkForNewAlerts();
