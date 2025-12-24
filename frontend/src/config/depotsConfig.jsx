@@ -1,11 +1,12 @@
 import { depotsHelpers } from '../utils/depotsHelpers';
-import { FaEdit, FaTrashAlt, FaStream } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 
 export const depotsConfig = {
   columns: (styles, handlers) => [
     {
       key: 'name',
       header: 'Name',
+      width: '1fr',
       render: (depot) => <span className={styles.nameCell}>{depot.name}</span>
     },
     {
@@ -20,20 +21,9 @@ export const depotsConfig = {
     {
       key: 'actions',
       header: 'Actions',
+      width: '120px',
       render: (depot) => (
         <div className={styles.actions}>
-          {handlers.onViewAisles && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handlers.onViewAisles(depot);
-              }}
-              className={styles.viewButton}
-              title="View Aisles"
-            >
-              <FaStream />
-            </button>
-          )}
           <button
             onClick={(e) => {
               e.stopPropagation();

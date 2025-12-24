@@ -6,6 +6,7 @@ export const racksConfig = {
     {
       key: 'rack_code',
       header: 'Code',
+      width: '1fr',
       render: (rack) => <span className={styles.nameCell}>{rack.rack_code}</span>
     },
     {
@@ -20,6 +21,7 @@ export const racksConfig = {
     {
       key: 'actions',
       header: 'Actions',
+      width: '120px',
       render: (rack) => (
         <div className={styles.actions}>
           <button
@@ -28,6 +30,7 @@ export const racksConfig = {
               handlers.onEdit(rack);
             }}
             className={styles.editButton}
+            title="Edit Rack"
           >
             <FaEdit />
           </button>
@@ -37,6 +40,7 @@ export const racksConfig = {
               handlers.onDelete(rack.rack_id);
             }}
             className={styles.deleteButton}
+            title="Delete Rack"
           >
             <FaTrashAlt />
           </button>

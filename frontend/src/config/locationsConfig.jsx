@@ -1,5 +1,5 @@
 import { locationsHelpers } from '../utils/locationsHelpers';
-import { FaEdit, FaTrashAlt, FaWarehouse } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 
 export const locationsConfig = {
   columns: (styles, handlers) => [
@@ -35,18 +35,10 @@ export const locationsConfig = {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handlers.onViewDepots(location);
-            }}
-            className={styles.depotButton}
-          >
-            <FaWarehouse />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
               handlers.onEdit(location);
             }}
             className={styles.editButton}
+            title="Edit Location"
           >
             <FaEdit />
           </button>
@@ -56,6 +48,7 @@ export const locationsConfig = {
               handlers.onDelete(location.location_id);
             }}
             className={styles.deleteButton}
+            title="Delete Location"
           >
             <FaTrashAlt />
           </button>

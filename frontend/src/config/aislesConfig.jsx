@@ -1,11 +1,12 @@
 import { aislesHelpers } from '../utils/aislesHelpers';
-import { FaEdit, FaTrashAlt, FaBoxes } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 
 export const aislesConfig = {
   columns: (styles, handlers) => [
     {
       key: 'name',
       header: 'Name',
+      width: '1fr',
       render: (aisle) => <span className={styles.nameCell}>{aisle.name}</span>
     },
     {
@@ -20,25 +21,16 @@ export const aislesConfig = {
     {
       key: 'actions',
       header: 'Actions',
+      width: '120px',
       render: (aisle) => (
         <div className={styles.actions}>
-          {handlers.onViewRacks && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handlers.onViewRacks(aisle);
-              }}
-              className={styles.viewButton}
-            >
-              <FaBoxes />
-            </button>
-          )}
           <button
             onClick={(e) => {
               e.stopPropagation();
               handlers.onEdit(aisle);
             }}
             className={styles.editButton}
+            title="Edit Aisle"
           >
             <FaEdit />
           </button>
@@ -48,6 +40,7 @@ export const aislesConfig = {
               handlers.onDelete(aisle.aisle_id);
             }}
             className={styles.deleteButton}
+            title="Delete Aisle"
           >
             <FaTrashAlt />
           </button>
