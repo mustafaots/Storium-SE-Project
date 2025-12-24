@@ -41,6 +41,10 @@ const productsService = {
         p.unit,
         p.min_stock_level, 
         p.max_stock_level,
+        p.rate,
+        p.rate_unit,
+        p.image_mime_type,
+        TO_BASE64(p.image_data) AS image_data,
         COALESCE(st.total_stock, 0) AS total_stock,
         ps.source_id,
         src.source_name AS supplier,
@@ -107,6 +111,10 @@ const productsService = {
           p.unit,
           p.min_stock_level, 
           p.max_stock_level,
+          p.rate,
+          p.rate_unit,
+          p.image_mime_type,
+          TO_BASE64(p.image_data) AS image_data,
           COALESCE(st.total_stock, 0) AS total_stock,
           ps.source_id,
           src.source_name AS supplier,
@@ -137,13 +145,18 @@ const productsService = {
   // Create new product and return the inserted product row (including created_at and joined supplier/total_stock)
   create: (data) => {
     return new Promise((resolve, reject) => {
-      const { name, category, description, unit, min_stock_level, max_stock_level, source_id } = data;
+      const { name, category, description, unit, min_stock_level, max_stock_level, source_id, rate, rate_unit, image_data, image_mime_type } = data;
+
+      const validRate = rate != null && rate !== '' && !Number.isNaN(Number(rate)) && Number(rate) >= 0
+        ? Number(rate)
+        : null;
+      const validRateUnit = rate_unit != null && String(rate_unit).trim() !== '' ? String(rate_unit).trim() : null;
 
       // 1) Insert product
       connection.query(
-        `INSERT INTO ${TABLE} (name, category, description, unit, min_stock_level, max_stock_level)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [name, category, description, unit, min_stock_level, max_stock_level],
+        `INSERT INTO ${TABLE} (name, category, description, unit, min_stock_level, max_stock_level, rate, rate_unit, image_data, image_mime_type)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, category, description, unit, min_stock_level, max_stock_level, validRate, validRateUnit, image_data || null, image_mime_type || null],
         (err, insertRes) => {
           if (err) {
             console.error('❌ Service create error (insert):', err);
@@ -151,46 +164,6 @@ const productsService = {
           }
 
           const productId = insertRes.insertId;
-
-          // helper to fetch the inserted product row (no grouping) so created_at is accurate
-          const fetchProductRow = (cb) => {
-            connection.query(
-              `SELECT * FROM ${TABLE} WHERE ${PRIMARY_KEY} = ? LIMIT 1`,
-              [productId],
-              (errRow, rows) => {
-                if (errRow) return cb(errRow);
-                if (!rows || rows.length === 0) return cb(new Error('Inserted product not found'));
-                const productRow = rows[0];
-                // now fetch total_stock
-                connection.query(
-                  `SELECT COALESCE(SUM(quantity), 0) AS total_stock FROM stocks WHERE product_id = ?`,
-                  [productId],
-                  (errStock, stockRows) => {
-                    if (errStock) return cb(errStock);
-                    const total_stock = stockRows && stockRows[0] ? (stockRows[0].total_stock || 0) : 0;
-                    // fetch preferred supplier if any
-                    connection.query(
-                      `SELECT ps.source_id, s.source_name FROM product_sources ps JOIN sources s ON s.source_id = ps.source_id WHERE ps.product_id = ? AND ps.is_preferred_supplier = TRUE LIMIT 1`,
-                      [productId],
-                      (errSup, supRows) => {
-                        if (errSup) return cb(errSup);
-                        const supplier = supRows && supRows[0] ? supRows[0].source_name : null;
-                        const source_id_found = supRows && supRows[0] ? supRows[0].source_id : null;
-                        // merge and return
-                        const merged = {
-                          ...productRow,
-                          total_stock,
-                          supplier,
-                          source_id: source_id_found
-                        };
-                        return cb(null, merged);
-                      }
-                    );
-                  }
-                );
-              }
-            );
-          };
 
           // 2) If supplier provided, insert mapping then fetch product row; otherwise just fetch product row
           if (source_id !== null && source_id !== undefined && source_id !== '') {
@@ -202,19 +175,15 @@ const productsService = {
                   console.error('❌ Service - Failed to link supplier:', psErr);
                   return reject(psErr);
                 }
-                // After creating mapping, fetch canonical product row
-                fetchProductRow((fetchErr, productData) => {
-                  if (fetchErr) return reject(fetchErr);
-                  resolve(productData);
-                });
+                productsService.getById(productId)
+                  .then((row) => resolve(row))
+                  .catch((getErr) => reject(getErr));
               }
             );
           } else {
-            // No supplier to link — just fetch the product row
-            fetchProductRow((fetchErr, productData) => {
-              if (fetchErr) return reject(fetchErr);
-              resolve(productData);
-            });
+            productsService.getById(productId)
+              .then((row) => resolve(row))
+              .catch((getErr) => reject(getErr));
           }
         }
       );
@@ -224,11 +193,24 @@ const productsService = {
   // Update existing product
   update: (id, data) => {
     return new Promise((resolve, reject) => {
-      const { name, category, description, unit, min_stock_level, max_stock_level, source_id } = data;
+      const { name, category, description, unit, min_stock_level, max_stock_level, source_id, rate, rate_unit, image_data, image_mime_type } = data;
+
+      const validRate = rate != null && rate !== '' && !Number.isNaN(Number(rate)) && Number(rate) >= 0
+        ? Number(rate)
+        : null;
+      const validRateUnit = rate_unit != null && String(rate_unit).trim() !== '' ? String(rate_unit).trim() : null;
 
       // Build update query
-      const updateQuery = `UPDATE ${TABLE} SET name = ?, category = ?, description = ?, unit = ?, min_stock_level = ?, max_stock_level = ? WHERE ${PRIMARY_KEY} = ?`;
-      const updateParams = [name, category, description, unit, min_stock_level, max_stock_level, id];
+      let updateQuery;
+      let updateParams;
+
+      if (image_data !== undefined) {
+        updateQuery = `UPDATE ${TABLE} SET name = ?, category = ?, description = ?, unit = ?, min_stock_level = ?, max_stock_level = ?, rate = ?, rate_unit = ?, image_data = ?, image_mime_type = ? WHERE ${PRIMARY_KEY} = ?`;
+        updateParams = [name, category, description, unit, min_stock_level, max_stock_level, validRate, validRateUnit, image_data, image_mime_type || null, id];
+      } else {
+        updateQuery = `UPDATE ${TABLE} SET name = ?, category = ?, description = ?, unit = ?, min_stock_level = ?, max_stock_level = ?, rate = ?, rate_unit = ? WHERE ${PRIMARY_KEY} = ?`;
+        updateParams = [name, category, description, unit, min_stock_level, max_stock_level, validRate, validRateUnit, id];
+      }
 
       connection.query(
         updateQuery,
