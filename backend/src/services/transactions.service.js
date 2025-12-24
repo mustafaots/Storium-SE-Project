@@ -123,7 +123,7 @@ export const TransactionsService = {
   async createManualInflow({ stockId, productId, toSlotId, sourceId, quantity, unitPrice, note }) {
     const qty = Number(quantity);
     const price = unitPrice != null ? Number(unitPrice) : 0;
-    const connection = db.promise();
+    const connection = await db.promise().getConnection();
 
     await connection.beginTransaction();
     try {
@@ -183,6 +183,8 @@ export const TransactionsService = {
     } catch (error) {
       await connection.rollback();
       throw error;
+    } finally {
+      connection.release();
     }
   },
 
@@ -190,7 +192,7 @@ export const TransactionsService = {
   async createManualOutflow({ stockId, productId, fromSlotId, clientId, quantity, unitPrice, note }) {
     const qty = Number(quantity);
     const price = unitPrice != null ? Number(unitPrice) : 0;
-    const connection = db.promise();
+    const connection = await db.promise().getConnection();
 
     await connection.beginTransaction();
     try {
@@ -251,13 +253,15 @@ export const TransactionsService = {
     } catch (error) {
       await connection.rollback();
       throw error;
+    } finally {
+      connection.release();
     }
   },
 
   // Create: transfer transaction
   async createTransfer({ productId, fromStockId, toStockId, fromSlotId, toSlotId, quantity, note }) {
     const qty = Number(quantity);
-    const connection = db.promise();
+    const connection = await db.promise().getConnection();
 
     await connection.beginTransaction();
     try {
@@ -335,6 +339,8 @@ export const TransactionsService = {
     } catch (error) {
       await connection.rollback();
       throw error;
+    } finally {
+      connection.release();
     }
   },
 
@@ -342,7 +348,7 @@ export const TransactionsService = {
   async createAdjustment({ stockId, productId, slotId, quantityDelta, unitPrice, note, isAutomated, routineId }) {
     const delta = Number(quantityDelta);
     const price = unitPrice != null ? Number(unitPrice) : 0;
-    const connection = db.promise();
+    const connection = await db.promise().getConnection();
 
     await connection.beginTransaction();
     try {
@@ -401,13 +407,15 @@ export const TransactionsService = {
     } catch (error) {
       await connection.rollback();
       throw error;
+    } finally {
+      connection.release();
     }
   },
 
   // Create: relocation transaction (moving stock from one slot to another)
   async createRelocation({ stockId, productId, fromSlotId, toSlotId, quantity, note, txnType, dbConn }) {
     const qty = Number(quantity);
-    const connection = dbConn || db.promise();
+    const connection = dbConn || await db.promise().getConnection();
     const manageTransaction = !dbConn;
 
     if (manageTransaction) await connection.beginTransaction();
@@ -492,13 +500,15 @@ export const TransactionsService = {
     } catch (error) {
       if (manageTransaction) await connection.rollback();
       throw error;
+    } finally {
+      if (manageTransaction) connection.release();
     }
   },
 
   // Create: consumption transaction (consuming stock internally)
   async createConsumption({ stockId, productId, slotId, quantity, note }) {
     const qty = Number(quantity);
-    const connection = db.promise();
+    const connection = await db.promise().getConnection();
 
     await connection.beginTransaction();
     try {
@@ -563,6 +573,8 @@ export const TransactionsService = {
     } catch (error) {
       await connection.rollback();
       throw error;
+    } finally {
+      connection.release();
     }
   },
 
@@ -570,7 +582,7 @@ export const TransactionsService = {
   async createStockInflow({ stockId, productId, slotId, quantity, unitPrice, note }) {
     const qty = Number(quantity);
     const price = unitPrice != null ? Number(unitPrice) : 0;
-    const connection = db.promise();
+    const connection = await db.promise().getConnection();
 
     await connection.beginTransaction();
     try {
@@ -612,6 +624,8 @@ export const TransactionsService = {
     } catch (error) {
       await connection.rollback();
       throw error;
+    } finally {
+      connection.release();
     }
   },
 
@@ -619,7 +633,7 @@ export const TransactionsService = {
   async createAutomatedInflow({ stockId, productId, toSlotId, sourceId, routineId, quantity, unitPrice, note }) {
     const qty = Number(quantity);
     const price = unitPrice != null ? Number(unitPrice) : 0;
-    const connection = db.promise();
+    const connection = await db.promise().getConnection();
 
     await connection.beginTransaction();
     try {
@@ -680,6 +694,8 @@ export const TransactionsService = {
     } catch (error) {
       await connection.rollback();
       throw error;
+    } finally {
+      connection.release();
     }
   },
 
@@ -687,7 +703,7 @@ export const TransactionsService = {
   async createAutomatedOutflow({ stockId, productId, fromSlotId, clientId, routineId, quantity, unitPrice, note }) {
     const qty = Number(quantity);
     const price = unitPrice != null ? Number(unitPrice) : 0;
-    const connection = db.promise();
+    const connection = await db.promise().getConnection();
 
     await connection.beginTransaction();
     try {
@@ -749,6 +765,8 @@ export const TransactionsService = {
     } catch (error) {
       await connection.rollback();
       throw error;
+    } finally {
+      connection.release();
     }
   }
 };
