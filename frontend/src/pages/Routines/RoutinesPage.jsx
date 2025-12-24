@@ -194,11 +194,23 @@ function RoutinesPage() {
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label>ROUTINE NAME</label>
-                                    <input type="text" placeholder="e.g. Low Stock Alert" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                                    <input 
+                                        id="routine-name"
+                                        name="routine-name"
+                                        type="text" 
+                                        placeholder="e.g. Low Stock Alert" 
+                                        value={formData.name} 
+                                        onChange={e => setFormData({...formData, name: e.target.value})} 
+                                    />
                                 </div>
                                 <div className={styles.formGroup}>
-                                    <label>FREQUENCY</label>
-                                    <select value={formData.frequency} onChange={e => setFormData({...formData, frequency: e.target.value})}>
+                                    <label htmlFor="routine-frequency">FREQUENCY</label>
+                                    <select 
+                                        id="routine-frequency"
+                                        name="routine-frequency"
+                                        value={formData.frequency} 
+                                        onChange={e => setFormData({...formData, frequency: e.target.value})}
+                                    >
                                         <option value="Daily">Daily</option>
                                         <option value="Weekly">Weekly</option>
                                         <option value="On Event">On Event</option>
@@ -210,7 +222,7 @@ function RoutinesPage() {
                                     <div className={`${styles.logicHeader} ${styles.blueHeader}`}>THE PROMISE (TRIGGER)</div>
                                     <div className={styles.logicContent}>
                                         <div className={styles.formGroup}>
-                                            <label>TIME / SCHEDULE / CONDITION</label>
+                                            <label htmlFor="trigger-schedule">TIME / SCHEDULE / CONDITION</label>
                                             <div className={styles.inputIconWrapper}>
                                                 <input type="text" placeholder="--:-- --" value={formData.trigger} onChange={e => setFormData({...formData, trigger: e.target.value})} />
                                                 <FaRegClock className={styles.inputIcon}/>

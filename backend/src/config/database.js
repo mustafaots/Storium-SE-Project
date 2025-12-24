@@ -3,20 +3,32 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Fix environment variable names to match .env
-const connection = mysql.createConnection({
+// Create a standard callback-based pool
+const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-connection.connect((err) => {
+// Create a promise-based wrapper
+const promisePool = pool.promise();
+
+// Ping the database to verify connection on startup
+pool.getConnection((err, connection) => {
   if (err) {
-    console.error('Error connecting to MySQL:', err);
-    return;
+    console.error('❌ Database connection failed:', err.message);
+  } else {
+    console.log('✅ Connected to MySQL database');
+    connection.release();
   }
-  console.log('Connected to MySQL database');
 });
 
-export default connection;
+// Export the promise pool for the visualization feature
+export const db = promisePool;
+
+// Export the callback-based pool as default for legacy services
+export default pool;

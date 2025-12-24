@@ -1,5 +1,5 @@
 // frontend/src/controllers/sourcesController.js
-import { sourcesAPI } from "../utils/sourcesAPI.js";
+import { sourcesAPI } from "../utils/SourcesAPI.js";
 import sourcesHelpers from "../utils/sourcesHelpers.js";
 
 export const sourcesController = {

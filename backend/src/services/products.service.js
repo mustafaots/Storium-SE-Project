@@ -38,13 +38,9 @@ const productsService = {
         p.name, 
         p.category, 
         p.description, 
-        TO_BASE64(p.image_data) AS image_data,
-        p.image_mime_type,
         p.unit,
         p.min_stock_level, 
         p.max_stock_level,
-        p.rate,
-        p.rate_unit,
         COALESCE(st.total_stock, 0) AS total_stock,
         ps.source_id,
         src.source_name AS supplier,
@@ -108,13 +104,9 @@ const productsService = {
           p.name, 
           p.category, 
           p.description, 
-          TO_BASE64(p.image_data) AS image_data,
-          p.image_mime_type,
           p.unit,
           p.min_stock_level, 
           p.max_stock_level,
-          p.rate,
-          p.rate_unit,
           COALESCE(st.total_stock, 0) AS total_stock,
           ps.source_id,
           src.source_name AS supplier,
@@ -145,16 +137,13 @@ const productsService = {
   // Create new product and return the inserted product row (including created_at and joined supplier/total_stock)
   create: (data) => {
     return new Promise((resolve, reject) => {
-      const { name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, rate, rate_unit, source_id } = data;
-
-      // Validate rate if provided
-      const validRate = rate != null && rate !== '' && !isNaN(rate) && rate >= 0 ? rate : null;
+      const { name, category, description, unit, min_stock_level, max_stock_level, source_id } = data;
 
       // 1) Insert product
       connection.query(
-        `INSERT INTO ${TABLE} (name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, rate, rate_unit)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [name, category, description, image_data || null, image_mime_type || null, unit, min_stock_level, max_stock_level, validRate, rate_unit || null],
+        `INSERT INTO ${TABLE} (name, category, description, unit, min_stock_level, max_stock_level)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [name, category, description, unit, min_stock_level, max_stock_level],
         (err, insertRes) => {
           if (err) {
             console.error('❌ Service create error (insert):', err);
@@ -235,22 +224,11 @@ const productsService = {
   // Update existing product
   update: (id, data) => {
     return new Promise((resolve, reject) => {
-      const { name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, rate, rate_unit, source_id } = data;
+      const { name, category, description, unit, min_stock_level, max_stock_level, source_id } = data;
 
-      // Validate rate if provided
-      const validRate = rate != null && rate !== '' && !isNaN(rate) && rate >= 0 ? rate : null;
-
-      // Build update query - only update image if provided
-      let updateQuery;
-      let updateParams;
-      
-      if (image_data !== undefined) {
-        updateQuery = `UPDATE ${TABLE} SET name = ?, category = ?, description = ?, image_data = ?, image_mime_type = ?, unit = ?, min_stock_level = ?, max_stock_level = ?, rate = ?, rate_unit = ? WHERE ${PRIMARY_KEY} = ?`;
-        updateParams = [name, category, description, image_data, image_mime_type, unit, min_stock_level, max_stock_level, validRate, rate_unit || null, id];
-      } else {
-        updateQuery = `UPDATE ${TABLE} SET name = ?, category = ?, description = ?, unit = ?, min_stock_level = ?, max_stock_level = ?, rate = ?, rate_unit = ? WHERE ${PRIMARY_KEY} = ?`;
-        updateParams = [name, category, description, unit, min_stock_level, max_stock_level, validRate, rate_unit || null, id];
-      }
+      // Build update query
+      const updateQuery = `UPDATE ${TABLE} SET name = ?, category = ?, description = ?, unit = ?, min_stock_level = ?, max_stock_level = ? WHERE ${PRIMARY_KEY} = ?`;
+      const updateParams = [name, category, description, unit, min_stock_level, max_stock_level, id];
 
       connection.query(
         updateQuery,

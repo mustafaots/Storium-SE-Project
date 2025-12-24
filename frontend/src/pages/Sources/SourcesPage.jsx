@@ -14,7 +14,7 @@ import { useSources } from '../../hooks/useSources';
 import { sourcesHandlers } from '../../handlers/sourcesHandlers';
 import { sourcesConfig } from '../../config/sourcesConfig';
 import useTableSearch from '../../hooks/useTableSearch';
-import { sourcesAPI } from '../../utils/sourcesAPI';
+import { sourcesAPI } from '../../utils/SourcesAPI';
 import { sourcesHelpers } from '../../utils/sourcesHelpers';
 import styles from './SourcesPage.module.css';
 

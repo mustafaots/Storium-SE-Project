@@ -1,0 +1,37 @@
+/* DepotStockChart Styles */
+/* Path: frontend/src/components/Visualise/DepotStockChart/DepotStockChart.module.css */
+
+.container {
+    background: var(--discord-gray);
+    border-radius: 8px;
+    /* Consistent radius */
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--discord-gray-light);
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--industrial-gold);
+    margin: 0 0 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.chartWrapper {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: var(--text-gray);
+}

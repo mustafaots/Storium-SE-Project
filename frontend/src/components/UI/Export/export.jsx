@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaFileCsv, FaFilePdf } from 'react-icons/fa';
-import styles from './Export.module.css';
+import styles from './export.module.css';
 
 const ExportModal = ({ isOpen, onClose, onExportCSV, onExportPDF }) => {
     if (!isOpen) return null;

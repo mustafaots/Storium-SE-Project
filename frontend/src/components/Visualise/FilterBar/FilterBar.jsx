@@ -1,104 +1,163 @@
-import { useState } from 'react';
+// FilterBar Component
+// Path: frontend/src/components/Visualise/FilterBar/FilterBar.jsx
+
+import { Calendar, Layers, Package, MapPin, Filter, Play, ArrowRightLeft } from 'lucide-react';
 import styles from './FilterBar.module.css';
-import { FaChevronDown, FaCalendarAlt } from 'react-icons/fa';
-import Button from '../../UI/Button/Button';
 
-function FilterBar() {
-  const [filters, setFilters] = useState({
-    stockLevel: 'Stock Levels',
-    timeframe: 'Last 30 Days',
-    product: 'All Products',
-    location: 'All Locations',
-    stockType: 'All Stock Types'
-  });
+const viewTypeOptions = [
+  { value: 'stock_levels', label: 'Stock Levels' },
+  { value: 'movements', label: 'Movements' },
+  { value: 'occupancy', label: 'Occupancy' },
+];
 
-  const handleFilterChange = (filterKey, value) => {
-    setFilters(prev => ({ ...prev, [filterKey]: value }));
-  };
+const dateRangeOptions = [
+  { value: 7, label: 'Last 7 Days' },
+  { value: 30, label: 'Last 30 Days' },
+  { value: 90, label: 'Last 90 Days' },
+];
 
-  const handleApplyFilters = () => {
-    console.log('Filters applied:', filters);
+const stockTypeOptions = [
+  { value: 'all', label: 'All Types' },
+  { value: 'raw', label: 'Raw Materials' },
+  { value: 'wip', label: 'Work in Progress' },
+  { value: 'to_ship', label: 'Ready to Ship' },
+];
+
+const transactionTypeOptions = [
+  { value: 'all', label: 'All Transactions' },
+  { value: 'inflow', label: 'Inflow' },
+  { value: 'outflow', label: 'Outflow' },
+  { value: 'transfer', label: 'Transfer' },
+  { value: 'consumption', label: 'Consumption' },
+  { value: 'adjustment', label: 'Adjustment' },
+];
+
+/**
+ * FilterBar Component
+ * Provides filtering controls for visualization data
+ */
+const FilterBar = ({
+  filters = {},
+  onFilterChange,
+  onApply,
+  products = [],
+  locations = []
+}) => {
+  const handleChange = (key, value) => {
+    if (onFilterChange) {
+      onFilterChange({ [key]: value });
+    }
   };
 
   return (
     <div className={styles.filterBar}>
+      {/* View Type */}
       <div className={styles.filterGroup}>
-        <div className={styles.filterItem}>
-          <select
-            className={styles.filterSelect}
-            value={filters.stockLevel}
-            onChange={(e) => handleFilterChange('stockLevel', e.target.value)}
-          >
-            <option>Stock Levels</option>
-            <option>Movements</option>
-            <option>Stock Value</option>
-          </select>
-          <FaChevronDown className={styles.chevron} />
-        </div>
-
-        <div className={styles.filterItem}>
-          <FaCalendarAlt className={styles.icon} />
-          <select
-            className={styles.filterButton}
-            value={filters.timeframe}
-            onChange={(e) => handleFilterChange('timeframe', e.target.value)}
-          >
-            <option>Last 30 Days</option>
-            <option>Last 7 Days</option>
-            <option>Last 90 Days</option>
-            <option>Last Year</option>
-          </select>
-          <FaChevronDown className={styles.chevron} />
-        </div>
-
-        <div className={styles.filterItem}>
-          <select
-            className={styles.filterButton}
-            value={filters.product}
-            onChange={(e) => handleFilterChange('product', e.target.value)}
-          >
-            <option>All Products</option>
-            <option>Product A</option>
-            <option>Product B</option>
-          </select>
-          <FaChevronDown className={styles.chevron} />
-        </div>
-
-        <div className={styles.filterItem}>
-          <select
-            className={styles.filterButton}
-            value={filters.location}
-            onChange={(e) => handleFilterChange('location', e.target.value)}
-          >
-            <option>All Locations</option>
-            <option>Location A</option>
-            <option>Location B</option>
-          </select>
-          <FaChevronDown className={styles.chevron} />
-        </div>
-
-        <div className={styles.filterItem}>
-          <select
-            className={styles.filterButton}
-            value={filters.stockType}
-            onChange={(e) => handleFilterChange('stockType', e.target.value)}
-          >
-            <option>All Stock Types</option>
-            <option>Type A</option>
-            <option>Type B</option>
-          </select>
-          <FaChevronDown className={styles.chevron} />
-        </div>
+        <Layers className={styles.selectIcon} />
+        <select
+          className={styles.select}
+          value={filters.viewType || 'stock_levels'}
+          onChange={(e) => handleChange('viewType', e.target.value)}
+        >
+          {viewTypeOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <Button 
-        variant="primary" 
-        onClick={handleApplyFilters}
-      >
+      {/* Date Range */}
+      <div className={styles.filterGroup}>
+        <Calendar className={styles.selectIcon} />
+        <select
+          className={styles.select}
+          value={filters.dateRange || 30}
+          onChange={(e) => handleChange('dateRange', parseInt(e.target.value))}
+        >
+          {dateRangeOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Products */}
+      <div className={styles.filterGroup}>
+        <Package className={styles.selectIcon} />
+        <select
+          className={styles.select}
+          value={filters.productId || ''}
+          onChange={(e) => handleChange('productId', e.target.value ? parseInt(e.target.value) : null)}
+        >
+          <option value="">All Products</option>
+          {products.map(product => (
+            <option key={product.product_id} value={product.product_id}>
+              {product.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Locations */}
+      <div className={styles.filterGroup}>
+        <MapPin className={styles.selectIcon} />
+        <select
+          className={styles.select}
+          value={filters.locationId || ''}
+          onChange={(e) => handleChange('locationId', e.target.value ? parseInt(e.target.value) : null)}
+        >
+          <option value="">All Locations</option>
+          {locations.map(location => (
+            <option key={location.location_id} value={location.location_id}>
+              {location.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Stock Types */}
+      <div className={styles.filterGroup}>
+        <Filter className={styles.selectIcon} />
+        <select
+          className={styles.select}
+          value={filters.stockType || 'all'}
+          onChange={(e) => handleChange('stockType', e.target.value)}
+        >
+          {stockTypeOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Transaction Type - Only for Movements view */}
+      {filters.viewType === 'movements' && (
+        <div className={styles.filterGroup}>
+          <ArrowRightLeft className={styles.selectIcon} />
+          <select
+            className={styles.select}
+            value={filters.txnType || 'all'}
+            onChange={(e) => handleChange('txnType', e.target.value)}
+          >
+            {transactionTypeOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Apply Button */}
+      <button className={styles.applyButton} onClick={onApply}>
+        <Play className={styles.applyIcon} />
         Apply Filters
-      </Button>
+      </button>
     </div>
   );
-}
+};
 
 export default FilterBar;
