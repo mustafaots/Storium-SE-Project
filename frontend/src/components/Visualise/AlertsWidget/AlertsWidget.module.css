@@ -1,0 +1,134 @@
+.container {
+    background: var(--card-bg, #ffffff);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary, #1f2937);
+    margin: 0;
+}
+
+.badge {
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+}
+
+.feed {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-right: 0.25rem;
+}
+
+.alertItem {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.alertItem:hover {
+    background: #f3f4f6;
+}
+
+.alertItem.critical {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+}
+
+.alertItem.warning {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.iconWrapper {
+    display: flex;
+    align-items: flex-start;
+    padding-top: 0.125rem;
+}
+
+.iconCritical {
+    color: #dc2626;
+}
+
+.iconWarning {
+    color: #f59e0b;
+}
+
+.iconInfo {
+    color: #3b82f6;
+}
+
+.content {
+    flex: 1;
+    min-width: 0;
+}
+
+.message {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.875rem;
+    color: var(--text-primary, #1f2937);
+    line-height: 1.4;
+}
+
+.meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.type {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--text-muted, #9ca3af);
+    letter-spacing: 0.025em;
+}
+
+.time {
+    font-size: 0.75rem;
+    color: var(--text-muted, #9ca3af);
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    background: #dc2626;
+    border-radius: 50%;
+    margin-top: 0.5rem;
+}
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted, #9ca3af);
+    gap: 0.75rem;
+    opacity: 0.6;
+}

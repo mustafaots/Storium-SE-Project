@@ -1,0 +1,138 @@
+.container {
+    background: var(--discord-gray);
+    border-radius: 8px;
+    /* Consistent radius */
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--discord-gray-light);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 400px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--industrial-gold);
+    /* Gold title */
+    margin: 0;
+}
+
+.tabs {
+    display: flex;
+    background: var(--discord-gray-dark);
+    padding: 0.25rem;
+    border-radius: 8px;
+    border: 1px solid var(--discord-gray-light);
+}
+
+.tab {
+    padding: 0.375rem 0.75rem;
+    border: none;
+    background: transparent;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-gray);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    color: var(--text-light);
+}
+
+.tab.active {
+    background: var(--discord-gray);
+    color: var(--industrial-gold);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.listContainer {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Scrollbar styling */
+.listContainer::-webkit-scrollbar {
+    width: 8px;
+}
+
+.listContainer::-webkit-scrollbar-track {
+    background: var(--discord-gray-dark);
+}
+
+.listContainer::-webkit-scrollbar-thumb {
+    background: var(--discord-gray-light);
+    border-radius: 4px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    text-align: left;
+    font-size: 0.75rem;
+    color: var(--text-gray);
+    text-transform: uppercase;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 2px solid var(--discord-gray-light);
+    font-weight: 600;
+}
+
+.table td {
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--discord-gray-light);
+    font-size: 0.875rem;
+    color: var(--text-light);
+}
+
+.productName {
+    font-weight: 500;
+    color: var(--industrial-gold);
+}
+
+.stockVal,
+.minVal {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-light);
+}
+
+.badgeWarning {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(217, 119, 6, 0.2);
+    color: #f59e0b;
+    /* Amber */
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badgeCritical {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(220, 38, 38, 0.2);
+    color: #ef4444;
+    /* Red */
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.empty {
+    text-align: center;
+    color: var(--text-gray);
+    padding: 2rem !important;
+}

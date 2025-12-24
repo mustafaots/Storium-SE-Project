@@ -4,11 +4,27 @@
 import db from '../config/database.js';
 import { TransactionFileStore } from '../utils/transactionFileStore.js';
 
+// Helper to parse stock snapshot JSON safely
+const parseStockSnapshot = (snapshot) => {
+  if (!snapshot) return null;
+  try {
+    return typeof snapshot === 'string' ? JSON.parse(snapshot) : snapshot;
+  } catch (e) {
+    console.error('Failed to parse stock snapshot:', e);
+    return null;
+  }
+};
+
 // Helper to fetch related names for a transaction (for display purposes)
 async function enrichTransactionWithNames(txn) {
   const connection = db.promise();
   
   try {
+    // Parse stock snapshot if exists
+    if (txn.stock_snapshot) {
+      txn.stock_snapshot = parseStockSnapshot(txn.stock_snapshot);
+    }
+
     // Fetch product name if not already set
     if (txn.product_id && !txn.product_name) {
       const [products] = await connection.query(

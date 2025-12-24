@@ -1,0 +1,249 @@
+/* MovementLogTable Styles */
+/* Path: frontend/src/components/Visualise/MovementLogTable/MovementLogTable.module.css */
+
+.container {
+    background: var(--discord-gray);
+    border-radius: 8px;
+    /* Consistent radius */
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    grid-column: 1 / -1;
+    border: 1px solid var(--discord-gray-light);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--industrial-gold);
+    margin: 0 0 0.25rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: var(--text-gray);
+}
+
+.exportButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--industrial-gold);
+    color: var(--discord-gray-dark);
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.exportButton:hover {
+    background: var(--industrial-gold-dark);
+    transform: translateY(-1px);
+}
+
+.tableWrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--discord-gray-light);
+}
+
+/* Scrollbar styling */
+.tableWrapper::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.tableWrapper::-webkit-scrollbar-track {
+    background: var(--discord-gray-dark);
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+    background: var(--discord-gray-light);
+    border-radius: 3px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.table thead {
+    background: var(--discord-gray-dark);
+    border-bottom: 2px solid var(--discord-gray-light);
+}
+
+.table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-gray);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid var(--discord-gray-light);
+    transition: background 0.15s;
+}
+
+.table tbody tr:hover {
+    background: var(--discord-gray-dark);
+}
+
+.table td {
+    padding: 0.75rem 1rem;
+    color: var(--text-light);
+}
+
+.timestamp {
+    font-size: 0.8125rem;
+    color: var(--text-gray);
+    white-space: nowrap;
+}
+
+.productName {
+    font-weight: 500;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--industrial-gold);
+}
+
+.productType {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    background: var(--discord-gray-dark);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-gray);
+    font-weight: 500;
+    border: 1px solid var(--discord-gray-light);
+}
+
+.txnType {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.inflow {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.outflow {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.transfer {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.consumption {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.adjustment {
+    background: rgba(168, 85, 247, 0.2);
+    color: #a855f7;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.quantity {
+    font-weight: 600;
+    text-align: right;
+    color: var(--text-light);
+}
+
+.value {
+    font-weight: 500;
+    text-align: right;
+    color: #10b981;
+}
+
+.source {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-gray);
+}
+
+.reference {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: var(--text-gray);
+}
+
+.emptyState {
+    padding: 3.75rem 1.25rem;
+    text-align: center;
+    color: var(--text-gray);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--discord-gray-light);
+}
+
+.pageButton {
+    padding: 0.5rem 1rem;
+    background: var(--discord-gray-dark);
+    border: 1px solid var(--discord-gray-light);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-light);
+    transition: all 0.2s;
+}
+
+.pageButton:hover:not(:disabled) {
+    background: var(--discord-gray);
+    border-color: var(--industrial-gold);
+    color: var(--industrial-gold);
+}
+
+.pageButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pageInfo {
+    font-size: 0.875rem;
+    color: var(--text-gray);
+    font-weight: 500;
+}

@@ -7,28 +7,7 @@ import dotenv from 'dotenv';
 import requestLogger from './src/middleware/logger.js';
 import notFoundHandler from './src/middleware/notFound.js';
 import errorHandler from './src/middleware/errorHandler.js';
-
-// Import routes
-
-
-dotenv.config();
-
-const app = express();
-
-// ===== MIDDLEWARE =====
-app.use(cors({
-  origin: [/^http:\/\/localhost:\d+$/],
-  credentials: true
-}));
-app.use(express.json());
-app.use(requestLogger);
-
-// ===== ROUTES =====
-app.use('/api/clients', clientsRoutes);
-app.use('/api/locations', locationsRoutes);
-app.use('/api', utilityRoutes);
-
-// ===== ERROR HANDLING =====
+import { db } from './src/config/database.js';
 
 // Import routes
 import clientsRoutes from './src/routes/clients.routes.js';
@@ -37,11 +16,38 @@ import utilityRoutes from './src/routes/utility.routes.js';
 import transactionsRoutes from './src/routes/transactions.routes.js';
 import productsRoutes from './src/routes/products.routes.js';
 import sourcesRoutes from './src/routes/sources.routes.js';
+import visualiseRoutes from './src/routes/visualise.routes.js';
+
+dotenv.config();
+
+const app = express();
+
+// ===== MIDDLEWARE =====
+
+// Database middleware to attach connection to req
+app.use((req, res, next) => {
+  req.db = db;
+  next();
+});
+
+app.use(cors({
+  origin: [/^http:\/\/localhost:\d+$/],
+  credentials: true
+}));
+app.use(express.json());
+app.use(requestLogger);
+
+// ===== ROUTES =====
+
 // API Routes
 app.use('/api/clients', clientsRoutes);
-app.use('/api/products',productsRoutes);
-app.use('/api/sources',sourcesRoutes);
+app.use('/api/locations', locationsRoutes);
+app.use('/api/products', productsRoutes);
+app.use('/api/sources', sourcesRoutes);
 app.use('/api/transactions', transactionsRoutes);
+app.use('/api/visualise', visualiseRoutes);
+app.use('/api', utilityRoutes);
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Storium IMS API is running' });

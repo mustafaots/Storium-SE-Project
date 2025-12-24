@@ -20,8 +20,6 @@ export const Product = {
           p.rate,
           p.rate_unit,
           p.description, 
-          TO_BASE64(p.image_data) AS image_data,
-          p.image_mime_type,
           p.created_at,
           COALESCE(SUM(st.quantity), 0) AS total_stock,
           ps.source_id, 
@@ -82,8 +80,6 @@ export const Product = {
           p.rate,
           p.rate_unit,
           p.description, 
-          TO_BASE64(p.image_data) AS image_data,
-          p.image_mime_type,
           COALESCE(SUM(st.quantity), 0) AS total_stock,
           ps.source_id, 
           s.source_name AS supplier

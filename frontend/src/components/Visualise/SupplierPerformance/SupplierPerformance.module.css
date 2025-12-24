@@ -1,0 +1,67 @@
+/* SupplierPerformance Styles */
+/* Path: frontend/src/components/Visualise/SupplierPerformance/SupplierPerformance.module.css */
+
+.container {
+    background: var(--discord-gray);
+    border-radius: 8px;
+    /* Consistent radius */
+    padding: 1.5rem;
+    border: 1px solid var(--discord-gray-light);
+    height: 100%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    margin-bottom: 1.5rem;
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--industrial-gold);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: var(--text-gray);
+}
+
+.chartWrapper {
+    height: 300px;
+    width: 100%;
+}
+
+/* Tooltip Styles */
+.tooltip {
+    background: var(--discord-gray-dark);
+    border: 1px solid var(--discord-gray-light);
+    border-radius: 8px;
+    padding: 0.75rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.tooltipLabel {
+    font-size: 0.75rem;
+    color: var(--text-gray);
+    margin-bottom: 0.25rem;
+}
+
+.tooltipValue {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--industrial-gold);
+}
+
+.tooltipSubValue {
+    font-size: 0.75rem;
+    color: var(--text-gray);
+}
+
+@media (max-width: 640px) {
+    .chartWrapper {
+        height: 250px;
+    }
+}
