@@ -28,6 +28,15 @@ export const getTransactions = async (req, res, next) => {
   }
 };
 
+export const clearTransactions = async (req, res, next) => {
+  try {
+    const result = await TransactionsService.clearTransactions();
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const createManualOutflow = async (req, res, next) => {
   try {

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTransactions , createManualOutflow ,createManualInflow,
+import { getTransactions , clearTransactions, createManualOutflow ,createManualInflow,
   createTransfer,
   createAdjustment,
   createRelocation,
@@ -10,6 +10,7 @@ import { getTransactions , createManualOutflow ,createManualInflow,
 const router = express.Router();
 
 router.get('/', getTransactions);
+router.delete('/clear', clearTransactions);
 router.post('/manual-outflow', createManualOutflow);
 router.post('/manual-inflow', createManualInflow);
 router.post('/transfer', createTransfer);

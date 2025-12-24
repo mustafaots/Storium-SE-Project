@@ -411,7 +411,7 @@ import { exportToCSV, exportToPDF } from '../../utils/export.js';
 import { useState } from 'react';
 import DataTable from '../../components/UI/DataTable/DataTable.jsx';
 import { transactionsConfig } from '../../config/transactionsConfig.jsx';
-import { FaSearch, FaExchangeAlt, FaFileExport } from 'react-icons/fa';
+import { FaSearch, FaExchangeAlt, FaFileExport, FaTrash } from 'react-icons/fa';
 import { useTransactions } from '../../hooks/useTransactions';
 import Pagination from '../../components/UI/Pagination/Pagination.jsx'; 
 
@@ -421,6 +421,7 @@ function TransactionsPage() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [clearing, setClearing] = useState(false);
 
   const formatSlotContext = (txn, side) => {
     const isFrom = side === 'from';
@@ -447,7 +448,7 @@ function TransactionsPage() {
     setSearchTerm,
     pagination,
     setError,
-    loadTransactions,
+    clearTransactions,
     handlePageChange,
     handlePageSizeChange
   } = useTransactions();
@@ -524,6 +525,19 @@ function TransactionsPage() {
 
     exportToPDF(pdfData, columns, 'Transactions Report', 'transactions');
     setShowExportModal(false);
+  };
+
+  const handleClearAll = async () => {
+    setClearing(true);
+    try {
+      await clearTransactions();
+      setShowDetails(false);
+      setSelectedTransaction(null);
+    } catch (err) {
+      setError(err?.message || 'Failed to clear transactions');
+    } finally {
+      setClearing(false);
+    }
   };
 
   
@@ -619,6 +633,16 @@ function TransactionsPage() {
               >
                 <FaFileExport className={styles.exportIcon} />
                 Export Table
+              </button>
+
+              <button
+                className={styles.clearBtn}
+                onClick={handleClearAll}
+                disabled={clearing || loading}
+                title="Clear all transactions"
+              >
+                <FaTrash className={styles.exportIcon} />
+                {clearing ? 'Clearing...' : 'Clear'}
               </button>
 
               <ExportModal

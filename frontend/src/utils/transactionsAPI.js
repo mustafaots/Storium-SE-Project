@@ -14,6 +14,17 @@ export const transactionsAPI = {
     return await res.json();
   },
 
+  async clearTransactions() {
+    const res = await fetch(`${API_BASE_URL}/transactions/clear`, {
+      method: 'DELETE'
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error || 'Failed to clear transactions');
+    }
+    return json.data;
+  },
+
   async manualOutflow(payload) {
     const res = await fetch(`${API_BASE_URL}/transactions/manual-outflow`, {
       method: 'POST',

@@ -119,6 +119,10 @@ export const TransactionsService = {
     return { rows: enrichedRows, totalCount };
   },
 
+  async clearTransactions() {
+    return TransactionFileStore.clearAll();
+  },
+
   // Create: manual inflow transaction
   async createManualInflow({ stockId, productId, toSlotId, sourceId, quantity, unitPrice, note }) {
     const qty = Number(quantity);

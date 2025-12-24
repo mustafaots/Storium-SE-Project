@@ -315,6 +315,35 @@
   height: 16px;
 }
 
+.clearBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--discord-gray-light);
+  color: var(--text-light);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.clearBtn:hover {
+  border-color: var(--industrial-gold);
+  transform: translateY(-1px);
+}
+
+.clearBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 
 .transactionsTable {
     border: 1px solid #40444b;

@@ -170,5 +170,16 @@ export const TransactionFileStore = {
   getById(txnId) {
     const transactions = this.readAll();
     return transactions.find(t => t.txn_id === Number(txnId)) || null;
+  },
+
+  /**
+   * Clear all transactions (truncate file) and reset ID counter.
+   * @returns {{ clearedCount: number }}
+   */
+  clearAll() {
+    const clearedCount = this.readAll().length;
+    fs.writeFileSync(TRANSACTIONS_FILE, '', 'utf8');
+    nextTxnId = 1;
+    return { clearedCount };
   }
 };

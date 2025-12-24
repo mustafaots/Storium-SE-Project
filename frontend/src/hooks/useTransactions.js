@@ -94,6 +94,42 @@ const loadTransactions = useCallback(async () => {
     searchTerm
   ]);
 
+  const reloadFirstPage = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const response = await transactionsAPI.getTransactions({
+        page: 1,
+        pageSize: pagination.pageSize,
+        filterType,
+        dateFilter,
+        search: searchTerm
+      });
+
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to load transactions');
+      }
+
+      setTransactions(response.data || []);
+      setPagination(prev => ({
+        ...prev,
+        currentPage: 1,
+        totalCount: response.pagination?.totalCount ?? 0,
+        totalPages: response.pagination?.totalPages ?? 0
+      }));
+    } catch (err) {
+      setError(err.message || 'Failed to load transactions');
+    } finally {
+      setLoading(false);
+    }
+  }, [pagination.pageSize, filterType, dateFilter, searchTerm]);
+
+  const clearTransactions = useCallback(async () => {
+    await transactionsAPI.clearTransactions();
+    await reloadFirstPage();
+  }, [reloadFirstPage]);
+
 
    /**
    * Reset page ONLY when filters/search change
@@ -166,6 +202,8 @@ const handlePageSizeChange = useCallback((newSize) => {
 
     //handlers
     loadTransactions,
+    reloadFirstPage,
+    clearTransactions,
     handlePageChange,
     handlePageSizeChange,
     
