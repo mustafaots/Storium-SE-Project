@@ -49,8 +49,9 @@ export const getTotalStockValue = async (db, filters = {}) => {
   const { whereClause, params } = buildFilterWhere(filters, 's');
 
   const [rows] = await db.execute(`
-    SELECT COALESCE(SUM(s.quantity * COALESCE(s.sale_price, s.cost_price, 0)), 0) as total_value
+    SELECT COALESCE(SUM(s.quantity * COALESCE(s.sale_price, s.cost_price, p.rate, 0)), 0) as total_value
     FROM stocks s
+    LEFT JOIN products p ON p.product_id = s.product_id
     WHERE 1=1 ${whereClause}
   `, params);
   return parseFloat(rows[0]?.total_value) || 0;
@@ -206,8 +207,9 @@ export const getCurrentStockValue = async (db, filters = {}) => {
   const { whereClause, params } = buildFilterWhere(filters, 's');
 
   const [rows] = await db.execute(`
-    SELECT COALESCE(SUM(s.quantity * COALESCE(s.sale_price, s.cost_price, 0)), 0) as value
+    SELECT COALESCE(SUM(s.quantity * COALESCE(s.sale_price, s.cost_price, p.rate, 0)), 0) as value
     FROM stocks s
+    LEFT JOIN products p ON p.product_id = s.product_id
     WHERE 1=1 ${whereClause}
   `, params);
   return parseFloat(rows[0]?.value) || 0;
@@ -365,7 +367,7 @@ export const getCategoryDistribution = async (db, filters = {}) => {
   const [rows] = await db.execute(`
     SELECT 
       p.category,
-      SUM(s.quantity * COALESCE(s.sale_price, s.cost_price, 0)) as value
+      SUM(s.quantity * COALESCE(s.sale_price, s.cost_price, p.rate, 0)) as value
     FROM products p
     JOIN stocks s ON p.product_id = s.product_id
     WHERE 1=1 ${whereClause}
@@ -422,9 +424,9 @@ export const getSupplyChainMetrics = async (db, filters = {}) => {
   const [rows] = await db.execute(`
     SELECT 
       src.source_name as name,
-      AVG(ps.lead_time_days) as avg_lead_time,
+      COALESCE(AVG(ps.lead_time_days), 0) as avg_lead_time,
       COUNT(DISTINCT ps.product_id) as product_count,
-      AVG(ps.cost_price) as avg_cost
+      COALESCE(AVG(ps.cost_price), 0) as avg_cost
     FROM sources src
     JOIN product_sources ps ON src.source_id = ps.source_id
     ${where}
@@ -584,18 +586,22 @@ export const getDepotStock = async (db, filters = {}) => {
     SELECT 
       d.name as depot_name,
       l.name as location_name,
-      COALESCE(SUM(s.quantity * COALESCE(s.sale_price, s.cost_price, 0)), 0) as total_value
+      COALESCE(SUM(s.quantity * COALESCE(s.sale_price, s.cost_price, p.rate, 0)), 0) as total_value
     FROM depots d
     JOIN locations l ON d.parent_location = l.location_id
     LEFT JOIN aisles a ON a.parent_depot = d.depot_id
     LEFT JOIN racks r ON r.parent_aisle = a.aisle_id
     LEFT JOIN rack_slots rs ON rs.rack_id = r.rack_id
     LEFT JOIN stocks s ON s.slot_id = rs.slot_id
+    LEFT JOIN products p ON p.product_id = s.product_id
     ${where}
     GROUP BY d.depot_id
     ORDER BY total_value DESC
   `, params);
-  return rows;
+  return rows.map(r => ({
+    ...r,
+    total_value: parseFloat(r.total_value) || 0
+  }));
 };
 
 /**
@@ -756,7 +762,10 @@ export const getStockByDepot = async (db, filters = {}) => {
     ORDER BY quantity DESC
   `, params);
 
-  return rows;
+  return rows.map(r => ({
+    ...r,
+    quantity: Number(r.quantity) || 0
+  }));
 };
 
 /**

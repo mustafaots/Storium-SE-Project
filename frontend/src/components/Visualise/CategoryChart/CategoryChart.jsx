@@ -28,12 +28,12 @@ const CategoryChart = ({ data = [] }) => {
     const chartData = useMemo(() => {
         return data.map(item => ({
             name: item.name,
-            value: item.value
+            value: Number(item.value) || 0
         }));
     }, [data]);
 
     const totalValue = useMemo(() => {
-        return chartData.reduce((sum, item) => sum + item.value, 0);
+        return chartData.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
     }, [chartData]);
 
     return (

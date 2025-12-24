@@ -9,7 +9,7 @@ const DepotStockChart = ({ data = [] }) => {
         return data.map(item => ({
             name: item.depot_name,
             location: item.location_name,
-            value: parseFloat(item.total_value)
+            value: Number(item.total_value) || 0
         }));
     }, [data]);
 
