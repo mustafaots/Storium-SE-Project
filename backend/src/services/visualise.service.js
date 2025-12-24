@@ -2,6 +2,77 @@
 // Path: backend/src/services/visualise.service.js
 
 import * as visualiseModel from '../models/visualise.model.js';
+import { TransactionFileStore } from '../utils/transactionFileStore.js';
+
+const toIsoDate = (timestamp) => {
+  try {
+    return new Date(timestamp).toISOString().split('T')[0];
+  } catch {
+    return null;
+  }
+};
+
+const formatDateLabel = (dateStr) => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
+const buildLastNDays = (days) => {
+  const n = Math.max(1, Number(days) || 30);
+  const today = new Date();
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    out.push({ date: dateStr, label: formatDateLabel(dateStr) });
+  }
+  return out;
+};
+
+const getSlotIdsForLocation = async (db, locationId) => {
+  if (!locationId) return null;
+  const [rows] = await db.execute(
+    `SELECT rs.slot_id
+     FROM rack_slots rs
+     JOIN racks r ON rs.rack_id = r.rack_id
+     JOIN aisles a ON r.parent_aisle = a.aisle_id
+     JOIN depots d ON a.parent_depot = d.depot_id
+     WHERE d.parent_location = ?`,
+    [locationId]
+  );
+  return new Set(rows.map(r => Number(r.slot_id)));
+};
+
+const filterTransactionsFromFile = async (db, filters = {}) => {
+  const all = TransactionFileStore.readAll();
+
+  const dateRangeDays = Math.max(1, Number(filters.dateRange) || 30);
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - dateRangeDays);
+
+  const slotSet = await getSlotIdsForLocation(db, filters.locationId);
+
+  return all.filter(t => {
+    if (!t || !t.timestamp) return false;
+    const ts = new Date(t.timestamp);
+    if (Number.isNaN(ts.getTime())) return false;
+    if (ts < cutoff) return false;
+
+    if (filters.productId && Number(t.product_id) !== Number(filters.productId)) return false;
+    if (filters.txnType && filters.txnType !== 'all' && String(t.txn_type) !== String(filters.txnType)) return false;
+
+    if (slotSet) {
+      const fromId = t.from_slot_id != null ? Number(t.from_slot_id) : null;
+      const toId = t.to_slot_id != null ? Number(t.to_slot_id) : null;
+      if (!(fromId != null && slotSet.has(fromId)) && !(toId != null && slotSet.has(toId))) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+};
 
 /**
  * Get all KPI data for the dashboard
@@ -10,9 +81,12 @@ import * as visualiseModel from '../models/visualise.model.js';
  * @returns {Promise<Object>} KPI data object
  */
 export const getKPIs = async (db, filters = {}) => {
-  const [totalStockValue, movementsToday, belowMinLevel, warehouseOccupancy] = await Promise.all([
+  const todayStr = new Date().toISOString().split('T')[0];
+  const movementsToday = (await filterTransactionsFromFile(db, { ...filters, dateRange: 1 }))
+    .filter(t => (t.timestamp || '').startsWith(todayStr)).length;
+
+  const [totalStockValue, belowMinLevel, warehouseOccupancy] = await Promise.all([
     visualiseModel.getTotalStockValue(db, filters),
-    visualiseModel.getMovementsToday(db, filters),
     visualiseModel.getProductsBelowMinLevel(db, filters),
     visualiseModel.getWarehouseOccupancy(db, filters)
   ]);
@@ -34,18 +108,23 @@ export const getKPIs = async (db, filters = {}) => {
  */
 export const getStockTrends = async (db, days = 30, filters = {}) => {
   const currentValue = await visualiseModel.getCurrentStockValue(db, filters);
-  const dailyChanges = await visualiseModel.getStockTrends(db, days, filters);
+  const txns = await filterTransactionsFromFile(db, { ...filters, dateRange: days, locationId: null, txnType: 'all' });
+
+  const dailyChangeMap = new Map();
+  for (const t of txns) {
+    const dateStr = toIsoDate(t.timestamp);
+    if (!dateStr) continue;
+    if (filters.productId && Number(t.product_id) !== Number(filters.productId)) continue;
+    const v = Number(t.total_value) || 0;
+    const signed = t.txn_type === 'outflow' ? -v : (t.txn_type === 'inflow' ? v : 0);
+    dailyChangeMap.set(dateStr, (dailyChangeMap.get(dateStr) || 0) + signed);
+  }
 
   // Build historical values by working backwards from current value
   const trendData = [];
   const today = new Date();
 
-  // Create a map of date -> change
-  const changeMap = new Map();
-  dailyChanges.forEach(row => {
-    const dateStr = new Date(row.date).toISOString().split('T')[0];
-    changeMap.set(dateStr, parseFloat(row.daily_change) || 0);
-  });
+  const changeMap = dailyChangeMap;
 
   // Calculate cumulative changes to get historical values
   let runningValue = currentValue;
@@ -66,23 +145,12 @@ export const getStockTrends = async (db, days = 30, filters = {}) => {
     runningValue -= change;
   }
 
-  // Format for chart display
   return values.map(item => ({
     date: item.date,
     label: formatDateLabel(item.date),
     value: Math.max(0, Math.round(item.value)),
-    units: Math.round(item.value / 100) // Approximate unit count
+    units: Math.round(item.value / 100)
   }));
-};
-
-/**
- * Format date string to display label
- * @param {string} dateStr - ISO date string
- * @returns {string} Formatted label (e.g., "Dec 23")
- */
-const formatDateLabel = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
 /**
@@ -147,22 +215,21 @@ export const getFilterOptions = async (db) => {
  * @returns {Promise<Object>} Transaction analytics
  */
 export const getTransactionAnalytics = async (db, filters = {}) => {
-  const rawData = await visualiseModel.getTransactionAnalytics(db, filters);
+  const txns = await filterTransactionsFromFile(db, { ...filters, txnType: 'all' });
+  const days = Math.max(1, Number(filters.dateRange) || 30);
+  const points = buildLastNDays(days);
+  const map = new Map(points.map(p => [p.date, { date: p.date, label: p.label, inflow: 0, outflow: 0 }]));
 
-  // Format data for chart consumption (grouped by date)
-  const formattedData = {};
-  rawData.forEach(row => {
-    const dateStr = new Date(row.date).toISOString().split('T')[0];
-    if (!formattedData[dateStr]) {
-      formattedData[dateStr] = { date: dateStr, label: formatDateLabel(dateStr), inflow: 0, outflow: 0 };
-    }
-    if (row.txn_type === 'inflow') formattedData[dateStr].inflow = parseFloat(row.total_value) || 0;
-    if (row.txn_type === 'outflow') formattedData[dateStr].outflow = parseFloat(row.total_value) || 0;
-    // Consumption can be treated similarly to outflow or separately
-    if (row.txn_type === 'consumption') formattedData[dateStr].outflow = (formattedData[dateStr].outflow || 0) + (parseFloat(row.total_value) || 0);
-  });
+  for (const t of txns) {
+    const dateStr = toIsoDate(t.timestamp);
+    if (!dateStr || !map.has(dateStr)) continue;
+    const v = Number(t.total_value) || 0;
+    if (t.txn_type === 'inflow') map.get(dateStr).inflow += v;
+    if (t.txn_type === 'outflow') map.get(dateStr).outflow += v;
+    if (t.txn_type === 'consumption') map.get(dateStr).outflow += v;
+  }
 
-  return Object.values(formattedData);
+  return Array.from(map.values());
 };
 
 /**
@@ -172,7 +239,44 @@ export const getTransactionAnalytics = async (db, filters = {}) => {
  * @returns {Promise<Object>} Product performance
  */
 export const getProductPerformance = async (db, filters = {}) => {
-  return await visualiseModel.getProductPerformance(db, filters);
+  const days = Math.max(1, Number(filters.dateRange) || 30);
+  const txns = await filterTransactionsFromFile(db, { ...filters, dateRange: days, locationId: null, txnType: 'all' });
+
+  const byProduct = new Map();
+  for (const t of txns) {
+    if (t.txn_type !== 'outflow') continue;
+    const key = Number(t.product_id);
+    const prev = byProduct.get(key) || { name: t.product_name || 'Unknown', total_quantity: 0 };
+    prev.total_quantity += Number(t.quantity) || 0;
+    byProduct.set(key, prev);
+  }
+
+  const topMoving = Array.from(byProduct.values())
+    .sort((a, b) => b.total_quantity - a.total_quantity)
+    .slice(0, 5);
+
+  // Slow moving: products that have stock but no activity in last 90 days
+  const activeSet = new Set();
+  const activeTxns = await filterTransactionsFromFile(db, { ...filters, dateRange: 90, locationId: null, txnType: 'all' });
+  for (const t of activeTxns) {
+    if (t.product_id != null) activeSet.add(Number(t.product_id));
+  }
+
+  const [stockRows] = await db.execute(`
+    SELECT p.product_id, p.name, COALESCE(SUM(s.quantity), 0) as current_stock
+    FROM products p
+    LEFT JOIN stocks s ON p.product_id = s.product_id
+    GROUP BY p.product_id
+    HAVING current_stock > 0
+  `);
+
+  const slowMoving = stockRows
+    .filter(r => !activeSet.has(Number(r.product_id)))
+    .sort((a, b) => (Number(b.current_stock) || 0) - (Number(a.current_stock) || 0))
+    .slice(0, 5)
+    .map(r => ({ name: r.name, current_stock: Number(r.current_stock) || 0 }));
+
+  return { topMoving, slowMoving };
 };
 
 /**
@@ -266,19 +370,41 @@ export const getLowStockProducts = async (db, filters = {}) => {
  * @returns {Promise<Array>} Formatted movement log
  */
 export const getMovementLog = async (db, filters = {}) => {
-  const rawData = await visualiseModel.getMovementLog(db, filters);
+  const txns = await filterTransactionsFromFile(db, filters);
 
-  // Format timestamps for display
-  return rawData.map(row => ({
-    ...row,
-    timestamp: new Date(row.timestamp).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }));
+  // Optional enrichment: pull product_type from current stocks (may be null if stock row deleted)
+  const stockIds = Array.from(new Set(txns.map(t => t.stock_id).filter(v => v != null).map(v => Number(v))));
+  const stockTypeById = new Map();
+  if (stockIds.length > 0) {
+    const [rows] = await db.execute(
+      'SELECT stock_id, product_type FROM stocks WHERE stock_id IN (?)',
+      [stockIds]
+    );
+    rows.forEach(r => stockTypeById.set(Number(r.stock_id), r.product_type));
+  }
+
+  const mapped = txns.slice(0, 500).map(t => {
+    const sourceDestination = t.source_name || t.client_name || 'Internal';
+    return {
+      txn_id: t.txn_id,
+      timestamp: new Date(t.timestamp).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      productName: t.product_name || 'Unknown',
+      productType: stockTypeById.get(Number(t.stock_id)) || null,
+      txnType: t.txn_type,
+      quantity: Number(t.quantity) || 0,
+      totalValue: Number(t.total_value) || 0,
+      referenceNumber: t.reference_number || null,
+      sourceDestination
+    };
+  });
+
+  return mapped;
 };
 
 /**
@@ -288,7 +414,19 @@ export const getMovementLog = async (db, filters = {}) => {
  * @returns {Promise<Array>} Transaction type summary
  */
 export const getTransactionTypeSummary = async (db, filters = {}) => {
-  return await visualiseModel.getTransactionTypeSummary(db, filters);
+  const txns = await filterTransactionsFromFile(db, { ...filters, txnType: 'all' });
+  const agg = new Map();
+
+  for (const t of txns) {
+    const type = t.txn_type;
+    const prev = agg.get(type) || { txnType: type, totalQuantity: 0, transactionCount: 0, totalValue: 0 };
+    prev.totalQuantity += Number(t.quantity) || 0;
+    prev.transactionCount += 1;
+    prev.totalValue += Number(t.total_value) || 0;
+    agg.set(type, prev);
+  }
+
+  return Array.from(agg.values()).sort((a, b) => b.totalQuantity - a.totalQuantity);
 };
 
 /**
@@ -298,29 +436,28 @@ export const getTransactionTypeSummary = async (db, filters = {}) => {
  * @returns {Promise<Array>} Movements over time by type
  */
 export const getMovementsOverTime = async (db, filters = {}) => {
-  const rawData = await visualiseModel.getTransactionAnalytics(db, filters);
+  const txns = await filterTransactionsFromFile(db, { ...filters, txnType: 'all' });
+  const days = Math.max(1, Number(filters.dateRange) || 30);
+  const points = buildLastNDays(days);
+  const map = new Map(points.map(p => [p.date, {
+    date: p.date,
+    label: p.label,
+    inflow: 0,
+    outflow: 0,
+    transfer: 0,
+    consumption: 0,
+    adjustment: 0
+  }]));
 
-  // Format data for chart with all 5 transaction types
-  const formattedData = {};
-  rawData.forEach(row => {
-    const dateStr = new Date(row.date).toISOString().split('T')[0];
-    if (!formattedData[dateStr]) {
-      formattedData[dateStr] = {
-        date: dateStr,
-        label: formatDateLabel(dateStr),
-        inflow: 0,
-        outflow: 0,
-        transfer: 0,
-        consumption: 0,
-        adjustment: 0
-      };
-    }
+  for (const t of txns) {
+    const dateStr = toIsoDate(t.timestamp);
+    if (!dateStr || !map.has(dateStr)) continue;
+    const v = Number(t.total_value) || 0;
+    const slot = map.get(dateStr);
+    if (slot[t.txn_type] !== undefined) slot[t.txn_type] += v;
+  }
 
-    const value = parseFloat(row.total_value) || 0;
-    formattedData[dateStr][row.txn_type] = value;
-  });
-
-  return Object.values(formattedData);
+  return Array.from(map.values());
 };
 
 /**
@@ -330,7 +467,25 @@ export const getMovementsOverTime = async (db, filters = {}) => {
  * @returns {Promise<Array>} Movement frequency data
  */
 export const getMovementFrequency = async (db, filters = {}) => {
-  return await visualiseModel.getMovementFrequency(db, filters);
+  const txns = await filterTransactionsFromFile(db, filters);
+  const agg = new Map();
+
+  for (const t of txns) {
+    const productId = Number(t.product_id);
+    const prev = agg.get(productId) || {
+      productName: t.product_name || 'Unknown',
+      productType: null,
+      transactionCount: 0,
+      totalQuantityMoved: 0
+    };
+    prev.transactionCount += 1;
+    prev.totalQuantityMoved += Number(t.quantity) || 0;
+    agg.set(productId, prev);
+  }
+
+  return Array.from(agg.values())
+    .sort((a, b) => b.transactionCount - a.transactionCount)
+    .slice(0, 20);
 };
 
 /**

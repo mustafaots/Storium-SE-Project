@@ -787,7 +787,7 @@ export const getLowStockProducts = async (db, filters = {}) => {
       p.name as productName,
       p.min_stock_level as minStockLevel,
       COALESCE(SUM(CASE WHEN 1=1 ${stockWhere} THEN s.quantity ELSE 0 END), 0) as currentQuantity,
-      s.product_type as productType
+      MAX(s.product_type) as productType
     FROM products p
     LEFT JOIN stocks s ON p.product_id = s.product_id
     WHERE ${conditions.join(' AND ')}
