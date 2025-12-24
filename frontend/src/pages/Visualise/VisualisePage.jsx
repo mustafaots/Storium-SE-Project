@@ -1,22 +1,22 @@
-import CategoryChart from '../../components/Visualise/CategoryChart/CategoryChart';
-import DepotStockChart from '../../components/Visualise/DepotStockChart/DepotStockChart';
-import ExpiryTimeline from '../../components/Visualise/ExpiryTimeline/ExpiryTimeline';
-import InventoryHealthTable from '../../components/Visualise/InventoryHealthTable/InventoryHealthTable';
-import PlacementSearch from '../../components/Visualise/PlacementSearch/PlacementSearch';
-import SupplierPerformance from '../../components/Visualise/SupplierPerformance/SupplierPerformance';
-import TransactionChart from '../../components/Visualise/TransactionChart/TransactionChart';
+import CategoryChart from '../../components/Layout/VisualiseLayout/CategoryChart/CategoryChart';
+import DepotStockChart from '../../components/Layout/VisualiseLayout/DepotStockChart/DepotStockChart';
+import ExpiryTimeline from '../../components/Layout/VisualiseLayout/ExpiryTimeline/ExpiryTimeline';
+import InventoryHealthTable from '../../components/Layout/VisualiseLayout/InventoryHealthTable/InventoryHealthTable';
+import PlacementSearch from '../../components/Layout/VisualiseLayout/PlacementSearch/PlacementSearch';
+import SupplierPerformance from '../../components/Layout/VisualiseLayout/SupplierPerformance/SupplierPerformance';
+import TransactionChart from '../../components/Layout/VisualiseLayout/TransactionChart/TransactionChart';
 import { exportToCSV, exportToPDF } from '../../utils/exportUtils';
 import styles from './VisualisePage.module.css';
 import useVisualise from '../../hooks/useVisualise';
 import { FileText, Table } from 'lucide-react';
-import FilterBar from '../../components/Visualise/FilterBar/FilterBar';
-import { StatCardsGrid } from '../../components/Visualise/StatCard/StatCard';
-import Chart from '../../components/Visualise/Chart/Chart';
-import WarehouseOccupancy from '../../components/Visualise/WarehouseOccupancy/WarehouseOccupancy';
-import StockByDepotChart from '../../components/Visualise/StockByDepotChart/StockByDepotChart';
-import LowStockAlert from '../../components/Visualise/LowStockAlert/LowStockAlert';
-import MovementLogTable from '../../components/Visualise/MovementLogTable/MovementLogTable';
-import TransactionTypeSummaryChart from '../../components/Visualise/TransactionTypeSummaryChart/TransactionTypeSummaryChart';
+import FilterBar from '../../components/Layout/VisualiseLayout/FilterBar/FilterBar';
+import { StatCardsGrid } from '../../components/Layout/VisualiseLayout/StatCard/StatCard';
+import Chart from '../../components/Layout/VisualiseLayout/Chart/Chart';
+import WarehouseOccupancy from '../../components/Layout/VisualiseLayout/WarehouseOccupancy/WarehouseOccupancy';
+import StockByDepotChart from '../../components/Layout/VisualiseLayout/StockByDepotChart/StockByDepotChart';
+import LowStockAlert from '../../components/Layout/VisualiseLayout/LowStockAlert/LowStockAlert';
+import MovementLogTable from '../../components/Layout/VisualiseLayout/MovementLogTable/MovementLogTable';
+import TransactionTypeSummaryChart from '../../components/Layout/VisualiseLayout/TransactionTypeSummaryChart/TransactionTypeSummaryChart';
 
 // Navigation imports
 import NavBar from '../../components/UI/NavBar/NavBar';
