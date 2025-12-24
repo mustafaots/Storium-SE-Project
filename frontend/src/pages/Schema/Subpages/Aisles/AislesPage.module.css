@@ -190,6 +190,8 @@
 .actions {
   display: flex;
   gap: 8px;
+  width: 100%;
+  justify-content: flex-end;
 }
 
 .viewButton,
@@ -204,12 +206,13 @@
 }
 
 .viewButton {
-  background: #5dade2;
-  color: var(--discord-gray-dark);
+  background: var(--discord-gray-light);
+  color: var(--text-light);
 }
 
 .viewButton:hover {
-  background: #3498db;
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
 }
 
 .editButton {

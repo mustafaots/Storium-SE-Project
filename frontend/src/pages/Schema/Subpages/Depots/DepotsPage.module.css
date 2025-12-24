@@ -190,9 +190,9 @@
 
 .actions {
 	display: flex;
-	gap: 6px;
-	flex-shrink: 0;
-	min-width: max-content;
+	gap: 8px;
+	width: 100%;
+	justify-content: flex-end;
 }
 
 .viewButton,
@@ -208,21 +208,23 @@
 }
 
 .viewButton {
-	background: #5dade2;
-	color: var(--discord-gray-dark);
+	background: var(--discord-gray-light);
+	color: var(--text-light);
 }
 
 .viewButton:hover {
-	background: #3498db;
+	background: var(--industrial-gold);
+	color: var(--discord-gray-dark);
 }
 
 .exportButton {
-	background: #27ae60;
-	color: white;
+	background: var(--discord-gray-light);
+	color: var(--text-light);
 }
 
 .exportButton:hover {
-	background: #1e8449;
+	background: var(--industrial-gold);
+	color: var(--discord-gray-dark);
 }
 
 .editButton {

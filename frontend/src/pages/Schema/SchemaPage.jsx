@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FaBorderAll, FaBoxes, FaCubes, FaLayerGroup, FaMapMarkerAlt, FaProjectDiagram, FaWarehouse } from 'react-icons/fa';
+import { FaBorderAll, FaCubes, FaLayerGroup, FaMapMarkerAlt, FaProjectDiagram, FaWarehouse } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import styles from './SchemaPage.module.css';
 import NavBar from '../../components/UI/NavBar/NavBar';
@@ -39,7 +39,6 @@ function SchemaPage() {
         { key: 'aisles', label: 'Aisles', icon: FaProjectDiagram, color: '#2196F3' },
         { key: 'racks', label: 'Racks', icon: FaLayerGroup, color: '#9C27B0' },
         { key: 'slots', label: 'Slots', icon: FaBorderAll, color: '#FF5722' },
-        { key: 'stocks', label: 'Active Stocks', icon: FaBoxes, color: '#00BCD4' },
         { key: 'products', label: 'Products', icon: FaCubes, color: '#E91E63' }
     ];
 

@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { FaArrowLeft, FaDownload, FaFileCsv, FaFilePdf, FaProjectDiagram } from 'react-icons/fa';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { exportToPDF } from '../../../../utils/export';
 
 import NavBar from '../../../../components/UI/NavBar/NavBar';
 import Header from '../../../../components/UI/Header/Header';
@@ -62,62 +61,36 @@ export const AislesPage = () => {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       } else if (format === 'pdf') {
-        // PDF export using jsPDF + autotable
+        // PDF export (shared helper + autotable fallback)
         const resp = await fetch(`${API_BASE_URL}/depots/${depotId}/export?format=json`);
         if (!resp.ok) throw new Error('Export failed');
         const data = await resp.json();
         const inventory = data.inventory || [];
 
-        const doc = new jsPDF();
-        
-        // Title
-        doc.setFontSize(18);
-        doc.setTextColor(40, 40, 40);
-        doc.text(`Inventory Report: ${data.depot?.name || depotName || 'Depot'}`, 14, 20);
-        
-        // Subtitle with date
-        doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 28);
-        doc.text(`Total Items: ${data.summary?.total_items || 0} | Total Quantity: ${data.summary?.total_quantity || 0}`, 14, 34);
-        
-        // Table columns
-        const columns = [
-          { header: 'Product', dataKey: 'product' },
-          { header: 'Category', dataKey: 'category' },
-          { header: 'Quantity', dataKey: 'quantity' },
-          { header: 'Aisle', dataKey: 'aisle' },
-          { header: 'Rack', dataKey: 'rack' },
-          { header: 'Expiry', dataKey: 'expiry' }
-        ];
-
-        // Transform data for table
-        const rows = inventory.map(item => ({
+        const rows = inventory.map((item) => ({
           product: item.product || '-',
           category: item.category || '-',
-          quantity: item.quantity || 0,
+          quantity: item.quantity ?? 0,
           aisle: item.location?.aisle || '-',
           rack: item.location?.rack_code || '-',
-          expiry: item.expiry ? new Date(item.expiry).toLocaleDateString() : '-'
+          expiry: item.expiry ? new Date(item.expiry).toLocaleDateString() : '-',
         }));
 
-        // Generate table
-        doc.autoTable({
-          columns,
-          body: rows,
-          startY: 35,
-          theme: 'striped',
-          headStyles: { 
-            fillColor: [218, 165, 32],
-            textColor: [0, 0, 0],
-            fontStyle: 'bold'
-          },
-          alternateRowStyles: { fillColor: [245, 245, 245] },
-          styles: { fontSize: 9 }
-        });
+        const columns = [
+          { key: 'product', label: 'Product' },
+          { key: 'category', label: 'Category' },
+          { key: 'quantity', label: 'Quantity' },
+          { key: 'aisle', label: 'Aisle' },
+          { key: 'rack', label: 'Rack' },
+          { key: 'expiry', label: 'Expiry' },
+        ];
 
-        // Save PDF
-        doc.save(`${depotName || 'depot'}_inventory_${new Date().toISOString().split('T')[0]}.pdf`);
+        const title = `Inventory Report: ${data.depot?.name || depotName || 'Depot'}`;
+        const filename = `${depotName || 'depot'}_inventory`;
+        const result = exportToPDF(rows, columns, title, filename);
+        if (result && result.success === false) {
+          throw result.error;
+        }
       }
     } catch (err) {
       setError(err?.message || 'Failed to export inventory');
@@ -168,13 +141,6 @@ export const AislesPage = () => {
   );
 
   const handlers = useMemo(() => ({
-    onViewRacks: (aisle) => navigate(`/locations/${locationId}/depots/${depotId}/aisles/${aisle.aisle_id}/racks`, {
-      state: {
-        locationName,
-        depotName,
-        aisleName: aisle.name
-      }
-    }),
     onEdit: (aisle) => aislesHandlers.onEdit(
       aisle,
       setCurrentAisle,
@@ -220,12 +186,21 @@ export const AislesPage = () => {
 
   const columns = useMemo(
     () => aislesConfig.columns(styles, {
-      onViewRacks: handlers.onViewRacks,
       onEdit: handlers.onEdit,
       onDelete: handlers.onDelete
     }),
     [handlers]
   );
+
+  const handleRowClick = (aisle) => {
+    navigate(`/locations/${locationId}/depots/${depotId}/aisles/${aisle.aisle_id}/racks`, {
+      state: {
+        locationName,
+        depotName,
+        aisleName: aisle.name
+      }
+    });
+  };
 
   const handleSubmit = (formData) => {
     if (isEditing) {
@@ -302,6 +277,7 @@ export const AislesPage = () => {
                 searchPlaceholder="Search aisles..."
                 onSearchChange={search.setSearchTerm}
                 searchTerm={search.searchTerm}
+                onRowClick={handleRowClick}
                 rightControls={(
                   <div className={styles.rightControlsGroup}>
                     <div className={styles.exportWrapper} ref={exportRef}>

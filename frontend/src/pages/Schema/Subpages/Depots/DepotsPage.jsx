@@ -66,12 +66,6 @@ function DepotsPage() {
 	);
 
 	const handlers = useMemo(() => ({
-		onViewAisles: (depot) => navigate(`/locations/${locationId}/depots/${depot.depot_id}/aisles`, {
-			state: {
-				locationName,
-				depotName: depot.name
-			}
-		}),
 		onEdit: (depot) => depotsHandlers.onEdit(
 			depot,
 			setCurrentDepot,
@@ -115,12 +109,20 @@ function DepotsPage() {
 
 	const columns = useMemo(
 		() => depotsConfig.columns(styles, {
-			onViewAisles: handlers.onViewAisles,
 			onEdit: handlers.onEdit,
 			onDelete: handlers.onDelete
 		}),
 		[handlers]
 	);
+
+	const handleRowClick = (depot) => {
+		navigate(`/locations/${locationId}/depots/${depot.depot_id}/aisles`, {
+			state: {
+				locationName,
+				depotName: depot.name
+			}
+		});
+	};
 
 	const handleSubmit = (formData) => {
 		if (isEditing) {
@@ -185,6 +187,7 @@ function DepotsPage() {
 								searchPlaceholder="Search depots..."
 								onSearchChange={search.setSearchTerm}
 								searchTerm={search.searchTerm}
+								onRowClick={handleRowClick}
 								rightControls={(
 									<Button variant="secondary" leadingIcon={<FaPlus />} onClick={handlers.onNew}>
 										Add

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaMapMarkerAlt, FaPlus, FaArrowLeft } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaPlus } from 'react-icons/fa';
 
 import NavBar from '../../../../components/UI/NavBar/NavBar';
 import Header from '../../../../components/UI/Header/Header';
@@ -19,7 +19,6 @@ import styles from './LocationsPage.module.css';
 function LocationsPage() {
 	const activeItem = useActiveNavItem();
 	const navigate = useNavigate();
-	const [selectedLocation, setSelectedLocation] = useState(null);
 
 	const {
 		locations,
@@ -62,9 +61,6 @@ function LocationsPage() {
 	);
 
 	const handlers = useMemo(() => ({
-		onViewDepots: (location) => navigate(`/locations/${location.location_id}/depots`, {
-			state: { locationName: location.name }
-		}),
 		onEdit: (location) => locationsHandlers.onEdit(
 			location,
 			setCurrentLocation,
@@ -102,30 +98,27 @@ function LocationsPage() {
 			setError,
 			onFormSuccess
 		),
-	}), [setCurrentLocation, setIsEditing, setShowForm, setError, onFormSuccess, deleteLocation, search.debouncedSearch, currentLocation?.location_id]);
+	}), [navigate, setCurrentLocation, setIsEditing, setShowForm, setError, onFormSuccess, deleteLocation, search.debouncedSearch, currentLocation?.location_id]);
 
 	const columns = useMemo(
 		() => locationsConfig.columns(styles, {
-			onViewDepots: handlers.onViewDepots,
 			onEdit: handlers.onEdit,
 			onDelete: handlers.onDelete
 		}),
 		[handlers]
 	);
 
+	const handleRowClick = (location) => {
+		navigate(`/locations/${location.location_id}/depots`, {
+			state: { locationName: location.name }
+		});
+	};
+
 	const handleSubmit = (formData) => {
 		if (isEditing) {
 			return handlers.onUpdate(formData);
 		}
 		return handlers.onCreate(formData);
-	};
-
-	const handleRowClick = (location) => {
-		setSelectedLocation(location);
-	};
-
-	const handleCloseDetail = () => {
-		setSelectedLocation(null);
 	};
 
 	return (
@@ -142,59 +135,6 @@ function LocationsPage() {
 							onCancel={handlers.onCancel}
 							onError={setError}
 						/>
-					) : selectedLocation ? (
-						// Location Detail View
-						<div className={styles.detailContainer}>
-							<div className={styles.detailHeader}>
-								<button 
-									className={styles.backButton}
-									onClick={handleCloseDetail}
-								>
-									<FaArrowLeft /> Back
-								</button>
-								<h2>{selectedLocation.name}</h2>
-							</div>
-
-							<div className={styles.detailContent}>
-								<div className={styles.detailSection}>
-									<label>Location Name</label>
-									<p>{selectedLocation.name}</p>
-								</div>
-
-								<div className={styles.detailSection}>
-									<label>Address</label>
-									<p>{selectedLocation.address || 'Not provided'}</p>
-								</div>
-
-								<div className={styles.detailSection}>
-									<label>Coordinates</label>
-									<p>{selectedLocation.coordinates || 'Not provided'}</p>
-								</div>
-
-								<div className={styles.detailSection}>
-									<label>Created</label>
-									<p>{new Date(selectedLocation.created_at).toLocaleDateString()}</p>
-								</div>
-
-								<div className={styles.detailActions}>
-									<button 
-										className={styles.editButton}
-										onClick={() => {
-											setSelectedLocation(null);
-											handlers.onEdit(selectedLocation);
-										}}
-									>
-										Edit
-									</button>
-									<button 
-										className={styles.depotButton}
-										onClick={() => handlers.onViewDepots(selectedLocation)}
-									>
-										View Depots
-									</button>
-								</div>
-							</div>
-						</div>
 					) : (
 						<div className={styles.listContainer}>
 							<Header
