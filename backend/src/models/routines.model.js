@@ -19,8 +19,11 @@ export const RoutineModel = {
   create: (data) => {
     return new Promise((resolve, reject) => {
       const { name, promise, resolve: resolveText, frequency } = data;
+      const normalizedFrequency = (frequency ?? 'daily').toString().trim().toLowerCase() === 'real-time'
+        ? 'always'
+        : (frequency ?? 'daily').toString().trim().toLowerCase();
       const sql = 'INSERT INTO routines (name, promise, resolve, frequency) VALUES (?, ?, ?, ?)';
-      db.query(sql, [name, promise, resolveText, frequency], (err, result) => {
+      db.query(sql, [name, promise, resolveText, normalizedFrequency], (err, result) => {
         if (err) return reject(err);
         resolve(result.insertId);
       });
