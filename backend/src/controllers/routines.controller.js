@@ -39,6 +39,19 @@ export const createRoutine = async (req, res, next) => {
       return res.status(400).json({ message: 'Name and Promise are required' });
     }
 
+    // 1b. Normalize/validate frequency (DB enum + scheduler expectations)
+    const rawFrequency = (req.body.frequency ?? 'daily').toString().trim().toLowerCase();
+    const normalizedFrequency = rawFrequency === 'real-time' ? 'always' : rawFrequency;
+    const allowedFrequencies = new Set(['daily', 'weekly', 'monthly', 'on_event', 'always']);
+    if (!allowedFrequencies.has(normalizedFrequency)) {
+      return res.status(400).json({
+        message: 'Invalid frequency',
+        allowed: Array.from(allowedFrequencies)
+      });
+    }
+
+    req.body.frequency = normalizedFrequency;
+
     // 2. Create in DB
     const newId = await RoutineModel.create(req.body);
     
