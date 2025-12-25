@@ -112,12 +112,12 @@ function RoutinesPage() {
     };
 
     const deleteRoutine = async (id) => {
-        if(window.confirm("Delete this routine?")) {
-            try {
-                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-                setRoutines(prev => prev.filter(r => r.routine_id !== id));
-                fetchAllData(); 
-            } catch (error) { console.error(error); }
+        try {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            setRoutines(prev => prev.filter(r => r.routine_id !== id));
+            fetchAllData();
+        } catch (error) {
+            console.error(error);
         }
     };
 
