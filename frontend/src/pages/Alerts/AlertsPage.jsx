@@ -1,92 +1,140 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './AlertsPage.module.css';
 import NavBar from '../../components/UI/NavBar/NavBar';
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 
-// 1. Import Header Component (Matches Transactions & Routines)
+// Components
 import Header from '../../components/UI/Header/Header.jsx';
-
-// 2. Import your EXISTING Table component
 import Table from "../../components/Layout/Table/table.jsx";
 
-// 3. Import Icons
+// Icons
 import { FaExclamationTriangle, FaInfoCircle, FaCheck, FaTrash, FaSortUp, FaBell } from 'react-icons/fa';
+
+// API URL
+const API_URL = "http://localhost:3001/api/alerts";
 
 function AlertsPage() {
     const activeItem = useActiveNavItem();
 
-    // --- MOCK DATA ---
-    const [alerts, setAlerts] = useState([
-        { id: 1, severity: 'CRITICAL', timestamp: '21 Nov 2025, 11:30', type: 'LOW STOCK', message: 'Critical stock level for Hydraulic Oil ISO 68. Current quantity: 8 units.', isRead: false },
-        { id: 2, severity: 'WARNING', timestamp: '21 Nov 2025, 10:15', type: 'EXPIRY', message: 'Welding Electrodes E6013 expiring in 3 months.', isRead: false },
-        { id: 3, severity: 'INFO', timestamp: '21 Nov 2025, 09:45', type: 'OVERSTOCK', message: 'LED Work Light 500W has exceeded optimal stock levels.', isRead: true },
-        { id: 4, severity: 'WARNING', timestamp: '20 Nov 2025, 17:20', type: 'REORDER', message: 'Steel Bolts M12x50mm has reached reorder point.', isRead: false },
-        { id: 5, severity: 'WARNING', timestamp: '20 Nov 2025, 15:00', type: 'LOW STOCK', message: 'Industrial Safety Gloves inventory below optimal levels.', isRead: false },
-    ]);
-
+    // --- STATE ---
+    const [alerts, setAlerts] = useState([]);
+    
     // --- FILTER STATE ---
     const [filterType, setFilterType] = useState('All Types');
     const [filterSeverity, setFilterSeverity] = useState('All Severities');
     const [showUnreadOnly, setShowUnreadOnly] = useState(true);
 
-    // --- ACTIONS ---
-    const handleMarkRead = (id) => {
-        setAlerts(prev => prev.map(a => a.id === id ? { ...a, isRead: true } : a));
-    };
-
-    const handleDelete = (id) => {
-        if(window.confirm("Delete this alert?")) {
-            setAlerts(prev => prev.filter(a => a.id !== id));
+    // --- 1. FETCH DATA (API) ---
+    const fetchAlerts = async () => {
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            setAlerts(data);
+        } catch (error) {
+            console.error("Error fetching alerts:", error);
         }
     };
 
-    // --- COLUMN DEFINITION ---
+    // Auto-refresh every 5 seconds to catch new alerts from the Scheduler
+    useEffect(() => {
+        fetchAlerts();
+        const interval = setInterval(fetchAlerts, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // --- 2. ACTIONS ---
+    const handleMarkRead = async (id) => {
+        try {
+            // Optimistic update (update UI instantly)
+            setAlerts(prev => prev.map(a => a.alert_id === id ? { ...a, is_read: 1 } : a));
+            
+            // Call API
+            await fetch(`${API_URL}/${id}/read`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_read: 1 })
+            });
+        } catch (error) {
+            console.error("Error marking read:", error);
+            fetchAlerts(); // Revert on error
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if(window.confirm("Delete this alert?")) {
+            try {
+                setAlerts(prev => prev.filter(a => a.alert_id !== id));
+                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            } catch (error) {
+                console.error("Error deleting:", error);
+                fetchAlerts();
+            }
+        }
+    };
+
+    // --- 3. COLUMN DEFINITION ---
     const alertColumns = [
         {
             key: 'severity',
             label: 'SEVERITY',
             render: (item) => {
+                // Normalize DB value (critical -> CRITICAL)
+                const severityUpper = item.severity ? item.severity.toUpperCase() : 'INFO';
+                
                 let icon = <FaExclamationTriangle />;
                 let styleClass = styles.sevWarning;
-                if(item.severity === 'CRITICAL') styleClass = styles.sevCritical;
-                if(item.severity === 'INFO') { icon = <FaInfoCircle />; styleClass = styles.sevInfo; }
+
+                if(severityUpper === 'CRITICAL') styleClass = styles.sevCritical;
+                if(severityUpper === 'INFO') { icon = <FaInfoCircle />; styleClass = styles.sevInfo; }
                 
                 return (
                     <div className={`${styles.severityCell} ${styleClass}`}>
-                        {icon} <span>{item.severity}</span>
+                        {icon} <span>{severityUpper}</span>
                     </div>
                 );
             }
         },
         {
-            key: 'timestamp',
+            key: 'sent_at', // Changed from timestamp
             label: <span className={styles.sortHeader}>Timestamp <FaSortUp /></span>,
-            render: (item) => <span className={styles.timestampText}>{item.timestamp}</span>
+            render: (item) => (
+                <span className={styles.timestampText}>
+                    {new Date(item.sent_at).toLocaleString('en-GB', { 
+                        day: 'numeric', month: 'short', year: 'numeric', 
+                        hour: '2-digit', minute: '2-digit' 
+                    })}
+                </span>
+            )
         },
         {
-            key: 'type',
+            key: 'alert_type', // Changed from type
             label: 'TYPE',
             render: (item) => {
-                const badgeType = item.type.toLowerCase().replace(' ', '');
-                return <span className={`${styles.badge} ${styles[badgeType]}`}>{item.type}</span>;
+                // DB: 'low_stock' -> UI Class: 'lowstock'
+                const rawType = item.alert_type || 'unknown';
+                const badgeClass = rawType.replace('_', ''); 
+                const displayText = rawType.replace('_', ' ').toUpperCase();
+
+                return <span className={`${styles.badge} ${styles[badgeClass]}`}>{displayText}</span>;
             }
         },
         {
-            key: 'message',
+            key: 'content', // Changed from message
             label: 'MESSAGE',
-            render: (item) => <span className={styles.messageText}>{item.message}</span>
+            render: (item) => <span className={styles.messageText}>{item.content}</span>
         },
         {
             key: 'actions',
             label: 'ACTIONS',
             render: (item) => (
                 <div className={styles.actionButtons}>
-                    {!item.isRead && (
-                        <button className={`${styles.iconBtn} ${styles.checkBtn}`} onClick={() => handleMarkRead(item.id)} title="Mark Read">
+                    {/* Check if is_read is 0 (false) */}
+                    {item.is_read === 0 && (
+                        <button className={`${styles.iconBtn} ${styles.checkBtn}`} onClick={() => handleMarkRead(item.alert_id)} title="Mark Read">
                             <FaCheck />
                         </button>
                     )}
-                    <button className={`${styles.iconBtn} ${styles.trashBtn}`} onClick={() => handleDelete(item.id)} title="Delete">
+                    <button className={`${styles.iconBtn} ${styles.trashBtn}`} onClick={() => handleDelete(item.alert_id)} title="Delete">
                         <FaTrash />
                     </button>
                 </div>
@@ -94,19 +142,31 @@ function AlertsPage() {
         }
     ];
 
-    // --- FILTERING LOGIC ---
+    // --- 4. FILTERING LOGIC ---
     const filteredData = alerts.filter(item => {
-        const typeMatch = filterType === 'All Types' || item.type === filterType.toUpperCase();
-        const sevMatch = filterSeverity === 'All Severities' || item.severity === filterSeverity.toUpperCase();
-        const statusMatch = showUnreadOnly ? !item.isRead : true;
-        return typeMatch && sevMatch && statusMatch;
+        // Handle Type Filter (Convert UI "Low Stock" to DB "low_stock")
+        let dbTypeMatch = true;
+        if (filterType !== 'All Types') {
+            const requiredType = filterType.toLowerCase().replace(' ', '_');
+            dbTypeMatch = item.alert_type === requiredType;
+        }
+
+        // Handle Severity Filter
+        let sevMatch = true;
+        if (filterSeverity !== 'All Severities') {
+            sevMatch = item.severity === filterSeverity.toLowerCase();
+        }
+
+        // Handle Status (is_read: 0 means Unread)
+        const statusMatch = showUnreadOnly ? item.is_read === 0 : true;
+
+        return dbTypeMatch && sevMatch && statusMatch;
     });
 
     return (
         <div className={styles.pageWrapper}>
             <div className={styles.mainContent}>
                 
-                {/* 1. Replaced Manual Header with Header Component */}
                 <div className={styles.headerWrapper}>
                     <Header 
                         title="ALERTS" 
@@ -117,7 +177,7 @@ function AlertsPage() {
                     />
                 </div>
 
-                {/* 2. Filter Controls */}
+                {/* Filter Controls */}
                 <div className={styles.filterControls}>
                     <div className={styles.filterGroup}>
                         <label>TYPE</label>
@@ -126,7 +186,6 @@ function AlertsPage() {
                             <option>Low Stock</option>
                             <option>Overstock</option>
                             <option>Expiry</option>
-                            <option>Reorder</option>
                         </select>
                     </div>
 
@@ -159,7 +218,7 @@ function AlertsPage() {
                     </div>
                 </div>
 
-                {/* 3. The Table Component */}
+                {/* Table */}
                 <div className={styles.tableContainer}>
                     <Table 
                         data={filteredData}

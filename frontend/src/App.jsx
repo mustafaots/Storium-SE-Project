@@ -1,5 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
+// 🔔 GLOBAL NOTIFICATION WATCHER
+// This stays here so it runs the timer even when you switch pages
+import NotificationWatcher from './components/notificationWatcher/NotificationWatcher';
+
+// Pages
 import ComingSoon from './pages/ComingSoon/ComingSoonPage';
 import SchemaPage from './pages/Schema/SchemaPage';
 import VisualisePage from './pages/Visualise/VisualisePage';
@@ -20,6 +27,27 @@ import SupportPage from './pages/Support/supportPage.jsx';
 function App() {
   return (
     <Router>
+      
+      {/* 1. NOTIFICATION WATCHER 
+          Placing this here ensures it watches for new alerts 
+          regardless of which page you are currently viewing.
+      */}
+      <NotificationWatcher />
+
+      {/* 2. TOAST CONTAINER 
+          Positioned at bottom-right. 
+          The CSS we added to NotificationWatcher.module.css will ensure 
+          this doesn't take up any extra space on the page.
+      */}
+      <ToastContainer 
+        position="bottom-right" 
+        autoClose={5000} 
+        theme="dark" 
+        newestOnTop={false}
+        limit={5}
+      />
+
+      {/* 3. PAGE ROUTES */}
       <Routes>
         <Route path="/" element={<MainPage />} /> 
         <Route path="/coming-soon" element={<ComingSoon />} />
