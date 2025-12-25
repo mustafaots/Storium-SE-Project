@@ -17,34 +17,18 @@ import transactionsRoutes from './src/routes/transactions.routes.js';
 import productsRoutes from './src/routes/products.routes.js';
 import sourcesRoutes from './src/routes/sources.routes.js';
 import visualiseRoutes from './src/routes/visualise.routes.js';
+import routinesRoutes from './src/routes/routines.routes.js'; 
+import alertsRoutes from './src/routes/alerts.routes.js';
 
 // Services (The Robot)
 // ⚠️ CHECK PATH: If your file is in 'src/scheduler.js', remove '/services'
 import { startScheduler } from './src/services/scheduler.js'; 
 
-// Routes
-import clientsRoutes from './src/routes/clients.routes.js';
-import sourcesRoutes from './src/routes/sources.routes.js';
-import routinesRoutes from './src/routes/routines.routes.js'; 
-import alertsRoutes from './src/routes/alerts.routes.js';
-
+// Load environment variables
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// ===== MIDDLEWARE =====
-
-// Database middleware to attach connection to req
-app.use((req, res, next) => {
-  req.db = db;
-  next();
-});
-
-app.use(cors({
-  origin: [/^http:\/\/localhost:\d+$/],
-  credentials: true
-}));
-app.use(express.json());
 // ===========================================
 // 1. MIDDLEWARE (ORDER MATTERS!)
 // ===========================================
