@@ -295,7 +295,7 @@ const racksController = {
         return res.status(404).json(apiResponse.errorResponse('Target slot not found for this rack'));
       }
 
-      const connection = await db.getConnection();
+      const connection = await db.promise().getConnection();
       await connection.beginTransaction();
       try {
         const [stockRows] = await connection.query(
@@ -428,7 +428,7 @@ const racksController = {
         return res.status(400).json(apiResponse.errorResponse('stockId and targetSlotId are required'));
       }
 
-      const connection = await db.getConnection();
+      const connection = await db.promise().getConnection();
       await connection.beginTransaction();
       try {
         const [stockRows] = await connection.query(
