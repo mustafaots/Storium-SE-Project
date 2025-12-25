@@ -43,6 +43,12 @@ app.use(express.urlencoded({ extended: true }));
 // Log Requests
 app.use(requestLogger);
 
+// Attach DB handle for controllers that expect req.db
+app.use((req, res, next) => {
+  req.db = db;
+  next();
+});
+
 // ===== ROUTES =====
 
 // API Routes

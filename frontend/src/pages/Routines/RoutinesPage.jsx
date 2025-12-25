@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './RoutinesPage.module.css';
 import NavBar from '../../components/UI/NavBar/NavBar';
 import Header from '../../components/UI/Header/Header.jsx'; 
@@ -9,8 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // Icons
 import { 
-    FaChartLine, FaExclamationTriangle, FaClock, FaSearch, FaFilter, 
-    FaPlus, FaBolt, FaTimes, FaPlay, FaPen, FaTrash, FaEnvelope, FaBoxOpen, FaBell 
+    FaPlus, FaBolt, FaTimes, FaPlay, FaTrash, FaEnvelope, FaBoxOpen, FaBell 
 } from 'react-icons/fa';
 
 // API BASE URL
