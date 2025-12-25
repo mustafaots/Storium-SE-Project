@@ -144,11 +144,15 @@ export const getWarehouseOccupancy = async (db, filters = {}) => {
   // We count slots containing the specific product vs total slots? That's utilization, not occupancy.
   // Let's implement location filtering only for occupancy base metric.
 
+  // IMPORTANT:
+  // Do not rely on rack_slots.is_occupied being maintained.
+  // Derive occupancy from actual stock presence to avoid always-0 occupancy.
   const [rows] = await db.execute(`
     SELECT 
-      COUNT(*) as total_slots,
-      SUM(CASE WHEN rs.is_occupied = true THEN 1 ELSE 0 END) as occupied_slots
+      COUNT(DISTINCT rs.slot_id) as total_slots,
+      COUNT(DISTINCT CASE WHEN s.stock_id IS NOT NULL AND COALESCE(s.quantity, 0) > 0 THEN rs.slot_id END) as occupied_slots
     FROM rack_slots rs
+    LEFT JOIN stocks s ON s.slot_id = rs.slot_id
     ${locationJoin}
     WHERE 1=1 ${locationWhere}
   `, params);
@@ -269,9 +273,9 @@ export const getWarehouseZones = async (db, filters = {}) => {
         rs.bay_no,
         rs.level_no,
         rs.bin_no,
-        rs.is_occupied,
+        CASE WHEN s.stock_id IS NOT NULL AND COALESCE(s.quantity, 0) > 0 THEN TRUE ELSE FALSE END as is_occupied,
         rs.capacity,
-        s.quantity,
+        COALESCE(s.quantity, 0) as quantity,
         s.product_type,
         p.name as product_name,
         p.product_id
@@ -291,11 +295,11 @@ export const getWarehouseZones = async (db, filters = {}) => {
       let match = true;
 
       // Filter verification
-      if (filters.productId && slot.product_id !== filters.productId && slot.is_occupied) match = false;
-      if (filters.stockType && filters.stockType !== 'all' && slot.product_type !== filters.stockType && slot.is_occupied) match = false;
+      if (filters.productId && Number(slot.product_id) !== Number(filters.productId) && slot.is_occupied) match = false;
+      if (filters.stockType && filters.stockType !== 'all' && String(slot.product_type) !== String(filters.stockType) && slot.is_occupied) match = false;
 
       if (slot.is_occupied && match) {
-        const fillPercentage = slot.capacity ? (slot.quantity / slot.capacity) * 100 : 50;
+        const fillPercentage = slot.capacity ? (Number(slot.quantity) / Number(slot.capacity)) * 100 : 50;
         if (fillPercentage >= 80) occupancy = 'high';
         else if (fillPercentage >= 40) occupancy = 'medium';
         else occupancy = 'low';
@@ -962,21 +966,25 @@ export const getOccupancyByRack = async (db, filters = {}) => {
 
   const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
-  // For product type filtering in occupancy, we count slots with that product type
-  let productTypeJoin = '';
+  // For product type filtering in occupancy, we count slots that contain that product type.
+  // NOTE: Use parameters (avoid string interpolation).
+  let productTypeJoin = 'LEFT JOIN stocks st ON rs.slot_id = st.slot_id';
   let productTypeCondition = '';
-
   if (filters.stockType && filters.stockType !== 'all') {
-    productTypeJoin = 'LEFT JOIN stocks st ON rs.slot_id = st.slot_id';
-    productTypeCondition = `AND st.product_type = '${filters.stockType}'`;
+    productTypeCondition = 'AND st.product_type = ?';
+    params.push(filters.stockType);
   }
 
   const [rows] = await db.execute(`
     SELECT 
       r.rack_code as rackCode,
-      COUNT(rs.slot_id) as totalSlots,
-      SUM(CASE WHEN rs.is_occupied = TRUE ${productTypeCondition} THEN 1 ELSE 0 END) as occupiedSlots,
-      ROUND(100.0 * SUM(CASE WHEN rs.is_occupied = TRUE ${productTypeCondition} THEN 1 ELSE 0 END) / COUNT(rs.slot_id), 1) as occupancyPercent
+      COUNT(DISTINCT rs.slot_id) as totalSlots,
+      COUNT(DISTINCT CASE WHEN st.stock_id IS NOT NULL AND COALESCE(st.quantity, 0) > 0 ${productTypeCondition} THEN rs.slot_id END) as occupiedSlots,
+      ROUND(
+        100.0 * COUNT(DISTINCT CASE WHEN st.stock_id IS NOT NULL AND COALESCE(st.quantity, 0) > 0 ${productTypeCondition} THEN rs.slot_id END)
+        / COUNT(DISTINCT rs.slot_id),
+        1
+      ) as occupancyPercent
     FROM racks r
     JOIN aisles a ON r.parent_aisle = a.aisle_id
     JOIN depots d ON a.parent_depot = d.depot_id
@@ -1008,6 +1016,8 @@ export const getOccupancyByDepot = async (db, filters = {}) => {
   }
 
   const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
+  // Same filter, but with alias used inside the subquery.
+  const where2 = conditions.length > 0 ? 'WHERE ' + conditions.map(c => c.replaceAll('d.', 'd2.')).join(' AND ') : '';
 
   const [rows] = await db.execute(`
     SELECT 
@@ -1018,13 +1028,13 @@ export const getOccupancyByDepot = async (db, filters = {}) => {
         JOIN racks r2 ON rs2.rack_id = r2.rack_id
         JOIN aisles a2 ON r2.parent_aisle = a2.aisle_id
         JOIN depots d2 ON a2.parent_depot = d2.depot_id
-        ${where}
+        ${where2}
       ), 1) as percentage
     FROM depots d
     JOIN aisles a ON a.parent_depot = d.depot_id
     JOIN racks r ON r.parent_aisle = a.aisle_id
     JOIN rack_slots rs ON rs.rack_id = r.rack_id
-    LEFT JOIN stocks s ON s.slot_id = rs.slot_id AND rs.is_occupied = TRUE
+    LEFT JOIN stocks s ON s.slot_id = rs.slot_id AND COALESCE(s.quantity, 0) > 0
     ${where}
     GROUP BY s.product_type
     ORDER BY occupiedSlots DESC

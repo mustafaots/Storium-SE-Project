@@ -30,6 +30,55 @@ const buildLastNDays = (days) => {
   return out;
 };
 
+const buildInListPlaceholders = (count) => Array(Math.max(0, count)).fill('?').join(',');
+
+const getTxnUnitPriceMaps = async (db, txns) => {
+  const stockIds = [];
+  const productIds = [];
+
+  for (const t of txns) {
+    if (t?.stock_id != null) stockIds.push(Number(t.stock_id));
+    if (t?.product_id != null) productIds.push(Number(t.product_id));
+  }
+
+  const uniqueStockIds = [...new Set(stockIds)].filter(Number.isFinite);
+  const uniqueProductIds = [...new Set(productIds)].filter(Number.isFinite);
+
+  const stockPriceMap = new Map();
+  const productPriceMap = new Map();
+
+  if (uniqueStockIds.length) {
+    const [rows] = await db.execute(
+      `SELECT s.stock_id, s.product_id,
+              COALESCE(s.sale_price, s.cost_price, p.rate, 0) AS unit_price
+       FROM stocks s
+       LEFT JOIN products p ON p.product_id = s.product_id
+       WHERE s.stock_id IN (${buildInListPlaceholders(uniqueStockIds.length)})`,
+      uniqueStockIds
+    );
+    for (const r of rows) {
+      stockPriceMap.set(Number(r.stock_id), Number(r.unit_price) || 0);
+      if (r.product_id != null) productPriceMap.set(Number(r.product_id), Number(r.unit_price) || 0);
+    }
+  }
+
+  // Fill missing product prices from products table
+  const missingProductIds = uniqueProductIds.filter(id => !productPriceMap.has(id));
+  if (missingProductIds.length) {
+    const [rows] = await db.execute(
+      `SELECT product_id, COALESCE(rate, 0) AS unit_price
+       FROM products
+       WHERE product_id IN (${buildInListPlaceholders(missingProductIds.length)})`,
+      missingProductIds
+    );
+    for (const r of rows) {
+      productPriceMap.set(Number(r.product_id), Number(r.unit_price) || 0);
+    }
+  }
+
+  return { stockPriceMap, productPriceMap };
+};
+
 const getSlotIdsForLocation = async (db, locationId) => {
   if (!locationId) return null;
   const [rows] = await db.execute(
@@ -110,13 +159,50 @@ export const getStockTrends = async (db, days = 30, filters = {}) => {
   const currentValue = await visualiseModel.getCurrentStockValue(db, filters);
   const txns = await filterTransactionsFromFile(db, { ...filters, dateRange: days, locationId: null, txnType: 'all' });
 
+  const { stockPriceMap, productPriceMap } = await getTxnUnitPriceMaps(db, txns);
+
+  // Identify the first day in this window where we have *any* recorded activity.
+  // If there's no activity yet, we can't infer historical totals, so leave as-is.
+  let earliestTxnDate = null;
+  for (const t of txns) {
+    const d = toIsoDate(t?.timestamp);
+    if (!d) continue;
+    if (!earliestTxnDate || d < earliestTxnDate) earliestTxnDate = d;
+  }
+
   const dailyChangeMap = new Map();
   for (const t of txns) {
     const dateStr = toIsoDate(t.timestamp);
     if (!dateStr) continue;
     if (filters.productId && Number(t.product_id) !== Number(filters.productId)) continue;
-    const v = Number(t.total_value) || 0;
-    const signed = t.txn_type === 'outflow' ? -v : (t.txn_type === 'inflow' ? v : 0);
+
+    const txnType = String(t.txn_type || '').toLowerCase();
+    const qty = Number(t.quantity) || 0;
+
+    let v = Number(t.total_value);
+    if (!Number.isFinite(v) || v === 0) {
+      const stockId = t.stock_id != null ? Number(t.stock_id) : null;
+      const productId = t.product_id != null ? Number(t.product_id) : null;
+      const unitPrice = (stockId != null ? stockPriceMap.get(stockId) : null) ??
+        (productId != null ? productPriceMap.get(productId) : null) ??
+        0;
+
+      const effectiveUnitPrice = unitPrice || 1; // fallback so the chart moves even if pricing isn't configured
+      if (txnType === 'adjustment') {
+        v = qty * effectiveUnitPrice; // qty is delta for adjustments
+      } else if (txnType === 'inflow' || txnType === 'outflow' || txnType === 'consumption') {
+        v = Math.abs(qty) * effectiveUnitPrice;
+      } else {
+        v = 0;
+      }
+    }
+
+    const signed =
+      txnType === 'outflow' || txnType === 'consumption' ? -Math.abs(v) :
+      txnType === 'inflow' ? Math.abs(v) :
+      txnType === 'adjustment' ? v :
+      0;
+
     dailyChangeMap.set(dateStr, (dailyChangeMap.get(dateStr) || 0) + signed);
   }
 
@@ -143,6 +229,14 @@ export const getStockTrends = async (db, days = 30, filters = {}) => {
     // Subtract today's change to get yesterday's value
     const change = changeMap.get(dateStr) || 0;
     runningValue -= change;
+  }
+
+  // If there were no recorded transactions before a given date in this window,
+  // do not backfill the chart with today's stock snapshot (it looks like "past" had stock).
+  if (earliestTxnDate) {
+    for (const point of values) {
+      if (point.date < earliestTxnDate) point.value = 0;
+    }
   }
 
   return values.map(item => ({
