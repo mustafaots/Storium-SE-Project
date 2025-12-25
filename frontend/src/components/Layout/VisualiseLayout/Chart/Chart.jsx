@@ -51,7 +51,7 @@ const Chart = ({ data = [], comparison = {} }) => {
   const chartData = useMemo(() => {
     return data.map(item => ({
       name: item.label || item.date,
-      value: item.value || item.stockValue || 0,
+      value: (item.value ?? item.stockValue ?? 0),
     }));
   }, [data]);
 
