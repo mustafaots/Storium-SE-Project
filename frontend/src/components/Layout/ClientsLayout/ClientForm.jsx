@@ -159,6 +159,8 @@ const FormField = ({ type, field, placeholder, value, onChange, error, required,
   <div className={styles.formGroup}>
     {type === 'textarea' ? (
       <textarea
+        id={field}
+        name={field}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(field, e.target.value)}
@@ -167,6 +169,8 @@ const FormField = ({ type, field, placeholder, value, onChange, error, required,
       />
     ) : (
       <input
+        id={field}
+        name={field}
         type={type}
         placeholder={placeholder}
         value={value}

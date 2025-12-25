@@ -55,10 +55,10 @@ function Table({
 
     // Add action/note column for all views
     baseColumns.push({
-      key: 'note',
+      key: 'notes',
       label: 'Action',
       render: (item) => (
-        <div className={styles.action}>{item.note}</div>
+        <div className={styles.action}>{item.notes}</div>
       )
     });
 

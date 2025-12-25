@@ -1,13 +1,13 @@
 import {
-  FaCompass, 
-  FaSitemap, 
-  FaChartBar, 
-  FaDatabase, 
-  FaBox, 
-  FaExchangeAlt, 
+  FaBell,
+  FaChartLine,
+  FaClock,
+  FaCompass,
+  FaCubes,
+  FaExchangeAlt,
+  FaBoxes,
+  FaSitemap,
   FaUsers,
-  FaCogs, 
-  FaBell
 } from 'react-icons/fa';
 
 import styles from './NavBar.module.css';
@@ -22,22 +22,22 @@ const defaultNavItems = [
   },
   {
       name: 'Schema',
-      icon: <FaSitemap/>,
+    icon: <FaSitemap/>,
       path: '/schema'
   },
   {
       name: 'Visualise',
-      icon: <FaChartBar/>,
+    icon: <FaChartLine/>,
       path: '/visualise'
   },
   {
       name: 'Sources',
-      icon: <FaDatabase/>,
+    icon: <FaBoxes/>,
       path: '/sources'
   },
   {
       name: 'Products',
-      icon: <FaBox/>,
+    icon: <FaCubes/>,
       path: '/products'
   },
   {
@@ -52,7 +52,7 @@ const defaultNavItems = [
   },
   {
       name: 'Routines',
-      icon: <FaCogs/>,
+    icon: <FaClock/>,
       path: '/routines'
   },
   {

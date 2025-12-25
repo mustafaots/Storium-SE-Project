@@ -4,6 +4,26 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 export const productsConfig = {
   columns: (styles, handlers) => [
     {
+      key: 'image',
+      header: '',
+      width: 'minmax(50px, 60px)',
+      render: (row) => (
+        <div className={styles.productImageCell}>
+          {row.image_data ? (
+            <img 
+              src={`data:${row.image_mime_type || 'image/png'};base64,${row.image_data}`}
+              alt={row.name}
+              className={styles.productImageCircle}
+            />
+          ) : (
+            <div className={styles.productImagePlaceholder}>
+              {row.name?.charAt(0)?.toUpperCase() || '?'}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
       key: 'product_id',
       header: 'ID',
       width: 'minmax(50px, 80px)',
@@ -31,12 +51,7 @@ export const productsConfig = {
       header: 'Unit',
       width: 'minmax(80px, 100px)',
     },
-    {
-      key: 'total_stock',
-      header: 'Total Stock',
-      width: 'minmax(100px, 120px)',
-      render: (row) => <span>{row.total_stock ?? row.total ?? 0}</span>,
-    },
+    
     {
       key: 'min_stock_level',
       header: 'Min Stock',
@@ -48,6 +63,18 @@ export const productsConfig = {
       header: 'Max Stock',
       width: 'minmax(90px, 110px)',
       render: (row) => <span>{row.max_stock_level ?? 0}</span>,
+    },
+    {
+      key: 'rate',
+      header: 'Rate',
+      width: 'minmax(80px, 100px)',
+      render: (row) => <span>{row.rate != null ? row.rate : '-'}</span>,
+    },
+    {
+      key: 'rate_unit',
+      header: 'Rate Unit',
+      width: 'minmax(100px, 130px)',
+      render: (row) => <span>{row.rate_unit || '-'}</span>,
     },
     {
       key: 'actions',

@@ -7,15 +7,14 @@ import Button from '../../components/UI/Button/Button';
 import DataTable from '../../components/UI/DataTable/DataTable';
 import SourceForm from '../../components/Layout/SourcesLayout/SourceForm';
 import { FaTruck, FaFile, FaPlus } from 'react-icons/fa';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { exportToCSV, exportToPDF } from '../../utils/export';
 
 
 import { useSources } from '../../hooks/useSources';
 import { sourcesHandlers } from '../../handlers/sourcesHandlers';
 import { sourcesConfig } from '../../config/sourcesConfig';
 import useTableSearch from '../../hooks/useTableSearch';
-import { sourcesAPI } from '../../utils/sourcesAPI';
+import { sourcesAPI } from '../../utils/SourcesAPI';
 import { sourcesHelpers } from '../../utils/sourcesHelpers';
 import styles from './SourcesPage.module.css';
 
@@ -119,55 +118,19 @@ function SourcesPage() {
     }
   };
 
-  const exportToCSV = async () => {
+  const handleExportCSV = async () => {
     const rows = exportScope === 'current' ? buildExportRows(sources) : await fetchAllSourcesForExport();
     if (!rows.length) return;
-
-    const escape = (value) => {
-      const str = String(value ?? '');
-      if (str.includes('"') || str.includes(',') || str.includes('\n')) {
-        return '"' + str.replace(/"/g, '""') + '"';
-      }
-      return str;
-    };
-
-    const headerLine = exportHeaders.map((h) => escape(h.label)).join(',');
-    const lines = rows.map((row) => exportHeaders.map((h) => escape(row[h.key])).join(','));
-    const csv = [headerLine, ...lines].join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'sources.csv';
-    link.click();
-    URL.revokeObjectURL(url);
+    exportToCSV(rows, 'sources');
     setShowExportMenu(false);
   };
 
-  const exportToPDF = async () => {
-  const rows = exportScope === 'current' ? buildExportRows(sources) : await fetchAllSourcesForExport();
-  if (!rows.length) return;
-
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-  doc.setFontSize(14);
-  doc.text('Sources', 40, 40);
-
-  const head = [exportHeaders.map(h => h.label)];
-  const body = rows.map(row => exportHeaders.map(h => row[h.key] ?? ''));
-
-  autoTable(doc, {
-    head,
-    body,
-    startY: 60,
-    styles: { fontSize: 10, cellPadding: 6 },
-    headStyles: { fillColor: [54, 57, 63] },
-    alternateRowStyles: { fillColor: [245, 245, 245] },
-  });
-
-  doc.save('sources.pdf');
-  setShowExportMenu(false);
-};
+  const handleExportPDF = async () => {
+    const rows = exportScope === 'current' ? buildExportRows(sources) : await fetchAllSourcesForExport();
+    if (!rows.length) return;
+    exportToPDF(rows, exportHeaders, 'Sources Report', 'sources');
+    setShowExportMenu(false);
+  };
 
 
   return (
@@ -239,8 +202,8 @@ function SourcesPage() {
                           </Button>
                           {showExportMenu && (
                             <div className={styles.exportMenu}>
-                              <button onClick={exportToCSV}>Export CSV</button>
-                              <button onClick={exportToPDF}>Export PDF</button>
+                              <button onClick={handleExportCSV}>Export CSV</button>
+                              <button onClick={handleExportPDF}>Export PDF</button>
                             </div>
                           )}
                         </div>

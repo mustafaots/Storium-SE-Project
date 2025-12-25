@@ -67,13 +67,6 @@ export const productsHandlers = {
    */
   handleDelete: async (id, deleteProduct, productName = 'this product') => {
     try {
-      // Create custom confirmation modal
-      const confirmed = window.confirm(
-        `⚠️ DELETE PRODUCT\n\nAre you sure you want to delete "${productName}"?\n\nThis action cannot be undone.`
-      );
-      
-      if (!confirmed) return;
-
       await deleteProduct(id);
       console.log('Product deleted successfully');
     } catch (err) {

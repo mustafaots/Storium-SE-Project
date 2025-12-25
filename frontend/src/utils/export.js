@@ -1,6 +1,12 @@
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTableImport from 'jspdf-autotable';
 import Papa from 'papaparse';
+
+const resolveAutoTable = () => {
+    if (typeof autoTableImport === 'function') return autoTableImport;
+    if (autoTableImport && typeof autoTableImport.default === 'function') return autoTableImport.default;
+    return null;
+};
 
 /**
  * Export data as CSV file
@@ -47,8 +53,8 @@ export const exportToCSV = (data, filename = 'export') => {
 
 export const exportToPDF = (data, columns, title = 'Report', filename = 'export') => {
     try {
-        // Create new PDF document
-        const doc = new jsPDF();
+        // Create new PDF document in landscape orientation
+        const doc = new jsPDF('landscape');
         
         // Add title
         doc.setFontSize(18);
@@ -60,59 +66,42 @@ export const exportToPDF = (data, columns, title = 'Report', filename = 'export'
         doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
         
         // Prepare table data - convert objects to arrays
-        const tableData = data.map(item => 
-            columns.map(col => item[col.key] || '')
+        const tableData = data.map(item =>
+            columns.map(col => item[col.key] ?? '')
         );
         
         // Prepare headers
         const headers = [columns.map(col => col.label)];
         
-        // Generate the table using the jspdf-autotable plugin attached to the jsPDF instance
-        // some bundlers attach the plugin to the doc as `doc.autoTable`
-        if (typeof doc.autoTable === 'function') {
-            doc.autoTable({
-                head: headers,
-                body: tableData,
-                startY: 40,
-                theme: 'striped',
-                headStyles: { 
-                    fillColor: [41, 128, 185],
-                    textColor: 255,
-                    fontStyle: 'bold'
-                },
-                styles: { 
-                    fontSize: 9,
-                    cellPadding: 3
-                },
-                alternateRowStyles: {
-                    fillColor: [245, 245, 245]
-                }
-            });
-        } else {
-            // Fallback: try calling autoTable as a global function (older setups)
-            if (typeof window !== 'undefined' && typeof window.autoTable === 'function') {
-                window.autoTable(doc, {
-                    head: headers,
-                    body: tableData,
-                    startY: 40,
-                    theme: 'striped',
-                    headStyles: { 
-                        fillColor: [41, 128, 185],
-                        textColor: 255,
-                        fontStyle: 'bold'
-                    },
-                    styles: { 
-                        fontSize: 9,
-                        cellPadding: 3
-                    },
-                    alternateRowStyles: {
-                        fillColor: [245, 245, 245]
-                    }
-                });
-            } else {
-                // If autoTable is not available, throw an informative error so caller can catch it
-                throw new Error('jspdf-autotable plugin is not loaded. Ensure "jspdf-autotable" is installed and imported.');
+        const tableOptions = {
+            head: headers,
+            body: tableData,
+            startY: 40,
+            theme: 'striped',
+            headStyles: {
+                fillColor: [41, 128, 185],
+                textColor: 255,
+                fontStyle: 'bold'
+            },
+            styles: {
+                fontSize: 9,
+                cellPadding: 3
+            },
+            alternateRowStyles: {
+                fillColor: [245, 245, 245]
             }
+        };
+
+        // Prefer the official callable API: autoTable(doc, options)
+        const autoTableFn = resolveAutoTable();
+        if (autoTableFn) {
+            autoTableFn(doc, tableOptions);
+        } else if (typeof doc.autoTable === 'function') {
+            doc.autoTable(tableOptions);
+        } else if (typeof window !== 'undefined' && typeof window.autoTable === 'function') {
+            window.autoTable(doc, tableOptions);
+        } else {
+            throw new Error('jspdf-autotable plugin is not available. Ensure it is installed and imported.');
         }
         // Save the PDF
         doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);

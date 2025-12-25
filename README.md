@@ -9,15 +9,15 @@ Storium is an inventory management system designed and built to meet industry st
 Storium will allow its wielders to track and record their inventory placements from geographic locations down to the microscopic shelf spots. Automate routines and visualise supply chains, tradeoff between understock and overstock, and make the institution run like clockwork with the IMS being the escapement that yields the implicit profits.
 
 ## Features
-- [ ] Schmea Tab: handling the positioning of the inventories across locations, down to depots, aisles and racks.
+- [x] Schmea Tab: handling the positioning of the inventories across locations, down to depots, aisles and racks.
 - [x] Clients Tab: manage clients for an outflow of goods.
-- [ ] Transactions Tab: record the actions occurring on the inventory's premisis.
-- [ ] Products Tab: manage identified products which are present in the inventory.
-- [ ] Sources Tab: manage the sources from which the inventory receives stocks of products.
+- [x] Transactions Tab: record the actions occurring on the inventory's premisis.
+- [x] Products Tab: manage identified products which are present in the inventory.
+- [x] Sources Tab: manage the sources from which the inventory receives stocks of products.
 - [ ] Routines Tab: manage automated transactions on inventory shelved stocks.
 - [ ] Alerts Tab: get notified on any nearby events such as overstock, understock, expiry...
 - [ ] Visualise Tab: transform the raw data collected through records into visualisiations that offer insight.
-- [ ] Exporting Information: export the inventory files or visualisations into tangible formats (pdf, csv, json, svg...)
+- [x] Exporting Information: export the inventory files or visualisations into tangible formats (pdf, csv, json, svg...)
 
 ## Use Cases
 
@@ -145,7 +145,8 @@ backend/
 │   ├── controllers/
 │   ├── middleware/
 │   ├── models/
-│   └── routes/
+│   ├── routes/
+│   ├── services/
 │   └── utils/
 │
 ├── .env

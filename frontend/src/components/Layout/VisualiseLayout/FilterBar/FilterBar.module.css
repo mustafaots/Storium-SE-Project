@@ -1,0 +1,106 @@
+/* FilterBar Component Styles */
+/* Path: frontend/src/components/Visualise/FilterBar/FilterBar.module.css */
+
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--discord-gray);
+  border-radius: 8px;
+  /* Matching border radius 8px from ProductsPage styles */
+  border: 1px solid var(--discord-gray-light);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.select {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+  border-radius: 4px;
+  /* Consistent small radius */
+  font-size: 0.875rem;
+  color: var(--text-light);
+  /* Light text color */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.select:hover {
+  border-color: var(--industrial-gold);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--industrial-gold);
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.3);
+  /* Gold glow */
+}
+
+.selectIcon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--text-gray);
+}
+
+.applyButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--industrial-gold);
+  color: var(--discord-gray-dark);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+
+.applyButton:hover {
+  background: var(--industrial-gold-dark);
+}
+
+.applyButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.applyIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (max-width: 768px) {
+  .filterBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterGroup {
+    width: 100%;
+  }
+
+  .select {
+    flex: 1;
+    min-width: auto;
+  }
+
+  .applyButton {
+    margin-left: 0;
+    justify-content: center;
+  }
+}
