@@ -141,7 +141,7 @@ CREATE TABLE routines (
     name VARCHAR(255) NOT NULL,
     promise TEXT COMMENT 'Condition or schedule description',
     resolve TEXT COMMENT 'Action to take when triggered',
-    frequency ENUM('daily', 'weekly', 'monthly', 'on_event'),
+    frequency ENUM('daily', 'weekly', 'monthly', 'on_event', 'always'),
     is_active BOOLEAN DEFAULT TRUE,
     last_run TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
