@@ -260,6 +260,22 @@ const racksController = {
         slot_coordinates
       });
 
+      // Record this as an inflow so visualization trends can reflect the change.
+      // (Stocks created via rack endpoints previously bypassed the transaction log.)
+      try {
+        const unitPrice = cost_price ?? sale_price ?? null;
+        await TransactionsService.createStockInflow({
+          stockId: Number(newStock.stock_id),
+          productId: Number(product_id),
+          slotId: Number(slotId),
+          quantity: Number(quantity),
+          unitPrice: unitPrice != null ? Number(unitPrice) : null,
+          note: `New stock created in ${slot_coordinates}`
+        });
+      } catch (logErr) {
+        console.warn('⚠️ Failed to log createStock inflow transaction:', logErr.message);
+      }
+
       res.status(201).json(apiResponse.successResponse(newStock, 'Stock created for slot'));
     } catch (error) {
       res.status(400).json(apiResponse.errorResponse(error.message));
@@ -279,12 +295,47 @@ const racksController = {
         return res.status(404).json(apiResponse.errorResponse('Target slot not found for this rack'));
       }
 
-      const result = await Stock.moveToSlot(stockId, targetSlotId);
-      if (result.affectedRows === 0) {
-        return res.status(404).json(apiResponse.errorResponse('Stock not found'));
-      }
+      const connection = await db.getConnection();
+      await connection.beginTransaction();
+      try {
+        const [stockRows] = await connection.query(
+          'SELECT stock_id, product_id, slot_id, quantity FROM stocks WHERE stock_id = ? FOR UPDATE',
+          [stockId]
+        );
+        const stockRow = stockRows?.[0];
+        if (!stockRow) {
+          await connection.rollback();
+          return res.status(404).json(apiResponse.errorResponse('Stock not found'));
+        }
 
-      res.json(apiResponse.successResponse(null, 'Stock moved successfully'));
+        const [updateResult] = await connection.query(
+          'UPDATE stocks SET slot_id = ?, last_updated = CURRENT_TIMESTAMP WHERE stock_id = ?',
+          [targetSlotId, stockId]
+        );
+        if (updateResult.affectedRows === 0) {
+          await connection.rollback();
+          return res.status(404).json(apiResponse.errorResponse('Stock not found'));
+        }
+
+        // Log relocation so location/product filtered visualisations reflect moves.
+        await TransactionsService.createRelocation({
+          stockId: Number(stockRow.stock_id),
+          productId: Number(stockRow.product_id),
+          fromSlotId: Number(stockRow.slot_id),
+          toSlotId: Number(targetSlotId),
+          quantity: Number(stockRow.quantity),
+          note: 'Stock moved',
+          dbConn: connection
+        });
+
+        await connection.commit();
+        res.json(apiResponse.successResponse(null, 'Stock moved successfully'));
+      } catch (innerError) {
+        await connection.rollback();
+        throw innerError;
+      } finally {
+        connection.release();
+      }
     } catch (error) {
       res.status(400).json(apiResponse.errorResponse(error.message));
     }
@@ -293,10 +344,54 @@ const racksController = {
   updateStock: async (req, res) => {
     try {
       const stockId = req.params.stockId;
-      const result = await Stock.update(stockId, req.body);
-      if (result.affectedRows === 0) {
+
+      const existing = await Stock.getById(stockId);
+      if (!existing) {
         return res.status(404).json(apiResponse.errorResponse('Stock not found'));
       }
+
+      const payload = { ...req.body };
+      const quantityProvided = payload.quantity !== undefined;
+      const newQty = quantityProvided ? Number(payload.quantity) : null;
+
+      if (quantityProvided && (!Number.isFinite(newQty) || newQty < 0)) {
+        return res.status(400).json(apiResponse.errorResponse('quantity must be a non-negative number'));
+      }
+
+      // Update non-quantity fields via the legacy Stock.update.
+      // Quantity changes are handled via TransactionsService.createAdjustment so they are logged.
+      delete payload.quantity;
+      if (Object.keys(payload).length) {
+        const result = await Stock.update(stockId, payload);
+        if (result.affectedRows === 0) {
+          return res.status(404).json(apiResponse.errorResponse('Stock not found'));
+        }
+      }
+
+      if (quantityProvided) {
+        const oldQty = Number(existing.quantity) || 0;
+        const delta = newQty - oldQty;
+        if (delta !== 0) {
+          const unitPrice =
+            req.body.cost_price ??
+            req.body.sale_price ??
+            existing.cost_price ??
+            existing.sale_price ??
+            null;
+
+          await TransactionsService.createAdjustment({
+            stockId: Number(stockId),
+            productId: Number(existing.product_id),
+            slotId: Number(existing.slot_id),
+            quantityDelta: delta,
+            unitPrice: unitPrice != null ? Number(unitPrice) : null,
+            note: 'Stock quantity updated',
+            isAutomated: false,
+            routineId: null
+          });
+        }
+      }
+
       res.json(apiResponse.successResponse(null, 'Stock updated successfully'));
     } catch (error) {
       res.status(400).json(apiResponse.errorResponse(error.message));
@@ -306,10 +401,20 @@ const racksController = {
   deleteStock: async (req, res) => {
     try {
       const stockId = req.params.stockId;
-      const result = await Stock.softDelete(stockId);
-      if (result.affectedRows === 0) {
+      const existing = await Stock.getById(stockId);
+      if (!existing) {
         return res.status(404).json(apiResponse.errorResponse('Stock not found'));
       }
+
+      // Treat discard as consumption so it is logged and trends can reflect the drop.
+      await TransactionsService.createConsumption({
+        stockId: Number(stockId),
+        productId: Number(existing.product_id),
+        slotId: Number(existing.slot_id),
+        quantity: Number(existing.quantity) || 0,
+        note: 'Stock discarded'
+      });
+
       res.json(apiResponse.successResponse(null, 'Stock discarded successfully'));
     } catch (error) {
       res.status(400).json(apiResponse.errorResponse(error.message));
@@ -323,7 +428,7 @@ const racksController = {
         return res.status(400).json(apiResponse.errorResponse('stockId and targetSlotId are required'));
       }
 
-      const connection = db.promise();
+      const connection = await db.getConnection();
       await connection.beginTransaction();
       try {
         const [stockRows] = await connection.query(
@@ -381,6 +486,8 @@ const racksController = {
       } catch (innerError) {
         await connection.rollback();
         throw innerError;
+      } finally {
+        connection.release();
       }
     } catch (error) {
       res.status(400).json(apiResponse.errorResponse(error.message));
