@@ -3,6 +3,7 @@
 
 import * as visualiseService from '../services/visualise.service.js';
 import { successResponse, errorResponse } from '../utils/apiResponse.js';
+import { db as defaultDb } from '../config/database.js';
 
 /**
  * Get Key Performance Indicators
@@ -10,11 +11,12 @@ import { successResponse, errorResponse } from '../utils/apiResponse.js';
  */
 export const getKPIs = async (req, res) => {
   try {
+    const db = req.db ?? defaultDb;
     const filters = {
       locationId: req.query.locationId ? parseInt(req.query.locationId) : null,
       productId: req.query.productId ? parseInt(req.query.productId) : null
     };
-    const kpis = await visualiseService.getKPIs(req.db, filters);
+    const kpis = await visualiseService.getKPIs(db, filters);
     return successResponse(res, 'KPIs retrieved', kpis);
   } catch (error) {
     return errorResponse(res, 'Failed to fetch KPIs', error.message, 500);
@@ -27,6 +29,7 @@ export const getKPIs = async (req, res) => {
  */
 export const getAnalytics = async (req, res) => {
   try {
+    const db = req.db ?? defaultDb;
     const { type, dateRange, locationId, productId } = req.query;
     const filters = {
       dateRange: dateRange ? parseInt(dateRange) : 30,
@@ -37,19 +40,19 @@ export const getAnalytics = async (req, res) => {
     let data;
     switch (type) {
       case 'stock-trends':
-        data = await visualiseService.getStockTrends(req.db, filters.dateRange);
+        data = await visualiseService.getStockTrends(db, filters.dateRange);
         break;
       case 'occupancy':
-        data = await visualiseService.getWarehouseZones(req.db);
+        data = await visualiseService.getWarehouseZones(db);
         break;
       case 'transactions':
-        data = await visualiseService.getTransactionAnalytics(req.db, filters);
+        data = await visualiseService.getTransactionAnalytics(db, filters);
         break;
       case 'products':
-        data = await visualiseService.getProductPerformance(req.db);
+        data = await visualiseService.getProductPerformance(db);
         break;
       default:
-        data = await visualiseService.getVisualizationData(req.db, filters);
+        data = await visualiseService.getVisualizationData(db, filters);
     }
 
     return successResponse(res, 'Analytics data retrieved', data);
@@ -65,8 +68,9 @@ export const getAnalytics = async (req, res) => {
  */
 export const getStockTrends = async (req, res) => {
   try {
+    const db = req.db ?? defaultDb;
     const days = req.query.days ? parseInt(req.query.days) : 30;
-    const trends = await visualiseService.getStockTrends(req.db, days);
+    const trends = await visualiseService.getStockTrends(db, days);
     const comparison = visualiseService.calculateComparison(trends);
     return successResponse(res, 'Stock trends retrieved', { trends, comparison });
   } catch (error) {
@@ -80,7 +84,8 @@ export const getStockTrends = async (req, res) => {
  */
 export const getOccupancyAnalytics = async (req, res) => {
   try {
-    const data = await visualiseService.getWarehouseZones(req.db);
+    const db = req.db ?? defaultDb;
+    const data = await visualiseService.getWarehouseZones(db);
     return successResponse(res, 'Occupancy data retrieved', data);
   } catch (error) {
     return errorResponse(res, 'Failed to fetch occupancy', error.message, 500);
@@ -93,11 +98,12 @@ export const getOccupancyAnalytics = async (req, res) => {
  */
 export const getTransactionAnalytics = async (req, res) => {
   try {
+    const db = req.db ?? defaultDb;
     const filters = {
       dateRange: req.query.dateRange ? parseInt(req.query.dateRange) : 30,
       locationId: req.query.locationId ? parseInt(req.query.locationId) : null
     };
-    const data = await visualiseService.getTransactionAnalytics(req.db, filters);
+    const data = await visualiseService.getTransactionAnalytics(db, filters);
     return successResponse(res, 'Transaction analytics retrieved', data);
   } catch (error) {
     return errorResponse(res, 'Failed to fetch transaction analytics', error.message, 500);
@@ -110,7 +116,8 @@ export const getTransactionAnalytics = async (req, res) => {
  */
 export const getProductPerformance = async (req, res) => {
   try {
-    const data = await visualiseService.getProductPerformance(req.db);
+    const db = req.db ?? defaultDb;
+    const data = await visualiseService.getProductPerformance(db);
     return successResponse(res, 'Product performance retrieved', data);
   } catch (error) {
     return errorResponse(res, 'Failed to fetch product performance', error.message, 500);
@@ -123,6 +130,7 @@ export const getProductPerformance = async (req, res) => {
  */
 export const getVisualizationData = async (req, res) => {
   try {
+    const db = req.db ?? defaultDb;
     const { type, dateRange, productId, locationId, stockType, txnType } = req.query;
     const filters = {
       dateRange: dateRange ? parseInt(dateRange) : 30,
@@ -143,12 +151,12 @@ export const getVisualizationData = async (req, res) => {
         movementsOverTime,
         movementFrequency
       ] = await Promise.all([
-        visualiseService.getKPIs(req.db, filters),
-        visualiseService.getFilterOptions(req.db),
-        visualiseService.getMovementLog(req.db, filters),
-        visualiseService.getTransactionTypeSummary(req.db, filters),
-        visualiseService.getMovementsOverTime(req.db, filters),
-        visualiseService.getMovementFrequency(req.db, filters)
+        visualiseService.getKPIs(db, filters),
+        visualiseService.getFilterOptions(db),
+        visualiseService.getMovementLog(db, filters),
+        visualiseService.getTransactionTypeSummary(db, filters),
+        visualiseService.getMovementsOverTime(db, filters),
+        visualiseService.getMovementFrequency(db, filters)
       ]);
 
       return successResponse(res, 'Movements data retrieved', {
@@ -168,11 +176,11 @@ export const getVisualizationData = async (req, res) => {
         occupancyByRack,
         occupancyByDepot
       ] = await Promise.all([
-        visualiseService.getKPIs(req.db, filters),
-        visualiseService.getFilterOptions(req.db),
-        visualiseService.getWarehouseZones(req.db, filters),
-        visualiseService.getOccupancyByRack(req.db, filters),
-        visualiseService.getOccupancyByDepot(req.db, filters)
+        visualiseService.getKPIs(db, filters),
+        visualiseService.getFilterOptions(db),
+        visualiseService.getWarehouseZones(db, filters),
+        visualiseService.getOccupancyByRack(db, filters),
+        visualiseService.getOccupancyByDepot(db, filters)
       ]);
 
       return successResponse(res, 'Occupancy data retrieved', {
@@ -184,12 +192,12 @@ export const getVisualizationData = async (req, res) => {
       });
     } else {
       // Default to stock_levels - comprehensive dashboard data with new charts
-      const data = await visualiseService.getVisualizationData(req.db, filters);
+      const data = await visualiseService.getVisualizationData(db, filters);
 
       // Add stock levels specific visualizations
       const [stockByDepot, lowStockProducts] = await Promise.all([
-        visualiseService.getStockByDepot(req.db, filters),
-        visualiseService.getLowStockProducts(req.db, filters)
+        visualiseService.getStockByDepot(db, filters),
+        visualiseService.getLowStockProducts(db, filters)
       ]);
 
       return successResponse(res, 'Visualization data retrieved', {
@@ -210,7 +218,8 @@ export const getVisualizationData = async (req, res) => {
  */
 export const getFilterOptions = async (req, res) => {
   try {
-    const filters = await visualiseService.getFilterOptions(req.db);
+    const db = req.db ?? defaultDb;
+    const filters = await visualiseService.getFilterOptions(db);
     return successResponse(res, 'Filters retrieved', filters);
   } catch (error) {
     return errorResponse(res, 'Failed to fetch filters', error.message, 500);
