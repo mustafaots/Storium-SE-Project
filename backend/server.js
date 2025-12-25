@@ -8,6 +8,7 @@ import requestLogger from './src/middleware/logger.js';
 import notFoundHandler from './src/middleware/notFound.js';
 import errorHandler from './src/middleware/errorHandler.js';
 import { db } from './src/config/database.js';
+import { runBestEffortMigrations } from './src/startup/bestEffortMigrations.js';
 
 // Import routes
 import clientsRoutes from './src/routes/clients.routes.js';
@@ -47,6 +48,11 @@ app.use(requestLogger);
 app.use((req, res, next) => {
   req.db = db;
   next();
+});
+
+// Best-effort startup migrations (do not block server start)
+runBestEffortMigrations(db).catch((err) => {
+  console.warn('⚠️ Best-effort migrations failed:', err?.message || err);
 });
 
 // ===== ROUTES =====
