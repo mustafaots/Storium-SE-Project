@@ -3,12 +3,6 @@
  * This is like a central settings file for the whole app
  */
 
-// Inventory settings
-const INVENTORY_SCOPES = {
-  SMALL: 'small',
-  INDUSTRIAL: 'industrial'
-};
-
 // Product types
 const PRODUCT_TYPES = {
   RAW: 'raw',
@@ -72,7 +66,6 @@ const PRODUCT_CATEGORIES = [
 ];
 
 const constants = {
-  INVENTORY_SCOPES,
   PRODUCT_TYPES,
   TRANSACTION_TYPES,
   ALERT_TYPES,
