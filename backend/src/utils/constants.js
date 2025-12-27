@@ -48,12 +48,6 @@ const PAGINATION = {
   MAX_LIMIT: 100
 };
 
-// Measurement units
-const MEASUREMENT_UNITS = ['kg', 'g', 'lb', 'oz', 'liters', 'ml', 'boxes', 'pallets', 'units'];
-
-// Rate temporal units
-const RATE_UNITS = ['/min', '/hour', '/day', '/week', '/month'];
-
 // Product categories
 const PRODUCT_CATEGORIES = [
   'Electronics',
