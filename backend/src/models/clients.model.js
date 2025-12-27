@@ -1,44 +1,55 @@
+// backend/src/models/clients.model.js
 import connection from '../config/database.js';
 import { buildPagination } from '../utils/database.js';
 
 export const Client = {
-  // Get all clients (keep existing for backward compatibility)
-  getAll: () => {
+  // Get all clients (paginated)
+  getAllPaginated: (page = 1, limit = 10, search = '') => {
     return new Promise((resolve, reject) => {
-      connection.query('SELECT * FROM clients ORDER BY created_at DESC', (err, results) => {
+      const { limit: queryLimit, offset } = buildPagination(page, limit);
+      const params = [];
+
+      let query = `
+        SELECT *
+        FROM clients
+      `;
+
+      if (search && String(search).trim()) {
+        query += ' WHERE client_name LIKE ? OR contact_email LIKE ? OR contact_phone LIKE ? OR address LIKE ?';
+        const term = `%${search}%`;
+        params.push(term, term, term, term);
+      }
+
+      query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      params.push(queryLimit, offset);
+
+      connection.query(query, params, (err, results) => {
         if (err) reject(err);
         else resolve(results);
       });
     });
   },
 
-  // NEW: Get paginated clients
-  getAllPaginated: (page = 1, limit = 10) => {
+  // Get total count (for pagination)
+  getTotalCount: (search = '') => {
     return new Promise((resolve, reject) => {
-      const { limit: queryLimit, offset } = buildPagination(page, limit);
-      
-      connection.query(
-        'SELECT * FROM clients ORDER BY created_at DESC LIMIT ? OFFSET ?',
-        [queryLimit, offset],
-        (err, results) => {
-          if (err) reject(err);
-          else resolve(results);
-        }
-      );
-    });
-  },
+      let query = 'SELECT COUNT(*) as total FROM clients';
+      const params = [];
 
-  // NEW: Get total count of clients
-  getTotalCount: () => {
-    return new Promise((resolve, reject) => {
-      connection.query('SELECT COUNT(*) as total FROM clients', (err, results) => {
+      if (search && String(search).trim()) {
+        query += ' WHERE client_name LIKE ? OR contact_email LIKE ? OR contact_phone LIKE ? OR address LIKE ?';
+        const term = `%${search}%`;
+        params.push(term, term, term, term);
+      }
+
+      connection.query(query, params, (err, results) => {
         if (err) reject(err);
         else resolve(results[0].total);
       });
     });
   },
 
-  // Keep existing methods unchanged
+  // Get single client by ID
   getById: (id) => {
     return new Promise((resolve, reject) => {
       connection.query('SELECT * FROM clients WHERE client_id = ?', [id], (err, results) => {
@@ -48,9 +59,11 @@ export const Client = {
     });
   },
 
+  // Create new client
   create: (clientData) => {
     return new Promise((resolve, reject) => {
       const { client_name, contact_email, contact_phone, address } = clientData;
+
       connection.query(
         'INSERT INTO clients (client_name, contact_email, contact_phone, address) VALUES (?, ?, ?, ?)',
         [client_name, contact_email, contact_phone, address],
@@ -62,9 +75,11 @@ export const Client = {
     });
   },
 
+  // Update client
   update: (id, clientData) => {
     return new Promise((resolve, reject) => {
       const { client_name, contact_email, contact_phone, address } = clientData;
+
       connection.query(
         'UPDATE clients SET client_name = ?, contact_email = ?, contact_phone = ?, address = ? WHERE client_id = ?',
         [client_name, contact_email, contact_phone, address, id],
@@ -76,6 +91,7 @@ export const Client = {
     });
   },
 
+  // Delete client
   delete: (id) => {
     return new Promise((resolve, reject) => {
       connection.query('DELETE FROM clients WHERE client_id = ?', [id], (err, results) => {

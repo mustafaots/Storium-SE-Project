@@ -1,0 +1,83 @@
+/* StatCard Component Styles */
+/* Path: frontend/src/components/Visualise/StatCard/StatCard.module.css */
+
+.statCard {
+  background: var(--discord-gray);
+  border-radius: 8px;
+  /* Consistent radius */
+  padding: 1.25rem;
+  border: 1px solid var(--discord-gray-light);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.statCard:hover {
+  border-color: var(--industrial-gold);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.title {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.iconWrapper {
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: var(--discord-gray-dark);
+  border: 1px solid var(--discord-gray-light);
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--industrial-gold);
+}
+
+.value {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-light);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .cardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .cardsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

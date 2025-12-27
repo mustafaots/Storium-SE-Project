@@ -37,32 +37,6 @@ export const sourcesConfig = {
       ),
     },
     {
-      key: 'rating',
-      header: 'Rating',
-      width: 'minmax(80px, 100px)',
-      render: (row) => (
-        <span style={{ color: row.rating >= 4.5 ? '#4CAF50' : row.rating >= 4.0 ? '#FFC107' : '#FF5722' }}>
-          {row.rating ? ` ${row.rating}` : '-'}
-        </span>
-      ),
-    },
-    {
-      key: 'is_active',
-      header: 'Status',
-      width: 'minmax(90px, 110px)',
-      render: (row) => (
-        <span style={{ 
-          color: row.is_active ? '#4CAF50' : '#999',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '5px'
-        }}>
-          {row.is_active ? <FaCheckCircle /> : <FaTimesCircle />}
-          {row.is_active ? 'Active' : 'Inactive'}
-        </span>
-      ),
-    },
-    {
       key: 'actions',
       header: 'Actions',
       width: 'minmax(120px, 150px)',

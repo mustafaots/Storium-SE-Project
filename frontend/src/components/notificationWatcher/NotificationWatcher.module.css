@@ -1,0 +1,93 @@
+/* --- 1. GLOBAL OVERRIDES (Fixes Layout & Routine Backgrounds) --- */
+
+/* This stops the "Giant White Block" and ensures it doesn't push your layout */
+:global(.Toastify__toast-container) {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    background: transparent !important; 
+    z-index: 999999 !important;
+    pointer-events: none; /* Allows clicking through empty areas */
+}
+
+/* This fixes the "Transparent Routine Notification" issue */
+:global(.Toastify__toast) {
+    pointer-events: auto; /* Re-enables clicking on the actual toast */
+    background: #1a1a1a !important; /* Solid dark background matching your dashboard */
+    color: #ffffff !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+    padding: 0 !important;
+    margin-bottom: 12px !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+}
+
+/* --- 2. DANGER SYSTEM ALERT DESIGN (The "Danger" Look) --- */
+
+/* Wrapper for the Red Alert */
+.toastContainerRed {
+    background: #121212 !important; /* Deeper dark for system alerts */
+    border: 1px solid #331111 !important; /* Subtle dark red border */
+}
+
+.customToast {
+    width: 300px;
+    background-color: transparent;
+    border-left: 4px solid #ff4d4d; /* High-intensity danger red accent */
+}
+
+/* Header with dark theme and yellow IMS accent */
+.toastHeader {
+    background-color: #1e1e1e; 
+    padding: 8px 12px;
+    border-bottom: 1px solid #2d2d2d;
+    display: flex;
+    align-items: center;
+}
+
+.brandName {
+    font-size: 10px;
+    font-weight: 800;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.brandSuffix {
+    color: #ffbc00; /* Yellow accent matching your "ROUTINES" logo */
+    margin-left: 2px;
+}
+
+/* Body with Danger padding and fonts */
+.toastBody {
+    padding: 16px; 
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(90deg, #1a1a1a 0%, #121212 100%);
+}
+
+.errorCircle {
+    width: 28px;
+    height: 28px;
+    background-color: #ff4d4d; /* Solid red circle for impact */
+    color: white; 
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
+}
+
+.toastMessage {
+    font-size: 12px;
+    color: #e0e0e0;
+    line-height: 1.5;
+    font-weight: 500;
+    word-break: break-word;
+}

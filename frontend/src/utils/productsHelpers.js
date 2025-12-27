@@ -5,7 +5,8 @@ export const productsHelpers = {
   normalize: (p) => ({
     ...p,
     sku: p.sku || `SKU-${String(p.product_id).padStart(4, '0')}`,
-    total: p.total ?? p.total_stock ?? 0
+    total: p.total ?? p.total_stock ?? 0,
+    supplier: p.supplier || p.source_name || null
   }),
 
   // Format price-like numbers (if you add price later)

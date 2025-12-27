@@ -1,84 +1,147 @@
-.pageWrapper {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    /* Added padding-bottom to account for fixed NavBar */
+    padding: 1.5rem 1.5rem 70px 1.5rem;
+    min-height: 100vh;
+    background: var(--discord-gray-dark);
 }
 
 .mainContent {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-}
-
-.content {
-  width: 100%;
-}
-
-.listContainer {
-  width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
 }
 
 .header {
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 187, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 0.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--discord-gray-light);
 }
 
-.statsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem 0;
+.title {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--industrial-gold);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: var(--text-gray);
+    margin-top: 0.5rem;
+}
+
+.exportGroup {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.exportButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: var(--discord-gray);
+    border: 1px solid var(--discord-gray-light);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.exportButton:hover {
+    background: var(--discord-gray-light);
+    border-color: var(--industrial-gold);
+    color: var(--industrial-gold);
 }
 
 .chartsGrid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
-  margin-top: 2rem;
-}
-
-.chartWrapper {
-  min-width: 0;
-}
-
-.occupancyWrapper {
-  min-width: 0;
-}
-
-@media (max-width: 1200px) {
-  .chartsGrid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .mainContent {
-    padding: 10px;
-  }
-
-  .statsGrid {
+    display: grid;
     grid-template-columns: 1fr;
-    gap: 1rem;
-    margin: 1.5rem 0;
-  }
-
-  .chartsGrid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-top: 1.5rem;
-  }
+    gap: 1.5rem;
 }
 
-@media (max-width: 480px) {
-  .statsGrid {
-    gap: 0.75rem;
-    margin: 1rem 0;
-  }
+@media (min-width: 1024px) {
+    .chartsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 
-  .chartsGrid {
+    .mainChart {
+        grid-column: span 2;
+    }
+}
+
+.performancePanel {
+    background: var(--discord-gray);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid var(--discord-gray-light);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.panelTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--industrial-gold);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.perfGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.perfGroup h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-gray);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.perfGroup ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
     gap: 0.75rem;
-    margin-top: 1rem;
-  }
+}
+
+.perfGroup li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9375rem;
+    color: var(--text-light);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--discord-gray-light);
+}
+
+.perfValue {
+    font-weight: 600;
+    color: var(--industrial-gold);
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    color: var(--text-gray);
+    background: var(--discord-gray-dark);
 }
