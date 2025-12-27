@@ -14,10 +14,10 @@ Storium will allow its wielders to track and record their inventory placements f
 - [x] Transactions Tab: record the actions occurring on the inventory's premisis.
 - [x] Products Tab: manage identified products which are present in the inventory.
 - [x] Sources Tab: manage the sources from which the inventory receives stocks of products.
-- [ ] Routines Tab: manage automated transactions on inventory shelved stocks.
-- [ ] Alerts Tab: get notified on any nearby events such as overstock, understock, expiry...
-- [ ] Visualise Tab: transform the raw data collected through records into visualisiations that offer insight.
-- [x] Exporting Information: export the inventory files or visualisations into tangible formats (pdf, csv, json, svg...)
+- [x] Routines Tab: manage automated transactions on inventory shelved stocks.
+- [x] Alerts Tab: get notified on any nearby events such as overstock, understock, expiry...
+- [x] Visualise Tab: transform the raw data collected through records into visualisiations that offer insight.
+- [x] Exporting Information: export the inventory files or visualisations into tangible formats (pdf, csv...)
 
 ## Use Cases
 
