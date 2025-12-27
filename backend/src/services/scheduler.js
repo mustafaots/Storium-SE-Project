@@ -1,5 +1,6 @@
 import cron from 'node-cron';
 import db from '../config/database.js';
+import { TransactionsService} from './transactions.service.js';
 
 export const startScheduler = () => {
     console.log('🚀 SCHEDULER STARTED: Debug Mode (Running every 20s)...');
@@ -50,14 +51,16 @@ const executeSmartLogic = (routine) => {
         sqlQuery = `
             SELECT s.stock_id, s.product_id, p.name, s.quantity, 
                    p.min_stock_level as limit_val, 
-                   p.max_stock_level
+                   p.max_stock_level,
+                   s.slot_id as to_slot_id
             FROM stocks s JOIN products p ON s.product_id = p.product_id 
             WHERE s.quantity <= p.min_stock_level
         `;
     } 
     else if (triggerType === 'overstock') {
         sqlQuery = `
-            SELECT s.stock_id, s.product_id, p.name, s.quantity, p.max_stock_level as limit_val
+            SELECT s.stock_id, s.product_id, p.name, s.quantity, p.max_stock_level as limit_val,
+                   s.slot_id as to_slot_id
             FROM stocks s JOIN products p ON s.product_id = p.product_id 
             WHERE s.quantity >= p.max_stock_level
         `;
@@ -65,7 +68,8 @@ const executeSmartLogic = (routine) => {
     else if (triggerType === 'expiry') {
         sqlQuery = `
             SELECT s.stock_id, s.product_id, p.name, s.expiry_date, 
-            DATEDIFF(s.expiry_date, CURDATE()) as days_left
+            DATEDIFF(s.expiry_date, CURDATE()) as days_left,
+            s.slot_id as to_slot_id
             FROM stocks s JOIN products p ON s.product_id = p.product_id 
             WHERE s.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) 
             AND s.expiry_date IS NOT NULL
@@ -98,13 +102,13 @@ const executeSmartLogic = (routine) => {
         });
 
         // 3. PERFORM ACTION (Alert OR Transaction)
-        results.forEach(item => {
-            performAction(routine, triggerType, item);
+        results.forEach(async (item) => {
+            await performAction(routine, triggerType, item);
         });
     });
 };
 
-const performAction = (routine, triggerType, item) => {
+const performAction = async (routine, triggerType, item) => {
     // Parse the resolve string: "create_alert:critical" OR "create_transaction:fill_max"
     // Safety check in case resolve is empty
     if (!routine.resolve) return;
@@ -122,17 +126,15 @@ const performAction = (routine, triggerType, item) => {
 
         // Calculate Amount
         if (actionDetail === 'fill_max') {
-            const maxLevel = item.max_stock_level || 100; // Default to 100 if null
+            const maxLevel = item.max_stock_level || 100;
             amountToOrder = maxLevel - item.quantity;
             note = `Auto-Reorder (Fill to Max: ${maxLevel})`;
         } 
         else if (actionDetail && actionDetail.startsWith('fixed_')) {
-            // Example: fixed_100 -> 100
             amountToOrder = parseInt(actionDetail.split('_')[1]);
             note = `Auto-Reorder (Fixed Qty: ${amountToOrder})`;
         }
         else {
-            // Fallback
             amountToOrder = 50;
             note = "Auto-Reorder (Default 50)";
         }
@@ -142,46 +144,24 @@ const performAction = (routine, triggerType, item) => {
             return;
         }
 
-        // 1. DUPLICATE CHECK (Prevent spamming transactions)
-        // Checks transactions from the last minute
-        // FIX: Added backticks around `timestamp` and handled ERROR callback
-        const dupSql = `
-            SELECT txn_id FROM transactions 
-            WHERE stock_id = ? AND is_automated = 1 AND \`timestamp\` > NOW() - INTERVAL 1 MINUTE
-        `;
+        // 1. DUPLICATE CHECK - Check file store, not database
+        try {
+            const result = await TransactionsService.createAutomatedInflow({
+                stockId: Number(item.stock_id),
+                productId: Number(item.product_id),
+                toSlotId: item.to_slot_id ? Number(item.to_slot_id) : null,
+                sourceId: null,
+                routineId: Number(routine.routine_id),
+                quantity: Number(amountToOrder),
+                unitPrice: 0.00,
+                note
+            });
 
-        db.query(dupSql, [item.stock_id], (err, txns) => {
-            // 🛡️ CRITICAL FIX: Check for error first!
-            if (err) {
-                console.error("         ❌ DB Error during Duplicate Check:", err.message);
-                return;
-            }
-
-            // Now it is safe to check length
-            if (txns && txns.length === 0) {
-                // 2. INSERT TRANSACTION
-                const txnSql = `
-                    INSERT INTO transactions 
-                    (is_automated, routine_id, stock_id, product_id, txn_type, quantity, total_value, notes, \`timestamp\`)
-                    VALUES (1, ?, ?, ?, 'inflow', ?, 0.00, ?, NOW())
-                `;
-
-                db.query(txnSql, [routine.routine_id, item.stock_id, item.product_id, amountToOrder, note], (tErr, res) => {
-                    if (tErr) return console.error("            ❌ Txn Insert Failed:", tErr.message);
-                    
-                    console.log(`            ✅ TRANSACTION CREATED! Added +${amountToOrder} units.`);
-
-                    // 3. UPDATE STOCK (Fix the problem)
-                    const stockUpd = "UPDATE stocks SET quantity = quantity + ? WHERE stock_id = ?";
-                    db.query(stockUpd, [amountToOrder, item.stock_id], (uErr) => {
-                        if (uErr) console.error("            ❌ Stock Update Failed:", uErr.message);
-                        else console.log(`            📈 Stock Updated. New Qty: ${item.quantity + amountToOrder}`);
-                    });
-                });
-            } else {
-                console.log(`         ✋ Skipped: Recently ordered (Wait 1 min).`);
-            }
-        });
+            console.log(`            ✅ TRANSACTION CREATED! Txn ID: ${result.txn_id} | Added +${amountToOrder} units.`);
+        } catch (error) {
+            console.error("            ❌ Txn Insert Failed:", error.message);
+            console.error("            Stack:", error.stack);
+        }
     }
 
     // ====================================================
