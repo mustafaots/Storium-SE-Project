@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Download } from 'lucide-react';
 import styles from './MovementLogTable.module.css';
 
 const TRANSACTION_TYPE_LABELS = {
@@ -27,30 +26,6 @@ const MovementLogTable = ({ data = [] }) => {
     const endIndex = startIndex + itemsPerPage;
     const currentData = data.slice(startIndex, endIndex);
 
-    const handleExport = () => {
-        const csvContent = [
-            ['Timestamp', 'Product', 'Type', 'Transaction', 'Quantity', 'Value', 'Source/Destination', 'Reference'].join(','),
-            ...data.map(row => [
-                row.timestamp,
-                `"${row.productName}"`,
-                row.productType || '',
-                row.txnType,
-                row.quantity,
-                row.totalValue || 0,
-                `"${row.sourceDestination || ''}"`,
-                row.referenceNumber || ''
-            ].join(','))
-        ].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `movement-log-${new Date().toISOString().split('T')[0]}.csv`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-    };
-
     if (!data || data.length === 0) {
         return (
             <div className={styles.container}>
@@ -74,10 +49,6 @@ const MovementLogTable = ({ data = [] }) => {
                     <h3 className={styles.title}>Movement Log</h3>
                     <span className={styles.subtitle}>{data.length} transaction{data.length !== 1 ? 's' : ''}</span>
                 </div>
-                <button className={styles.exportButton} onClick={handleExport}>
-                    <Download size={16} />
-                    Export CSV
-                </button>
             </div>
 
             <div className={styles.tableWrapper}>

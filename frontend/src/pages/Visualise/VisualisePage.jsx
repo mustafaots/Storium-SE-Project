@@ -28,12 +28,39 @@ const VisualisePage = () => {
 
   const handleExportCSV = () => {
     if (!data) return;
-    const exportData = data.stockTrends.map(t => ({
-      Date: t.date,
-      Value: t.value,
-      Units: t.units
-    }));
-    exportToCSV(exportData, 'storium-stock-trends');
+    
+    if (filters.viewType === 'movements') {
+      // Export movement log data
+      const csvContent = [
+        ['Timestamp', 'Product', 'Type', 'Transaction', 'Quantity', 'Value', 'Source/Destination', 'Reference'].join(','),
+        ...data.movementLog.map(row => [
+          row.timestamp,
+          `"${row.productName}"`,
+          row.productType || '',
+          row.txnType,
+          row.quantity,
+          row.totalValue || 0,
+          `"${row.sourceDestination || ''}"`,
+          row.referenceNumber || ''
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `movement-log-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } else {
+      // Export stock trends for other views
+      const exportData = data.stockTrends.map(t => ({
+        Date: t.date,
+        Value: t.value,
+        Units: t.units
+      }));
+      exportToCSV(exportData, 'storium-stock-trends');
+    }
   };
 
   const handleExportPDF = () => {
