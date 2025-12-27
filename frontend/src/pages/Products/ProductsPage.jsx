@@ -41,6 +41,7 @@ function ProductsPage() {
 
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [exportScope, setExportScope] = useState('current');
+  const [selectedProductImage, setSelectedProductImage] = useState(null);
   const search = useTableSearch('');
   const hasInitialLoaded = useRef(false);
 
@@ -74,6 +75,7 @@ function ProductsPage() {
     ),
     onPageChange: (page) => handlePageChange(page, search.debouncedSearch),
     onPageSizeChange: (size) => handlePageSizeChange(size, search.debouncedSearch),
+    onImageClick: (product) => setSelectedProductImage(product),
   };
 
   const productColumns = productsConfig.columns(styles, handlers);
@@ -203,6 +205,13 @@ function ProductsPage() {
           )}
         </div>
       </div>
+      {selectedProductImage && (
+        <ImageModal 
+          product={selectedProductImage} 
+          onClose={() => setSelectedProductImage(null)} 
+          styles={styles}
+        />
+      )}
       <NavBar activeItem={activeItem} />
     </div>
   );
@@ -226,5 +235,35 @@ const LoadingState = ({ message = 'Loading...' }) => (
     </div>
   </div>
 );
+
+const ImageModal = ({ product, onClose, styles }) => {
+  const imageUrl = product.image_data 
+    ? `data:${product.image_mime_type || 'image/png'};base64,${product.image_data}`
+    : null;
+
+  if (!imageUrl) {
+    return (
+      <div className={styles.imageModalOverlay} onClick={onClose}>
+        <div className={styles.imageModalContent} onClick={(e) => e.stopPropagation()}>
+          <button className={styles.imageModalClose} onClick={onClose}>×</button>
+          <div className={styles.imageModalNoImage}>
+            <p>{product.name}</p>
+            <p className={styles.imageModalNoImageText}>No image available</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.imageModalOverlay} onClick={onClose}>
+      <div className={styles.imageModalContent} onClick={(e) => e.stopPropagation()}>
+        <button className={styles.imageModalClose} onClick={onClose}>×</button>
+        <img src={imageUrl} alt={product.name} className={styles.imageModalImage} />
+        <p className={styles.imageModalCaption}>{product.name}</p>
+      </div>
+    </div>
+  );
+};
 
 export default ProductsPage;

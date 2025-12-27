@@ -8,7 +8,14 @@ export const productsConfig = {
       header: '',
       width: 'minmax(50px, 60px)',
       render: (row) => (
-        <div className={styles.productImageCell}>
+        <div 
+          className={styles.productImageCell}
+          onClick={(e) => {
+            e.stopPropagation();
+            handlers.onImageClick(row);
+          }}
+          style={{ cursor: 'pointer' }}
+        >
           {row.image_data ? (
             <img 
               src={`data:${row.image_mime_type || 'image/png'};base64,${row.image_data}`}
