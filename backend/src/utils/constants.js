@@ -48,6 +48,9 @@ const PAGINATION = {
   MAX_LIMIT: 100
 };
 
+// Measurement units
+const MEASUREMENT_UNITS = ['kg', 'g', 'lb', 'oz', 'liters', 'ml', 'boxes', 'pallets', 'units'];
+
 // Product categories
 const PRODUCT_CATEGORIES = [
   'Electronics',
@@ -76,7 +79,6 @@ const constants = {
   ALERT_SEVERITIES,
   PAGINATION,
   MEASUREMENT_UNITS,
-  RATE_UNITS,
   PRODUCT_CATEGORIES
 };
 
