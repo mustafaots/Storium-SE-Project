@@ -317,17 +317,6 @@ const racksController = {
           return res.status(404).json(apiResponse.errorResponse('Stock not found'));
         }
 
-        // Log relocation so location/product filtered visualisations reflect moves.
-        await TransactionsService.createRelocation({
-          stockId: Number(stockRow.stock_id),
-          productId: Number(stockRow.product_id),
-          fromSlotId: Number(stockRow.slot_id),
-          toSlotId: Number(targetSlotId),
-          quantity: Number(stockRow.quantity),
-          note: 'Stock moved',
-          dbConn: connection
-        });
-
         await connection.commit();
         res.json(apiResponse.successResponse(null, 'Stock moved successfully'));
       } catch (innerError) {
