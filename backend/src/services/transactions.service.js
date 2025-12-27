@@ -637,15 +637,22 @@ export const TransactionsService = {
   async createAutomatedInflow({ stockId, productId, toSlotId, sourceId, routineId, quantity, unitPrice, note }) {
     const qty = Number(quantity);
     const price = unitPrice != null ? Number(unitPrice) : 0;
-    const connection = await db.promise().getConnection();
-
-    await connection.beginTransaction();
+    
     try {
+      // Get connection from the pool properly
+      const connection = await db.promise().getConnection();
+      
+      await connection.beginTransaction();
+
       const [rows] = await connection.query(
         'SELECT quantity FROM stocks WHERE stock_id = ? FOR UPDATE',
         [stockId]
       );
-      if (!rows || rows.length === 0) throw new Error('Stock not found');
+      if (!rows || rows.length === 0) {
+        await connection.rollback();
+        connection.release();
+        throw new Error('Stock not found');
+      }
 
       const qty_before = Number(rows[0].quantity);
       const qty_after = qty_before + qty;
@@ -659,7 +666,6 @@ export const TransactionsService = {
 
       // Fetch names for storage
       const [products] = await connection.query('SELECT name FROM products WHERE product_id = ?', [productId]);
-      const [sources] = sourceId ? await connection.query('SELECT source_name FROM sources WHERE source_id = ?', [sourceId]) : [[]];
 
       // Create transaction record in file
       const txn = TransactionFileStore.create({
@@ -669,37 +675,28 @@ export const TransactionsService = {
         product_id: productId,
         product_name: products[0]?.name || null,
         from_slot_id: null,
-        to_slot_id: toSlotId,
+        to_slot_id: toSlotId || null,
         txn_type: 'inflow',
         quantity: qty,
         total_value,
         reference_number: null,
         notes: note || `Automated inflow (routine ${routineId})`,
         source_id: sourceId || null,
-        source_name: sources[0]?.source_name || null,
+        source_name: null,
         client_id: null,
         client_name: null,
         stock_snapshot: { qty_before, qty_after }
       });
 
       await connection.commit();
-      return {
-        txn_id: txn.txn_id,
-        stock_id: stockId,
-        product_id: productId,
-        source_id: sourceId,
-        routine_id: routineId,
-        quantity: qty,
-        total_value,
-        notes: note,
-        qty_before,
-        qty_after
-      };
-    } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
       connection.release();
+      
+      console.log(`✅ Transaction saved to file: ${txn.txn_id}`);
+      
+      return txn;
+    } catch (error) {
+      console.error('❌ createAutomatedInflow error:', error.message);
+      throw error;
     }
   },
 
