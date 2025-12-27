@@ -72,18 +72,6 @@ export const productsConfig = {
       render: (row) => <span>{row.max_stock_level ?? 0}</span>,
     },
     {
-      key: 'rate',
-      header: 'Rate',
-      width: 'minmax(80px, 100px)',
-      render: (row) => <span>{row.rate != null ? row.rate : '-'}</span>,
-    },
-    {
-      key: 'rate_unit',
-      header: 'Rate Unit',
-      width: 'minmax(100px, 130px)',
-      render: (row) => <span>{row.rate_unit || '-'}</span>,
-    },
-    {
       key: 'actions',
       header: 'Actions',
       width: 'minmax(120px, 150px)',

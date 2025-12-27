@@ -68,8 +68,6 @@ CREATE TABLE products (
     unit VARCHAR(50) COMMENT 'pcs, kg, liters, boxes, etc.',
     min_stock_level INT COMMENT 'Alert threshold for low stock',
     max_stock_level INT COMMENT 'Alert threshold for overstocking',
-    rate FLOAT COMMENT 'Production or procurement rate',
-    rate_unit VARCHAR(50) COMMENT 'Unit for rate (e.g., pcs/day, kg/hour)',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
