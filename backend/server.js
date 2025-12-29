@@ -22,8 +22,7 @@ import routinesRoutes from './src/routes/routines.routes.js';
 import alertsRoutes from './src/routes/alerts.routes.js';
 
 // Services (The Robot)
-// ⚠️ CHECK PATH: If your file is in 'src/scheduler.js', remove '/services'
-import { startScheduler } from './src/services/scheduler.js'; 
+import { startScheduler } from './src/services/scheduler.service.js'; 
 
 // Load environment variables
 dotenv.config();
