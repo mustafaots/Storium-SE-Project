@@ -63,11 +63,9 @@ Table products {
   description text
   image_data blob [note: 'Product image stored as binary data']
   image_mime_type varchar [note: 'MIME type of the image (e.g., image/png, image/jpeg)']
-  unit varchar [note: 'pcs, kg, liters, boxes, etc.']
+  unit varchar
   min_stock_level integer [note: 'Alert threshold for low stock']
   max_stock_level integer [note: 'Alert threshold for overstocking']
-  rate float [note: 'Production or procurement rate']
-  rate_unit varchar [note: 'Unit for rate (e.g., pcs/day, kg/hour)']
   created_at timestamp [default: `now()`]
 }
 
@@ -266,4 +264,3 @@ Ref: alerts.linked_product > products.product_id [delete: set null, update: casc
 
 // Action History
 Ref: action_history.routine_id > routines.routine_id [delete: set null, update: cascade]
-
