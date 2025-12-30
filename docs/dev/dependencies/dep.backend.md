@@ -28,9 +28,9 @@ This document outlines all dependencies for the Node.js/Express backend server.
 
 ## Development Dependencies
 
-| Dependency | Version | Purpose |
-|------------|---------|---------|
-| **nodemon** | ^3.1.10 | Auto-restart server during development |
+| Dependency | Version | Purpose | Documentation |
+|------------|---------|---------|---------------|
+| **nodemon** | ^3.1.10 | Auto-restart server during development | [Nodemon Docs](https://nodemon.io/) |
 
 ---
 
@@ -222,6 +222,41 @@ function DropSlot({ onDrop }) {
 
 ---
 
+### 7. Nodemon 3.1.10
+```javascript
+// Used in development to automatically restart the server
+// Configured in package.json scripts
+// No direct code usage - runs as a CLI tool
+
+// Example package.json scripts:
+{
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  }
+}
+```
+
+**Configuration (nodemon.json):**
+```json
+{
+  "watch": ["src", "server.js"],
+  "ignore": ["node_modules", "uploads", "logs"],
+  "ext": "js,json",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}
+```
+
+**Use Cases:**
+- Automatic server restart on file changes
+- Faster development workflow
+- Eliminates manual restart process
+- Monitors specific file patterns
+
+---
+
 ## Scripts
 ```bash
 # Production start
@@ -231,10 +266,6 @@ npm start
 # Development with auto-restart
 npm run dev
 # => nodemon server.js
-
-# Run tests (placeholder)
-npm test
-# => echo "Error: no test specified" && exit 1
 ```
 
 ---
