@@ -191,4 +191,4 @@ frontend/
 ### Enduser Documentation
 [Storium User Documentation](docs/user/storium_user_docs.md)
 ### Dev Documentation
-[Developer Documentation](docs/dev/README.md)
+[Developer Documentation](docs/dev/)
