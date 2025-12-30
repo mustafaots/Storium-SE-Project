@@ -187,8 +187,8 @@ frontend/
 ```
 ## Documentation
 ### Software Requirements Specifications
-``` void ```
+[SRS Document](docs/srs)
 ### Enduser Documentation
-``` void ```
+[Storium User Documentation](docs/user/storium_user_docs.md)
 ### Dev Documentation
-``` void ```
+[Developer Documentation](docs/dev/README.md)
