@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -27,7 +27,7 @@ import SupportPage from './pages/Support/supportPage.jsx';
 function App() {
   return (
     <Router>
-      
+
       {/* 1. NOTIFICATION WATCHER 
           Placing this here ensures it watches for new alerts 
           regardless of which page you are currently viewing.
@@ -39,17 +39,17 @@ function App() {
           The CSS we added to NotificationWatcher.module.css will ensure 
           this doesn't take up any extra space on the page.
       */}
-      <ToastContainer 
-        position="bottom-right" 
-        autoClose={5000} 
-        theme="dark" 
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        theme="dark"
         newestOnTop={false}
         limit={5}
       />
 
       {/* 3. PAGE ROUTES */}
       <Routes>
-        <Route path="/" element={<MainPage />} /> 
+        <Route path="/" element={<MainPage />} />
         <Route path="/coming-soon" element={<ComingSoon />} />
         <Route path="/schema" element={<SchemaPage />} />
         <Route path="/support" element={<SupportPage />} />

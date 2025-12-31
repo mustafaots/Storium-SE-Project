@@ -42,7 +42,8 @@ app.whenReady().then(() => {
     // Only spawn backend in production (packaged) mode.
     // In development, we expect the backend to be running separately (e.g. via 'npm run dev').
     if (!isDev) {
-        const backendPath = path.join(__dirname, "..", "backend");
+        // Backend is copied to resources/backend via extraResources
+        const backendPath = path.join(process.resourcesPath, 'backend');
         console.log("Starting backend from:", backendPath);
 
         backendProcess = spawn("node", ["server.js"], {
