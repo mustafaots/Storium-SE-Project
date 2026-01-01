@@ -17,7 +17,7 @@ PrivilegesRequired=admin
 
 [Files]
 ; .iss is in software\installer, dist is at repo root -> ..\..\dist\win-unpacked\*
-Source: "C:\Users\PC\Documents\GitHub\Software-Engineering-Project\dist\win-unpacked\*"; DestDir: "{app}"; \
+Source: "..\dist\win-unpacked\*"; DestDir: "{app}"; \
   Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
