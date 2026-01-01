@@ -7,10 +7,20 @@ import styles from './Menu.module.css';
 function Menu() {
   const navigate = useNavigate(); // Hook for navigation
 
+  const handleExit = () => {
+    // Send IPC message to close the Electron app
+    if (window.electron?.ipcRenderer) {
+      window.electron.ipcRenderer.send('quit-app');
+    } else {
+      // Fallback for non-Electron environments
+      window.close();
+    }
+  };
+
   const menuItems = [
     { label: 'Enter', action: () => navigate('/schema') },
     { label: 'Support', action: () => navigate('/support') },
-    { label: 'Exit', action: () => ()=>{} },
+    { label: 'Exit', action: handleExit },
   ];
 
   return (

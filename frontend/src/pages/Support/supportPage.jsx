@@ -779,7 +779,7 @@ const SupportPage = () => {
                 <FaUsers className={styles.contactFooterIcon} />
                 <div className={styles.contactFooterText}>
                   <p className={styles.contactFooterLabel}>Meet the Team</p>
-                  <a href="https://mustafaots.github.io/G5-team4-portfolio-project/">View our portfolio</a>
+                  <a href="https://mustafaots.github.io/G5-team4-portfolio-project/" target="_blank" rel="noopener noreferrer">View our portfolio</a>
                 </div>
               </div>
             </div>

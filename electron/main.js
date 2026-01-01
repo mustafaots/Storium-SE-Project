@@ -1,6 +1,7 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow ,ipcMain} = require("electron");
 const path = require("path");
 const { spawn } = require("child_process");
+const {shell} = require('electron');    
 
 let mainWindow;
 let backendProcess;
@@ -12,6 +13,7 @@ function createWindow() {
         webPreferences: {
             contextIsolation: true,
             nodeIntegration: false,
+            preload: path.join(__dirname, "preload.js"),
         },
     });
 
@@ -31,6 +33,16 @@ function createWindow() {
         });
         console.log('Running in production mode: Loading from file system');
     }
+
+    // handel external links
+    mainWindow.webContents.setWindowOpenHandler(({url}) => {
+        if (url.startsWith('http') || url.startsWith('https')) {
+            shell.openExternal(url);
+            return { action: 'deny' };
+        }
+        return { action: 'allow' };
+    });
+
 
     mainWindow.on("closed", () => {
         mainWindow = null;
@@ -68,4 +80,10 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
     if (backendProcess) backendProcess.kill();
     if (process.platform !== "darwin") app.quit();
+});
+
+// Handle quit request from frontend
+ipcMain.on('quit-app', () => {
+    if (backendProcess) backendProcess.kill();
+    app.quit();
 });
