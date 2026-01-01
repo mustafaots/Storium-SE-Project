@@ -20,7 +20,8 @@ function createWindow() {
     if (isDev) {
         // In development, load from the Vite dev server
         mainWindow.loadURL('http://localhost:5173');
-        mainWindow.webContents.openDevTools();
+        // Uncomment the line below if you need to debug:
+        //mainWindow.webContents.openDevTools();
         console.log('Running in development mode: Loading from localhost:5173');
     } else {
         // In production, load the built index.html
@@ -48,8 +49,10 @@ app.whenReady().then(() => {
 
         backendProcess = spawn("node", ["server.js"], {
             cwd: backendPath,
-            stdio: "inherit",
-            env: process.env
+            stdio: "ignore",
+            env: process.env,
+            detached: true,
+            windowsHide: true
         });
 
         backendProcess.on("error", (err) => {
