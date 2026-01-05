@@ -316,6 +316,40 @@ nav a:hover:after {
     margin-bottom: 20px;
 }
 
+/* Documentation Section */
+.documentation {
+    text-align: center;
+    background-color: var(--discord-gray-dark);
+}
+
+.documentation-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: var(--discord-gray-light);
+    border-radius: 8px;
+    opacity: 0;
+    animation: slideInFromBottom 0.8s ease-out forwards;
+}
+
+.documentation-content h3 {
+    color: var(--industrial-gold);
+    margin-top: 20px;
+}
+
+.documentation-content p {
+    margin-bottom: 25px;
+}
+
+.doc-placeholder {
+    font-size: 4rem;
+    color: var(--industrial-gold);
+}
+
+.documentation .cta-button i {
+    margin-right: 8px;
+}
+
 /* Footer */
 footer {
     background-color: var(--discord-gray-dark);
