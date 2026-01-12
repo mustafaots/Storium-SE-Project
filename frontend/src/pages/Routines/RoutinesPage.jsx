@@ -327,7 +327,6 @@ function RoutinesPage() {
                                             <label>ACTION TYPE</label>
                                             <select className={styles.selectInput} value={formData.actionType} onChange={(e) => setFormData({...formData, actionType: e.target.value})}>
                                                 <option value="create_alert">🔔 Create Alert</option>
-                                                <option value="send_email">📧 Send Email</option>
                                                 {formData.routineType === 'low_stock' && <option value="create_transaction">📦 Auto-Reorder</option>}
                                             </select>
                                         </div>
@@ -349,9 +348,6 @@ function RoutinesPage() {
                                             )}
                                             {txnStrategy === 'fixed' && formData.actionType === 'create_transaction' && (
                                                 <input type="number" value={txnQty} onChange={e => setTxnQty(e.target.value)} placeholder="Qty" />
-                                            )}
-                                            {formData.actionType === 'send_email' && (
-                                                <input type="email" value={formData.actionDetail} onChange={e => setFormData({...formData, actionDetail: e.target.value})} placeholder="Email Address" />
                                             )}
                                         </div>
                                     </div>
