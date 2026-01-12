@@ -6,9 +6,6 @@ import styles from '../../../pages/Products/ProductsPage.module.css';
 // Measurement units for product unit selection
 const MEASUREMENT_UNITS = ['pcs', 'kg', 'g', 'lb', 'oz', 'liters', 'ml', 'boxes', 'pallets'];
 
-// Rate temporal units
-const RATE_UNITS = ['/min', '/hour', '/day', '/week', '/month'];
-
 // Product categories
 const PRODUCT_CATEGORIES = [
   'Electronics',
@@ -37,8 +34,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
     unit: '',
     min_stock_level: '',
     max_stock_level: '',
-    rate: '',
-    rate_unit: '',
     source_id: ''
   });
 
@@ -85,8 +80,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
         unit: currentProduct.unit || '',
         min_stock_level: currentProduct.min_stock_level ?? 0,
         max_stock_level: currentProduct.max_stock_level ?? 0,
-        rate: currentProduct.rate != null ? String(currentProduct.rate) : '',
-        rate_unit: currentProduct.rate_unit || '',
         source_id: currentProduct.source_id ?? ''
       });
       // Set image preview if product has an image
@@ -104,8 +97,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
         unit: '',
         min_stock_level: '',
         max_stock_level: '',
-        rate: '',
-        rate_unit: '',
         source_id: ''
       });
       setImageFile(null);
@@ -122,14 +113,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
     return Number(v) >= 0 ? '' : 'Must be a positive number';
   };
 
-  // Rate validators (optional fields)
-  const positiveNumberIfProvided = (v) => {
-    if (v === '' || v === null || v === undefined) return '';
-    const num = Number(v);
-    if (Number.isNaN(num)) return 'Rate must be a number';
-    return num > 0 ? '' : 'Rate must be a positive number';
-  };
-
   // Validation schema
   const productValidationSchema = {
     name: [required, (v) => minLength(v, 2, 'Product name')],
@@ -137,8 +120,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
     unit: [required],
     min_stock_level: [positiveNumber],
     max_stock_level: [positiveNumber],
-    rate: [positiveNumberIfProvided],
-    rate_unit: [],
     source_id: []
   };
 
@@ -199,8 +180,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
       formDataToSend.append('max_stock_level', formData.max_stock_level !== '' && formData.max_stock_level !== null && formData.max_stock_level !== undefined
         ? parseInt(formData.max_stock_level, 10)
         : 0);
-      formDataToSend.append('rate', formData.rate !== '' ? Number(formData.rate) : '');
-      formDataToSend.append('rate_unit', formData.rate_unit ? String(formData.rate_unit).trim() : '');
       formDataToSend.append('source_id', formData.source_id ? parseInt(formData.source_id, 10) : '');
       
       if (imageFile) {
@@ -342,33 +321,6 @@ const ProductForm = ({ isEditing, currentProduct, loading, error, onSuccess, onC
             onChange={handleChange}
             error={formErrors.max_stock_level}
           />
-
-          {/* Rate fields */}
-          <FormField
-            type="number"
-            field="rate"
-            placeholder="Rate (positive number, optional)"
-            value={formData.rate}
-            onChange={handleChange}
-            error={formErrors.rate}
-          />
-
-          {/* Rate Unit Dropdown */}
-          <div className={styles.formGroup}>
-            <select
-              value={formData.rate_unit}
-              onChange={(e) => handleChange('rate_unit', e.target.value)}
-              className={`${styles.formInput} ${formErrors.rate_unit ? styles.inputError : ''}`}
-            >
-              <option value="">Select Rate Unit (Optional)</option>
-              {RATE_UNITS.map((unit) => (
-                <option key={unit} value={unit}>
-                  {unit}
-                </option>
-              ))}
-            </select>
-            {formErrors.rate_unit && <span className={styles.errorText}>{formErrors.rate_unit}</span>}
-          </div>
 
           {/* Supplier Dropdown */}
           <div className={styles.formGroup}>

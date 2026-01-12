@@ -210,10 +210,18 @@ export const TransactionsService = {
       const qty_after = qty_before - qty;
       if (qty_after < 0) throw new Error('Insufficient stock for outflow transaction');
 
-      await connection.query(
-        'UPDATE stocks SET quantity = ? WHERE stock_id = ?',
-        [qty_after, stockId]
-      );
+      if (qty_after === 0) {
+        // Delete the stock when quantity reaches 0
+        await connection.query(
+          'DELETE FROM stocks WHERE stock_id = ?',
+          [stockId]
+        );
+      } else {
+        await connection.query(
+          'UPDATE stocks SET quantity = ? WHERE stock_id = ?',
+          [qty_after, stockId]
+        );
+      }
 
       const total_value = qty * price;
 
@@ -289,10 +297,18 @@ export const TransactionsService = {
       const to_after = to_before + qty;
 
       // Update both stocks
-      await connection.query(
-        'UPDATE stocks SET quantity = ? WHERE stock_id = ?',
-        [from_after, fromStockId]
-      );
+      if (from_after === 0) {
+        // Delete the source stock when quantity reaches 0
+        await connection.query(
+          'DELETE FROM stocks WHERE stock_id = ?',
+          [fromStockId]
+        );
+      } else {
+        await connection.query(
+          'UPDATE stocks SET quantity = ? WHERE stock_id = ?',
+          [from_after, fromStockId]
+        );
+      }
       await connection.query(
         'UPDATE stocks SET quantity = ? WHERE stock_id = ?',
         [to_after, toStockId]
@@ -366,10 +382,18 @@ export const TransactionsService = {
       const qty_after = qty_before + delta;
       if (qty_after < 0) throw new Error('Adjustment would make stock negative');
 
-      await connection.query(
-        'UPDATE stocks SET quantity = ? WHERE stock_id = ?',
-        [qty_after, stockId]
-      );
+      if (qty_after === 0) {
+        // Delete the stock when quantity reaches 0
+        await connection.query(
+          'DELETE FROM stocks WHERE stock_id = ?',
+          [stockId]
+        );
+      } else {
+        await connection.query(
+          'UPDATE stocks SET quantity = ? WHERE stock_id = ?',
+          [qty_after, stockId]
+        );
+      }
 
       const total_value = delta * price;
 

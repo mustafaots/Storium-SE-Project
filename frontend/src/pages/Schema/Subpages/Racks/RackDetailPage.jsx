@@ -432,6 +432,21 @@ const RackDetailPage = () => {
   const handleCreateStock = async (e) => {
     e.preventDefault();
     if (!targetSlot) return;
+    
+    // Validate for negative values
+    if (Number(stockForm.quantity) <= 0) {
+      setError('Quantity must be a positive number');
+      return;
+    }
+    if (stockForm.sale_price !== '' && Number(stockForm.sale_price) < 0) {
+      setError('Sale price cannot be negative');
+      return;
+    }
+    if (stockForm.cost_price !== '' && Number(stockForm.cost_price) < 0) {
+      setError('Cost price cannot be negative');
+      return;
+    }
+    
     setActionLoading(true);
     setError('');
     try {
@@ -566,7 +581,7 @@ const RackDetailPage = () => {
                     {slot.stock.expiry_date && (
                       <div className={styles.footerRow}>
                         <span className={styles.detailLabel}>Expiry</span>
-                        <span className={styles.detailValue}>{slot.stock.expiry_date}</span>
+                        <span className={styles.detailValue}>{slot.stock.expiry_date.split('T')[0]}</span>
                       </div>
                     )}
                     <div className={styles.footerRow}>
